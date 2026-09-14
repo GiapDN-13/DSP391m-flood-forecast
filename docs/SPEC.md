@@ -93,7 +93,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 | **FR-T3** | Sinh nhãn `alert_level` (0–3) cho toàn chuỗi | **M** | Cột có trong panel; phân bố lớp được báo cáo theo năm | G | W3 |
 | **FR-T4** | Kiểm chứng ngưỡng bằng 3 đợt lũ lịch sử 1999/2020/2023 | **M** | `THRESHOLDS.md` §5 điền; **lệch tối đa 1 cấp** ở cả 3 đợt | G | W3 |
 | **FR-T5** | Kiểm chứng chéo bằng ánh xạ tần suất (R3) | **C** | Lệch < 25 % so với R2, hoặc giải thích được nguyên nhân | G | W3 |
-| **FR-T6** | Đường R1 (rating curve thực đo) nếu xin được số liệu trạm | **C** | Có curve + so sánh với R2 | G/H | W4+ |
+| ~~FR-T6~~ | ~~Đường R1 (rating curve thực đo) từ số liệu trạm~~ | **W** | **ĐÃ LOẠI 15/09/2026** — không gửi được công văn xin số liệu. Ánh xạ H→Q dựa hoàn toàn vào R2, kiểm chứng chéo bằng R3 | — | — |
 
 # 5. Yêu cầu chức năng — Mô hình (FR-M)
 
@@ -192,7 +192,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 |---|---|---|
 | A1 | Open-Meteo giữ miễn phí, không đổi API trong 9 tuần | Dùng dữ liệu đã cache và backup; nêu trong Limitations |
 | A2 | Thu được ≥ 10 sự kiện lũ có công bố đỉnh mực nước | Lùi về ngưỡng phân vị R4, **đổi tên nhãn**, hạ tuyên bố |
-| A3 | Ô lưới GloFAS đại diện được dòng chảy thật tại trạm | Toàn bộ kết luận suy yếu — đây là rủi ro R1, **đã phát hiện sai ở lần quét đầu** |
+| A3 | Ô lưới GloFAS đại diện được dòng chảy thật tại trạm | ⚠️ **ĐÃ SAI MỘT PHẦN** — mạng sông GloFAS lệch ~7 km khỏi trạm, và có thể không tách được Hương/Bồ. Xem `FINDINGS_GRID.md` |
 | A4 | Số ngày vượt BĐ II trong test đủ ≥ 30 | Áp `AC-6`, chuyển sang báo cáo theo đợt lũ |
 | A5 | Ngày nộp suy ra từ session number gần đúng | Lấy ngày thật từ LMS ở W1 |
 
@@ -217,3 +217,4 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 | Ngày | Phiên bản | Thay đổi | Ai |
 |---|---|---|---|
 | 15/09/2026 | 1.0 | Bản đầu tiên | G |
+| 15/09/2026 | 1.1 | Loại FR-T6 (không xin được số liệu trạm). Cập nhật giả định A3 theo kết quả quét lưới | G |

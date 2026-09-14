@@ -63,7 +63,7 @@ Nguyên tắc tuần này: **không có tuần "chuẩn bị"**. Crawl phải ch
 | **D** | `make setup`, chạy lại script của G, thử 1 toạ độ sông Bồ | `notebooks/01_first_call.ipynb` |
 | **D** | Đọc doc Open-Meteo Archive + **Historical Forecast API**, ước lượng thời gian crawl 50 điểm × 2010–2026 | `docs/API_NOTES.md` |
 | **H** | **Tra Phụ lục QĐ 05/2020/QĐ-TTg**, xác nhận mực nước BĐ I/II/III cho Kim Long & Phú Ốc | `THRESHOLDS.md` §2 đã tick |
-| **H** | Soạn & gửi công văn xin số liệu Đài KTTV Trung Trung Bộ | Đã gửi, ghi ngày |
+| **H** | ~~Công văn xin số liệu Đài KTTV~~ — **đã loại**. Thay bằng: **bắt đầu thu `flood_events.csv`** (giờ là đường duy nhất để quy đổi ngưỡng) | ≥ 5 sự kiện có nguồn |
 | **H** | Zotero group + tìm 6 bài (2 bài về **post-processing dự báo dòng chảy**) | 6 entry |
 | **Cả 3** | Chốt tên đề tài + **email giảng viên báo team 3 người** | Đã gửi |
 | **Cả 3** | Lấy ngày nộp thật từ LMS, cập nhật bảng mốc ở trên | Bảng đã sửa |

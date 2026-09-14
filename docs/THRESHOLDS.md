@@ -28,7 +28,10 @@ Cần một ánh xạ **H → Q**. Cả file này là quy trình xây dựng án
 
 ## 3. Ba đường quy đổi H → Q
 
-Làm theo thứ tự ưu tiên. **R2 là đường chính vì chắc chắn làm được; R1 là bonus; R3 dùng để kiểm chứng chéo.**
+> 🔴 **Cập nhật 15/09/2026: đường R1 đã bị loại** — nhóm không gửi được công văn xin số liệu trạm.
+> ⇒ **R2 là đường duy nhất**, R3 là cách kiểm chứng chéo duy nhất. Điều này làm `FR-D7` (thu ≥15 sự kiện lũ có nguồn) trở thành **việc quan trọng nhất của H**, vì không còn đường lui nào ngoài R4.
+
+Thứ tự: **R2 chính · R3 kiểm chứng · R4 dự phòng cuối.**
 
 ### R1 — Đường quan hệ mực nước–lưu lượng thực đo (chuẩn nhất, phụ thuộc may mắn)
 
@@ -40,7 +43,7 @@ Q = a · (H − H₀)^b
 
 `H₀` = cao độ đáy quy ước. Fit bằng bình phương tối thiểu trên thang log. Nghịch đảo tại H = BĐ I/II/III.
 
-**Nếu xin được thì đây là điểm cộng lớn — H gửi công văn xin ngay W1**, vì thủ tục thường mất 3–6 tuần. Không chờ đến lúc cần mới xin.
+❌ **ĐÃ LOẠI KHỎI PHẠM VI (15/09/2026).** Không gửi được công văn. Giữ lại mô tả ở đây để nêu trong Limitations: *nghiên cứu không có số liệu mực nước quan trắc để hiệu chuẩn trực tiếp, nên ánh xạ H→Q được xây gián tiếp từ các đợt lũ đã công bố.*
 
 ### R2 — Hiệu chuẩn theo sự kiện lịch sử ⭐ ĐƯỜNG CHÍNH
 
