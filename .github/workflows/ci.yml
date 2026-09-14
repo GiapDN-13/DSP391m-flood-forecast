@@ -1,0 +1,55 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Cài dependency
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+          pip install ruff pytest nbstripout
+
+      - name: Lint
+        run: ruff check src tests
+
+      - name: Test
+        run: pytest -q tests
+
+      - name: Chặn commit file nặng (> 10 MB)
+        run: |
+          big=$(find . -path ./.git -prune -o -type f -size +10M -print)
+          if [ -n "$big" ]; then
+            echo "::error::Có file > 10MB bị commit:"; echo "$big"; exit 1
+          fi
+
+      - name: Chặn commit dữ liệu
+        run: |
+          bad=$(git ls-files | grep -E '\.(parquet|nc|grib|h5)$' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::File dữ liệu không được commit:"; echo "$bad"; exit 1
+          fi
+
+      - name: Chặn notebook còn output
+        run: |
+          fail=0
+          for nb in $(git ls-files '*.ipynb'); do
+            if ! nbstripout --verify "$nb" 2>/dev/null; then
+              echo "::error file=$nb::Notebook còn output — chạy 'nbstripout $nb' rồi commit lại"
+              fail=1
+            fi
+          done
+          exit $fail

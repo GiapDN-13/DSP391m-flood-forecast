@@ -1,0 +1,22 @@
+# Chuẩn hoá line ending — team dùng Windows, tránh diff giả do CRLF
+* text=auto eol=lf
+
+*.ps1   text eol=crlf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# Notebook: giảm rác trong diff (output vẫn nên xoá bằng nbstripout)
+*.ipynb  text
+
+# Nhị phân — đừng cố diff
+*.png    binary
+*.jpg    binary
+*.pdf    binary
+*.docx   binary
+*.pptx   binary
+*.xlsx   binary
+*.parquet binary
+
+# Gộp báo cáo/notebook: tránh auto-merge hỏng file
+*.ipynb  merge=union -diff
+*.docx   -merge -diff

@@ -1,0 +1,72 @@
+name: Task
+description: Một đầu việc cụ thể trong kế hoạch
+title: "[Wxx] "
+labels: []
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Mục tiêu
+      description: Làm việc này để được cái gì?
+      placeholder: Ví dụ - Xác định ô lưới GloFAS nằm đúng dòng sông Hương
+    validations:
+      required: true
+
+  - type: textarea
+    id: dod
+    attributes:
+      label: Xong khi nào (Definition of Done)
+      description: Liệt kê tiêu chí kiểm được, không nói chung chung
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: howto
+    attributes:
+      label: Gợi ý cách làm
+      description: |
+        BẮT BUỘC điền nếu issue này giao cho Đức hoặc Huyền.
+        Ghi rõ - input ở đâu, output để đâu, dùng hàm/file nào, tham khảo notebook nào.
+    validations:
+      required: false
+
+  - type: input
+    id: week
+    attributes:
+      label: Tuần
+      placeholder: W04
+    validations:
+      required: true
+
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Người làm
+      options:
+        - Giáp
+        - Đức
+        - Huyền
+        - Cả team
+    validations:
+      required: true
+
+  - type: input
+    id: effort
+    attributes:
+      label: Ước lượng (giờ)
+      placeholder: "3"
+
+  - type: input
+    id: due
+    attributes:
+      label: Hạn nội bộ
+      placeholder: 2026-10-08
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Phụ thuộc / ghi chú
+      placeholder: "Cần xong #12 trước"

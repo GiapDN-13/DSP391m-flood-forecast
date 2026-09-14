@@ -1,0 +1,60 @@
+# ===== Dữ liệu: TUYỆT ĐỐI không commit =====
+data/
+!data/
+!data/*/
+!data/*/.gitkeep
+!data/external/grid_candidates.csv
+*.parquet
+*.nc
+*.grib
+*.h5
+*.zip
+
+# ===== Model & artifact nặng (chỉ thư mục models/ ở gốc, KHÔNG phải src/models/) =====
+/models/
+*.pkl
+*.joblib
+*.pt
+*.pth
+*.onnx
+mlruns/
+optuna*.db
+
+# ===== Cache crawl =====
+.cache/
+*.cache
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# ===== Bí mật =====
+.env
+.env.*
+secrets.*
+*_credentials.json
+service-account*.json
+
+# ===== Hệ điều hành / IDE =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# ===== Office tạm =====
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# ===== NGOẠI LỆ: hình cho báo cáo thì GIỮ =====
+!reports/figures/**
+!reports/**/*.png

@@ -1,0 +1,146 @@
+# QUY TRÌNH GIT — DSP391m
+
+Mục tiêu: **`main` luôn chạy được**, mọi thay đổi đều qua PR, ai làm gì đều có vết.
+Quy trình cố tình giữ đơn giản (chỉ 1 nhánh dài `main`) vì team 3 người, không cần GitFlow.
+
+## 1. Tạo repo (Giáp làm 1 lần)
+
+```powershell
+cd E:\FPT_University\2026\FALL_26\DSP391m
+git init -b main
+git add .
+git commit -m "chore: khởi tạo cấu trúc dự án và tài liệu kế hoạch"
+
+# Tạo repo private trên GitHub và push
+gh repo create DSP391m-flood-forecast --private --source=. --remote=origin --push
+
+# Mời 2 bạn còn lại
+gh api -X PUT repos/:owner/DSP391m-flood-forecast/collaborators/<github-cua-duc>  -f permission=push
+gh api -X PUT repos/:owner/DSP391m-flood-forecast/collaborators/<github-cua-huyen> -f permission=push
+```
+
+## 2. Bảo vệ nhánh `main`
+
+Settings → Branches → Add rule cho `main`:
+
+- ☑ Require a pull request before merging — **1 approval**
+- ☑ Require status checks to pass — chọn `ci`
+- ☑ Require conversation resolution before merging
+- ☐ *Không* bật "Include administrators" (để Giáp còn hotfix được khi gấp)
+
+Hoặc bằng CLI:
+
+```powershell
+gh api -X PUT repos/:owner/DSP391m-flood-forecast/branches/main/protection `
+  --input .github/branch-protection.json
+```
+
+## 3. Đặt tên nhánh
+
+`<loại>/<người>/<mô-tả-ngắn>`
+
+| Loại | Dùng khi | Ví dụ |
+|---|---|---|
+| `feat` | Thêm chức năng code | `feat/giap/lightgbm-baseline` |
+| `data` | Crawl / ETL / làm sạch | `data/giap/crawl-era5-1984-2000` |
+| `eda` | Notebook phân tích | `eda/duc/lag-correlation` |
+| `exp` | Thí nghiệm mô hình (có thể bỏ) | `exp/giap/lstm-30d` |
+| `docs` | Báo cáo, tài liệu, slide | `docs/huyen/report1-problem-statement` |
+| `fix` | Sửa lỗi | `fix/duc/timezone-off-by-one` |
+
+## 4. Commit message — Conventional Commits
+
+```
+<loại>(<phạm vi>): <mô tả ngắn, tiếng Việt không dấu hoặc tiếng Anh>
+
+[thân bài tuỳ chọn]
+Refs: #<số issue>
+```
+
+Ví dụ tốt:
+
+```
+feat(ingest): them retry va checkpoint cho crawler ERA5
+
+Crawl theo lo 1 nam, luu state vao .cache/ de resume khi dut mang.
+Refs: #14
+```
+
+Commit **xấu** (đừng làm): `update`, `fix bug`, `asdasd`, `commit lan 2`.
+
+## 5. Vòng đời một task
+
+```
+1. Nhận issue trên GitHub Project  →  kéo sang "In progress"
+2. git switch main && git pull
+3. git switch -c feat/giap/ten-viec
+4. ... code ... commit nhỏ, thường xuyên ...
+5. git push -u origin feat/giap/ten-viec
+6. gh pr create --fill --base main
+7. Người khác review  →  sửa theo comment
+8. Squash and merge  →  issue tự đóng (nếu PR có "Closes #14")
+9. git switch main && git pull && git branch -d feat/giap/ten-viec
+```
+
+## 6. Ai review của ai
+
+| PR của | Người review |
+|---|---|
+| Giáp | Đức (code) — Huyền (nếu là docs) |
+| Đức | **Giáp bắt buộc** |
+| Huyền | Giáp hoặc Đức, review nhẹ, **không bắt bẻ format nhỏ nhặt** |
+
+Nguyên tắc review: **comment phải nói rõ "sửa thế nào"**, không chỉ nói "cái này sai". Đặc biệt khi review PR của Đức — mục tiêu là dạy chứ không phải chặn.
+
+SLA: review trong **24 giờ**. Quá hạn mà không ai review → Giáp merge để không chặn tiến độ.
+
+## 7. Dữ liệu — TUYỆT ĐỐI không commit
+
+`data/` đã nằm trong `.gitignore`. Dữ liệu đi đường khác:
+
+| Loại | Nơi lưu | Ai quản |
+|---|---|---|
+| Raw Parquet (nặng) | Google Drive team + Hugging Face Datasets | G |
+| `daily_panel.parquet` (bảng phân tích cuối) | HF Datasets (private) | G |
+| Model đã train (`.pkl`, `.pt`) | GitHub Release asset | G |
+| Hình cho báo cáo (PNG nhỏ) | **Có commit** trong `reports/figures/` | ai tạo |
+
+Nếu lỡ commit file nặng: báo Giáp ngay, **đừng tự `push --force`**.
+
+## 8. Notebook — chống conflict
+
+Notebook rất dễ conflict vì output nằm trong file JSON. Quy tắc:
+
+- **Mỗi người một notebook riêng**, không sửa chung 1 file.
+- Trước khi commit: `Kernel → Restart & Clear All Outputs` (hoặc để `nbstripout` trong pre-commit tự làm).
+- Code dùng lại nhiều lần → chuyển vào `src/`, notebook chỉ gọi hàm.
+
+## 9. Tag & release
+
+| Tag | Khi nào |
+|---|---|
+| `report1` | Ngay sau khi nộp Report 1 |
+| `report2` | Sau Report 2 |
+| `v1.0` | Freeze model cuối (W12) |
+| `final` | Sau khi nộp Report 4 |
+
+```powershell
+git tag -a report1 -m "Trang thai repo luc nop Report 1"
+git push origin report1
+```
+
+Tag giúp trả lời được câu hỏi khi vấn đáp: *"lúc nộp Report 2 thì mô hình đang ở đâu?"*
+
+## 10. Lệnh cứu hộ hay dùng
+
+```powershell
+git status                      # đang ở đâu, sửa gì
+git switch main; git pull       # đồng bộ trước khi làm việc mới
+git stash                       # cất tạm việc đang dở
+git stash pop                   # lấy lại
+git restore <file>              # bỏ sửa 1 file chưa commit
+git log --oneline --graph -20   # xem lịch sử
+git reset --soft HEAD~1         # gỡ commit cuối, GIỮ nguyên code
+```
+
+> Gặp chữ `CONFLICT` hoặc bất cứ thứ gì không chắc → **dừng lại, chụp màn hình, hỏi Giáp**. Đừng đoán, đừng `--force`.

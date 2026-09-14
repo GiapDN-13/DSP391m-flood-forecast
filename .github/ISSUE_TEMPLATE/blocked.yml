@@ -1,0 +1,40 @@
+name: Đang kẹt (Blocker)
+description: Dùng khi kẹt quá 45 phút — kẹt mà im lặng mới là vấn đề, báo ra thì không
+title: "[BLOCKED] "
+labels: ["blocked"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Rule của team:** kẹt > 45 phút thì mở issue này hoặc comment vào issue đang làm.
+        Mở blocker **không phải điểm trừ**. Để kẹt cả tuần mới là điểm trừ.
+
+  - type: textarea
+    id: trying
+    attributes:
+      label: Mình đang cố làm gì
+    validations:
+      required: true
+
+  - type: textarea
+    id: stuck
+    attributes:
+      label: Kẹt ở đâu
+      description: Dán nguyên văn thông báo lỗi nếu có
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: Đã thử những gì
+      value: |
+        1.
+        2.
+    validations:
+      required: true
+
+  - type: input
+    id: link
+    attributes:
+      label: Link tới code / notebook / issue gốc
