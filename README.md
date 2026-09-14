@@ -21,6 +21,7 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical 
 | Ngưỡng báo động BĐ I/II/III | [`docs/THRESHOLDS.md`](docs/THRESHOLDS.md) |
 | Chạy lại mọi thứ từ số 0 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) |
 | Rủi ro & chốt cắt scope | [`docs/RISKS.md`](docs/RISKS.md) |
+| **Kết quả quét ô lưới GloFAS** | [`docs/FINDINGS_GRID.md`](docs/FINDINGS_GRID.md) |
 | Checklist EDA (Report 2) | [`docs/EDA_CHECKLIST.md`](docs/EDA_CHECKLIST.md) |
 | Ôn thi vấn đáp | [`docs/EXAM_QUESTION_BANK.md`](docs/EXAM_QUESTION_BANK.md) |
 
