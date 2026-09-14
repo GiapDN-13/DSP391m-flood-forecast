@@ -1,4 +1,4 @@
-"""Test cho khâu làm sạch dữ liệu — Đức viết ở W04.
+"""Test cho khâu làm sạch dữ liệu — D viết ở W2.
 
 Lỗi ETL là loại lỗi âm thầm nhất: sai timezone 1 tiếng hoặc nhầm mm/h với mm/day
 sẽ không báo lỗi gì cả, chỉ làm kết quả sai lặng lẽ. Xem docs/GAPS.md mục 9.

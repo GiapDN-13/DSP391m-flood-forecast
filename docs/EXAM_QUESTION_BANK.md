@@ -2,7 +2,7 @@
 
 Thi cuối kỳ **chấm cá nhân, 30 phút, 20 % điểm**. Mỗi người phải trả lời được **toàn bộ**, kể cả phần mình không làm.
 
-Cách dùng: gặp khái niệm mới trong tuần → thêm 1 câu vào đây. Từ W10 bốc thăm 3 câu/người mỗi buổi mock exam.
+Cách dùng: gặp khái niệm mới trong tuần → thêm 1 câu vào đây. Mock exam ở **W6** và **W9**, mỗi người bốc 3 câu.
 Ghi kết quả mock vào bảng cuối file.
 
 ---
@@ -25,7 +25,9 @@ Ghi kết quả mock vào bảng cuối file.
 11. API (antecedent precipitation index) là gì, dùng để làm gì?
 12. Vì sao chọn LightGBM làm mô hình chính thay vì LSTM?
 13. Persistence baseline là gì? Vì sao bắt buộc phải có baseline?
-14. **Mô hình của nhóm tốt hơn dự báo GloFAS gốc ở điểm nào?** *(câu chắc chắn bị hỏi)*
+14. **Mô hình của nhóm tốt hơn dự báo GloFAS gốc ở điểm nào?** *(câu chắc chắn bị hỏi — trả lời theo `RESEARCH_DESIGN.md` §1)*
+14b. GloFAS vừa là baseline vừa là feature đầu vào — như vậy có phải gian lận không? Vì sao không?
+14c. Ngưỡng BĐ I/II/III định nghĩa theo mực nước, dữ liệu lại là lưu lượng — nhóm quy đổi bằng cách nào, và cách đó có hạn chế gì?
 15. Walk-forward validation khác k-fold thường ở chỗ nào? Vì sao không được dùng k-fold ở đây?
 16. Rò rỉ dữ liệu (data leakage) trong chuỗi thời gian xảy ra như thế nào? Nhóm phòng bằng cách nào?
 17. Optuna tối ưu gì, theo metric nào, bao nhiêu trial?
@@ -52,7 +54,14 @@ Ghi kết quả mock vào bảng cuối file.
 29. Mô hình train bằng mưa quan trắc nhưng chạy bằng mưa dự báo — vấn đề gì phát sinh?
 30. Có thêm 6 tháng nữa thì làm gì tiếp?
 
-## F. Câu hỏi về quy trình làm việc
+## F. Yêu cầu & nghiệm thu
+
+34. Dự án có bao nhiêu yêu cầu bắt buộc? Cái nào chưa đạt và vì sao?
+35. Ngưỡng nghiệm thu NSE ≥ 0,5 và POD ≥ 0,7 lấy căn cứ từ đâu?
+36. Yêu cầu phi chức năng nào khó đạt nhất? Nhóm xử lý thế nào?
+37. Làm sao chứng minh một con số trong Report 3 là có thật và tái lập được?
+
+## G. Câu hỏi về quy trình làm việc
 
 31. Bạn phụ trách phần nào? Phần **người khác** làm hoạt động ra sao?
 32. Nhóm phối hợp qua công cụ gì? Xử lý bất đồng thế nào?
@@ -64,6 +73,5 @@ Ghi kết quả mock vào bảng cuối file.
 
 | Lần | Ngày | Giáp | Đức | Huyền | Câu yếu nhất cần ôn |
 |---|---|---|---|---|---|
-| 1 (W10) | | /10 | /10 | /10 | |
-| 2 (W12) | | /10 | /10 | /10 | |
-| 3 (W15) | | /10 | /10 | /10 | |
+| 1 (W6) | | /10 | /10 | /10 | |
+| 2 (W9) | | /10 | /10 | /10 | |

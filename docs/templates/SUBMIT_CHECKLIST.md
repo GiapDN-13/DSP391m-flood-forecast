@@ -25,7 +25,7 @@ Báo cáo: ☐ Report 1 ☐ Report 2 ☐ Report 3 ☐ Report 4 (Final)
 ## Trích dẫn
 
 - [ ] Mọi trích dẫn trong bài đều có trong danh mục tài liệu và ngược lại
-- [ ] Đúng chuẩn trường yêu cầu (APA / IEEE — chốt từ W01)
+- [ ] Đúng chuẩn trường yêu cầu (APA / IEEE — chốt từ W1)
 - [ ] **Có trích dẫn Open-Meteo (CC BY 4.0) và GloFAS** — bắt buộc theo giấy phép
 - [ ] Nguồn web có ngày truy cập
 

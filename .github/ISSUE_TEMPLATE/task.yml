@@ -16,7 +16,9 @@ body:
     id: dod
     attributes:
       label: Xong khi nào (Definition of Done)
-      description: Liệt kê tiêu chí kiểm được, không nói chung chung
+      description: >
+        Nếu issue gắn với một FR, CHÉP THẲNG cột "Tiêu chí nghiệm thu" từ docs/SPEC.md vào đây.
+        Không viết lại theo ý mình. Tiêu chí phải kiểm được, không nói chung chung.
       value: |
         - [ ]
         - [ ]
@@ -28,16 +30,23 @@ body:
     attributes:
       label: Gợi ý cách làm
       description: |
-        BẮT BUỘC điền nếu issue này giao cho Đức hoặc Huyền.
+        BẮT BUỘC điền khi người làm không phải người viết issue.
         Ghi rõ - input ở đâu, output để đâu, dùng hàm/file nào, tham khảo notebook nào.
     validations:
       required: false
 
   - type: input
+    id: req
+    attributes:
+      label: ID yêu cầu (docs/SPEC.md)
+      description: Ví dụ FR-D1, FR-M3, NFR-4. Để trống nếu là việc vận hành không gắn yêu cầu nào.
+      placeholder: FR-D1
+
+  - type: input
     id: week
     attributes:
       label: Tuần
-      placeholder: W04
+      placeholder: W3
     validations:
       required: true
 

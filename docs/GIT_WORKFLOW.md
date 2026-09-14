@@ -3,7 +3,7 @@
 Mục tiêu: **`main` luôn chạy được**, mọi thay đổi đều qua PR, ai làm gì đều có vết.
 Quy trình cố tình giữ đơn giản (chỉ 1 nhánh dài `main`) vì team 3 người, không cần GitFlow.
 
-## 1. Tạo repo (Giáp làm 1 lần)
+## 1. Tạo repo (G làm 1 lần)
 
 ```powershell
 cd E:\FPT_University\2026\FALL_26\DSP391m
@@ -26,7 +26,7 @@ Settings → Branches → Add rule cho `main`:
 - ☑ Require a pull request before merging — **1 approval**
 - ☑ Require status checks to pass — chọn `ci`
 - ☑ Require conversation resolution before merging
-- ☐ *Không* bật "Include administrators" (để Giáp còn hotfix được khi gấp)
+- ☐ *Không* bật "Include administrators" (để G còn hotfix được khi gấp)
 
 Hoặc bằng CLI:
 
@@ -42,7 +42,7 @@ gh api -X PUT repos/:owner/DSP391m-flood-forecast/branches/main/protection `
 | Loại | Dùng khi | Ví dụ |
 |---|---|---|
 | `feat` | Thêm chức năng code | `feat/giap/lightgbm-baseline` |
-| `data` | Crawl / ETL / làm sạch | `data/giap/crawl-era5-1984-2000` |
+| `data` | Crawl / ETL / làm sạch | `data/giap/crawl-era5-2010-2015` |
 | `eda` | Notebook phân tích | `eda/duc/lag-correlation` |
 | `exp` | Thí nghiệm mô hình (có thể bỏ) | `exp/giap/lstm-30d` |
 | `docs` | Báo cáo, tài liệu, slide | `docs/huyen/report1-problem-statement` |
@@ -86,13 +86,15 @@ Commit **xấu** (đừng làm): `update`, `fix bug`, `asdasd`, `commit lan 2`.
 
 | PR của | Người review |
 |---|---|
-| Giáp | Đức (code) — Huyền (nếu là docs) |
-| Đức | **Giáp bắt buộc** |
-| Huyền | Giáp hoặc Đức, review nhẹ, **không bắt bẻ format nhỏ nhặt** |
+| G | D (code) · H (nếu là tài liệu) |
+| D | **G bắt buộc** |
+| H | G hoặc D |
 
-Nguyên tắc review: **comment phải nói rõ "sửa thế nào"**, không chỉ nói "cái này sai". Đặc biệt khi review PR của Đức — mục tiêu là dạy chứ không phải chặn.
+Mức độ review theo loại PR, không theo người: PR **code** review kỹ (logic, rò rỉ dữ liệu, test); PR **tài liệu/báo cáo** review nội dung và số liệu, không bắt bẻ chính tả vặt — góp ý câu chữ để lại comment trên Google Docs.
 
-SLA: review trong **24 giờ**. Quá hạn mà không ai review → Giáp merge để không chặn tiến độ.
+Nguyên tắc: **comment phải nói rõ "sửa thế nào"**, không chỉ nói "cái này sai". Mục tiêu của review là làm việc chạy và truyền kiến thức, không phải chặn.
+
+SLA: review trong **24 giờ** — lịch 9 tuần không chịu được PR nằm chờ. Quá hạn mà không ai review → G merge để không chặn tiến độ.
 
 ## 7. Dữ liệu — TUYỆT ĐỐI không commit
 
@@ -105,7 +107,7 @@ SLA: review trong **24 giờ**. Quá hạn mà không ai review → Giáp merge 
 | Model đã train (`.pkl`, `.pt`) | GitHub Release asset | G |
 | Hình cho báo cáo (PNG nhỏ) | **Có commit** trong `reports/figures/` | ai tạo |
 
-Nếu lỡ commit file nặng: báo Giáp ngay, **đừng tự `push --force`**.
+Nếu lỡ commit file nặng: báo G ngay, **đừng tự `push --force`**.
 
 ## 8. Notebook — chống conflict
 
@@ -121,7 +123,7 @@ Notebook rất dễ conflict vì output nằm trong file JSON. Quy tắc:
 |---|---|
 | `report1` | Ngay sau khi nộp Report 1 |
 | `report2` | Sau Report 2 |
-| `v1.0` | Freeze model cuối (W12) |
+| `v1.0` | Freeze model cuối (W8) |
 | `final` | Sau khi nộp Report 4 |
 
 ```powershell
@@ -143,4 +145,4 @@ git log --oneline --graph -20   # xem lịch sử
 git reset --soft HEAD~1         # gỡ commit cuối, GIỮ nguyên code
 ```
 
-> Gặp chữ `CONFLICT` hoặc bất cứ thứ gì không chắc → **dừng lại, chụp màn hình, hỏi Giáp**. Đừng đoán, đừng `--force`.
+> Gặp chữ `CONFLICT` hoặc bất cứ thứ gì không chắc → **dừng lại, chụp màn hình, hỏi G**. Đừng đoán, đừng `--force`.
