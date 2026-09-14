@@ -1,6 +1,6 @@
 # CHIA TẬP DỮ LIỆU & TỔNG HỢP KHÔNG GIAN
 
-> Điền ở **W05**. Chốt xong thì **không đổi nữa** — đổi split giữa chừng là tự lừa mình.
+> Điền ở **W3**. Chốt xong thì **không đổi nữa** — đổi split giữa chừng là tự lừa mình.
 
 ## 1. Mốc cắt 07/2022 — vì sao quan trọng
 
@@ -10,21 +10,21 @@ Từ tháng 07/2022, dữ liệu "lịch sử" của GloFAS trên Open-Meteo **k
 
 | Tập | Khoảng thời gian | Chế độ dữ liệu | Số ngày | Dùng để |
 |---|---|---|---|---|
-| Train | 1984-01-01 → 2015-12-31 | Reanalysis | ~11 700 | Huấn luyện |
+| Train | **2010-01-01** → 2015-12-31 | Reanalysis | ~2 190 | Huấn luyện |
 | Validation | 2016-01-01 → 2022-06-30 | Reanalysis | ~2 370 | Chọn siêu tham số (Optuna) |
 | **Test (chính)** | 2022-07-01 → 2026-08-31 | **Archived forecast** | ~1 520 | Báo cáo kết quả cuối |
-| Test (phụ, tuỳ chọn) | 2010-01-01 → 2015-12-31 | Reanalysis | — | Kiểm chéo, so cùng chế độ |
+| *(kiểm chéo)* | fold cuối của walk-forward | Reanalysis | — | So hiệu năng trên **cùng chế độ dữ liệu**, để tách ảnh hưởng của mốc 07/2022 |
 
-Điều chỉnh nếu kích hoạt phương án B (chỉ lấy 2010–2026).
+⚠️ Mưa ERA5 **chỉ crawl từ 2010** (scope đã cắt, xem `PLAN.md`). Discharge vẫn lấy đủ 1984–2026 nên phần phân vị, return period và ghép sự kiện lũ cũ vẫn dùng được chuỗi dài.
 
 ## 3. Walk-forward validation
 
 Không dùng k-fold ngẫu nhiên. Sơ đồ:
 
 ```
-fold 1: train[1984–2010]  → test[2011]
-fold 2: train[1984–2011]  → test[2012]
-fold 3: train[1984–2012]  → test[2013]
+fold 1: train[2010–2016]  → test[2017]
+fold 2: train[2010–2017]  → test[2018]
+fold 3: train[2010–2018]  → test[2019]
 ...
 ```
 

@@ -4,6 +4,7 @@ data/
 !data/*/
 !data/*/.gitkeep
 !data/external/grid_candidates.csv
+!data/external/flood_events.csv
 *.parquet
 *.nc
 *.grib

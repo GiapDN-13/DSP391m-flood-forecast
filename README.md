@@ -1,7 +1,7 @@
 # DSP391m — Dự báo nguy cơ lũ 1–3 ngày cho các xã ven đô TP. Huế
 
-Dự án Capstone môn DSP391m, học kỳ Fall 2026.
-Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical/Forecast API (ERA5)**, **NASA POWER**.
+Dự án Capstone môn DSP391m, học kỳ Fall 2026. **Khung thời gian: 9 tuần, 15/09 → 16/11/2026.**
+Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical + Historical Forecast API (ERA5)**.
 
 **Team:** Giáp (Tech Lead) · Đức (Data Analyst) · Huyền (Research & Documentation Lead)
 
@@ -11,12 +11,17 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical/
 
 | Bạn cần gì | Đọc file nào |
 |---|---|
-| **Tuần này tôi làm gì?** | [`docs/PLAN.md`](docs/PLAN.md) — kế hoạch 15 tuần theo từng người |
+| **Dự án phải làm được gì?** | [`docs/SPEC.md`](docs/SPEC.md) — FR / NFR / ngưỡng nghiệm thu |
+| **Tuần này tôi làm gì?** | [`docs/PLAN.md`](docs/PLAN.md) — kế hoạch 9 tuần theo từng người |
 | Ai làm gì, vì sao chia vậy | [`docs/TEAM.md`](docs/TEAM.md) |
 | Dùng git thế nào | [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) |
 | Theo dõi tiến độ ở đâu | [`docs/TRACKING.md`](docs/TRACKING.md) |
 | **Kế hoạch còn thiếu gì** | [`docs/GAPS.md`](docs/GAPS.md) ← *đọc kỹ, nhiều thứ ăn điểm ở đây* |
-| Rủi ro và phương án B | [`docs/RISKS.md`](docs/RISKS.md) |
+| Đóng góp / kịch bản đánh giá / lớp hiếm | [`docs/RESEARCH_DESIGN.md`](docs/RESEARCH_DESIGN.md) |
+| Ngưỡng báo động BĐ I/II/III | [`docs/THRESHOLDS.md`](docs/THRESHOLDS.md) |
+| Chạy lại mọi thứ từ số 0 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) |
+| Rủi ro & chốt cắt scope | [`docs/RISKS.md`](docs/RISKS.md) |
+| Checklist EDA (Report 2) | [`docs/EDA_CHECKLIST.md`](docs/EDA_CHECKLIST.md) |
 | Ôn thi vấn đáp | [`docs/EXAM_QUESTION_BANK.md`](docs/EXAM_QUESTION_BANK.md) |
 
 ## 🚀 Cài đặt
@@ -67,11 +72,13 @@ scripts/         bootstrap_github.ps1
 
 | Mốc | Hạn thật | **Deadline nội bộ** | % |
 |---|---|---|---|
-| Report 1 | 04/10/2026 | **01/10** | 10 % |
-| Report 2 | 01/11/2026 | **29/10** | 20 % |
-| Report 3 | 13/12/2026 | **10/12** | 40 % |
-| Report 4 | 21/12/2026 | **18/12** | 10 % |
-| Thi vấn đáp | 22–27/12/2026 | — | 20 % |
+| Report 1 | ~28/09/2026 | **26/09** | 10 % |
+| Report 2 | ~12/10/2026 | **09/10** | 20 % |
+| Report 3 | ~04/11/2026 | **02/11** | 40 % |
+| Report 4 | ~13/11/2026 | **10/11** | 10 % |
+| Thi vấn đáp | 13–16/11/2026 | — | 20 % |
+
+⚠️ Ngày trên **suy ra từ session number**, chưa phải ngày chính thức — việc đầu tiên ở W1 là lấy ngày thật từ LMS.
 
 Luôn làm việc theo **deadline nội bộ**, không phải hạn thật.
 
@@ -79,7 +86,7 @@ Luôn làm việc theo **deadline nội bộ**, không phải hạn thật.
 
 1. **Không commit vào `data/`.** Dữ liệu đi qua Google Drive / Hugging Face Datasets.
 2. **Kẹt quá 45 phút thì phải báo** — kéo issue sang `Blocked`. Báo ra không phải điểm trừ; im lặng cả tuần mới là.
-3. **Mọi thay đổi vào `main` đều qua Pull Request.** Không ai push thẳng, kể cả Giáp.
+3. **Mọi thay đổi vào `main` đều qua Pull Request.** Không ai push thẳng, kể cả G.
 
 ## 📄 Nguồn dữ liệu & giấy phép
 

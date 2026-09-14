@@ -3,6 +3,7 @@
 <!-- 2–3 câu, viết cho người KHÔNG theo dõi việc này -->
 
 Closes #
+Yêu cầu liên quan (docs/SPEC.md): `FR-__`
 
 ## Loại thay đổi
 

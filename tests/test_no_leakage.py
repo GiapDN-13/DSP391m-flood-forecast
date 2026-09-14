@@ -3,7 +3,7 @@
 Rò rỉ dữ liệu là lỗi chí mạng của bài toán chuỗi thời gian: kết quả đẹp giả,
 không báo lỗi, và chỉ lộ ra khi giảng viên hỏi. Xem docs/GAPS.md mục 9.
 
-Các test này sẽ FAIL cho tới khi src/features/build_panel.py được viết ở W05 —
+Các test này sẽ FAIL cho tới khi src/features/build_panel.py được viết ở W3 —
 đó là chủ ý, để nhắc rằng chưa có gì bảo vệ.
 """
 

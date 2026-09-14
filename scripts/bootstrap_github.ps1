@@ -1,5 +1,5 @@
 <#
-    Thiết lập GitHub cho dự án DSP391m — Giáp chạy 1 lần ở W01.
+    Thiết lập GitHub cho dự án DSP391m — G chạy 1 lần ở W1.
 
     Yêu cầu: GitHub CLI đã cài và đăng nhập
         winget install GitHub.cli
@@ -28,8 +28,8 @@ $labels = @(
     @{ name = "dashboard";       color = "006b75"; desc = "Streamlit / truc quan hoa" },
     @{ name = "docs";            color = "c5def5"; desc = "Bao cao / tai lieu / slide" },
     @{ name = "infra";           color = "444444"; desc = "Repo, CI, moi truong" },
-    @{ name = "good-first-task"; color = "7057ff"; desc = "Viec de, co huong dan - uu tien giao Duc" },
-    @{ name = "light-task";      color = "bfdadc"; desc = "Viec nhe, async, khong deadline gap - danh cho Huyen" },
+    @{ name = "good-first-task"; color = "7057ff"; desc = "Viec co huong dan tung buoc kem theo" },
+    @{ name = "light-task";      color = "bfdadc"; desc = "Viec async, chia duoc thanh phien ngan" },
     @{ name = "blocked";         color = "e11d21"; desc = "Dang ket, can nguoi go" },
     @{ name = "needs-review";    color = "0075ca"; desc = "Cho nguoi khac xem" }
 )
@@ -41,10 +41,10 @@ foreach ($l in $labels) {
 
 # ---------- 2. Milestones ----------
 $milestones = @(
-    @{ title = "Report 1"; due = "2026-10-01"; desc = "10% - Proposal. Han that 04/10, noi bo 01/10" },
-    @{ title = "Report 2"; due = "2026-10-29"; desc = "20% - Data + EDA. Han that 01/11, noi bo 29/10" },
-    @{ title = "Report 3"; due = "2026-12-10"; desc = "40% - Model + Evaluation. Han that 13/12, noi bo 10/12" },
-    @{ title = "Final + Exam"; due = "2026-12-18"; desc = "10% + 20% - Final report va thi van dap" }
+    @{ title = "Report 1"; due = "2026-09-26"; desc = "10% - Proposal. Noi bo 26/09" },
+    @{ title = "Report 2"; due = "2026-10-09"; desc = "20% - Data + EDA. Noi bo 09/10" },
+    @{ title = "Report 3"; due = "2026-11-02"; desc = "40% - Model + Evaluation. Noi bo 02/11" },
+    @{ title = "Final + Exam"; due = "2026-11-10"; desc = "10% + 20% - Report 4 va thi van dap" }
 )
 
 foreach ($m in $milestones) {
@@ -68,21 +68,24 @@ $protection | Out-File -FilePath "$env:TEMP\prot.json" -Encoding utf8
 gh api -X PUT "repos/$Repo/branches/main/protection" --input "$env:TEMP\prot.json" | Out-Null
 Remove-Item "$env:TEMP\prot.json"
 
-# ---------- 4. Issue khởi động cho W01 ----------
-Write-Host "==> Tao issue tuan 1" -ForegroundColor Cyan
+# ---------- 4. Issue khởi động cho W1 ----------
+Write-Host "==> Tao issue W1" -ForegroundColor Cyan
 $w01 = @(
-    @{ t = "[W01] Bao giang vien team doi tu 2 sang 3 nguoi"; l = "p0-critical,docs";      a = "Giap" },
-    @{ t = "[W01] Goi thu Flood API 1 diem song Huong (16.46, 107.59)"; l = "p0-critical,data"; a = "Giap" },
-    @{ t = "[W01] Setup moi truong + chay lai notebook cua Giap"; l = "good-first-task,infra"; a = "Duc" },
-    @{ t = "[W01] Doc doc Open-Meteo, viet API_NOTES.md";      l = "good-first-task,docs";  a = "Duc" },
-    @{ t = "[W01] Lap Zotero group + tim 6 bai bao";           l = "light-task,docs";       a = "Huyen" },
-    @{ t = "[W01] Tom tat paper 01 va 02";                     l = "light-task,docs";       a = "Huyen" },
-    @{ t = "[W01] Dien muc 6 TEAM.md - thoa thuan ho tro";     l = "light-task,docs";       a = "Ca team" }
+    @{ t = "[W1] Lay ngay nop that cua 4 report tu LMS";          l = "p0-critical,docs"; a = "Ca team" },
+    @{ t = "[W1] Email giang vien bao team 3 nguoi";              l = "p0-critical,docs"; a = "Giap" },
+    @{ t = "[W1] Goi thu Flood API diem song Huong 16.46/107.59"; l = "p0-critical,data"; a = "Giap" },
+    @{ t = "[W1] Quet luoi +-0.3 do, chot o GloFAS dung dong chay"; l = "p0-critical,data"; a = "Giap" },
+    @{ t = "[W1] Khoi dong crawl discharge 1984-2026";            l = "p0-critical,data"; a = "Giap" },
+    @{ t = "[W1] Setup moi truong + chay lai notebook cua G";     l = "good-first-task,infra"; a = "Duc" },
+    @{ t = "[W1] Doc Open-Meteo Archive + Historical Forecast API -> API_NOTES.md"; l = "good-first-task,docs"; a = "Duc" },
+    @{ t = "[W1] Tra Phu luc QD 05/2020/QD-TTg xac nhan muc nuoc BD I/II/III"; l = "p0-critical,docs"; a = "Huyen" },
+    @{ t = "[W1] Soan va gui cong van xin so lieu Dai KTTV";      l = "p1,docs"; a = "Huyen" },
+    @{ t = "[W1] Zotero group + tim 6 bai bao";                   l = "light-task,docs"; a = "Huyen" }
 )
 
 foreach ($i in $w01) {
     gh issue create --repo $Repo --title $i.t --label $i.l --milestone "Report 1" `
-        --body "Nguoi lam: $($i.a)`n`nXem chi tiet trong docs/PLAN.md muc W01." | Out-Null
+        --body "Nguoi lam: $($i.a)`n`nXem chi tiet trong docs/PLAN.md muc W1." | Out-Null
     Write-Host "  issue: $($i.t)"
 }
 
