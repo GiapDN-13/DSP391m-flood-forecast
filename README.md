@@ -11,6 +11,7 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical 
 
 | Bạn cần gì | Đọc file nào |
 |---|---|
+| **Đang ở đâu trong cả môn?** | [`docs/FLOW.md`](docs/FLOW.md) — sơ đồ toàn bộ + trạng thái từng phần |
 | **Dự án phải làm được gì?** | [`docs/SPEC.md`](docs/SPEC.md) — FR / NFR / ngưỡng nghiệm thu |
 | **Tuần này tôi làm gì?** | [`docs/PLAN.md`](docs/PLAN.md) — kế hoạch 9 tuần theo từng người |
 | Ai làm gì, vì sao chia vậy | [`docs/TEAM.md`](docs/TEAM.md) |
