@@ -88,7 +88,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 
 | ID | Yêu cầu | Ưu tiên | Tiêu chí nghiệm thu | Ai | Tuần |
 |---|---|---|---|---|---|
-| **FR-T1** | Nạp mực nước BĐ I/II/III đã **đối chiếu văn bản gốc** QĐ 05/2020/QĐ-TTg | **M** | `THRESHOLDS.md` §2 đã tick cả 2 trạm, ghi số hiệu phụ lục | H | W1 |
+| **FR-T1** | Nạp mực nước BĐ I/II/III cho trạm Kim Long | **M** | Giá trị 1,00 / 2,00 / 3,50 m đã kiểm chứng chéo bằng 5 bản tin KTTV (`THRESHOLDS.md` §2). **Còn lại:** dẫn nguồn gốc QĐ 05/2020/QĐ-TTg trong Report 2 | H | 🟡 **gần xong 15/09** |
 | **FR-T2** | Xây ánh xạ mực nước → lưu lượng theo đường R2, kèm khoảng tin cậy bootstrap | **M** | `THRESHOLDS.md` §4 điền đủ; báo cáo N, R², KTC 95 % cho từng cấp | G | W3 |
 | **FR-T3** | Sinh nhãn `alert_level` (0–3) cho toàn chuỗi | **M** | Cột có trong panel; phân bố lớp được báo cáo theo năm | G | W3 |
 | **FR-T4** | Kiểm chứng ngưỡng bằng 3 đợt lũ lịch sử 1999/2020/2023 | **M** | `THRESHOLDS.md` §5 điền; **lệch tối đa 1 cấp** ở cả 3 đợt | G | W3 |
