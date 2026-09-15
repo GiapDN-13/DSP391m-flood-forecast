@@ -1,10 +1,17 @@
 # ===== Dữ liệu: TUYỆT ĐỐI không commit =====
-data/
-!data/
+# Bỏ qua MỌI thứ trong data/, rồi mở lại đúng vài file nhỏ cần version.
+# (Bản trước dùng "data/" + "!data/" nên vô tình cho lọt log và tiến trình.)
+data/**
 !data/*/
 !data/*/.gitkeep
 !data/external/grid_candidates.csv
+!data/external/grid_scan_region.csv
 !data/external/flood_events.csv
+
+# ===== Sản phẩm sinh tự động của màn hình theo dõi =====
+reports/live/
+*.log
+*.jsonl
 *.parquet
 *.nc
 *.grib
