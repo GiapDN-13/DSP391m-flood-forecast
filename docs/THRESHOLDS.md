@@ -19,8 +19,8 @@ Cần một ánh xạ **H → Q**. Cả file này là quy trình xây dựng án
 
 | Trạm | Sông | BĐ I (m) | BĐ II (m) | BĐ III (m) | Đã đối chiếu văn bản gốc? |
 |---|---|---|---|---|---|
-| Kim Long | Hương | 1,00 | 2,00 | 3,50 | ☐ |
-| Phú Ốc | Bồ | 1,50 | 3,00 | 4,50 | ☐ |
+| **Kim Long** | **Hương** | 1,00 | 2,00 | 3,50 | ☐ ← **chỉ còn trạm này** |
+| ~~Phú Ốc~~ | ~~Bồ~~ | ~~1,50~~ | ~~3,00~~ | ~~4,50~~ | ĐÃ LOẠI 15/09 — GloFAS không tách được sông Bồ, xem `FINDINGS_GRID.md` Phần 2 |
 
 > ⚠️ **Các số trên là giá trị được trích dẫn phổ biến trong bản tin KTTV, CHƯA phải là số đã tra từ văn bản gốc.** H tra Phụ lục QĐ 05/2020/QĐ-TTg trên `vanban.chinhphu.vn` hoặc `thuvienphapluat.vn`, xác nhận hoặc sửa lại, rồi tick ô cuối và ghi số hiệu trang. **Sai một con số ở đây là sai toàn bộ nhãn của bài toán phân loại.**
 >

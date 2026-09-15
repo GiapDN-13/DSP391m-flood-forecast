@@ -59,3 +59,81 @@ Chọn xong thì cập nhật `src/config.py:RIVER_POINTS`, `docs/THRESHOLDS.md`
 
 - **FR-D4 đạt**: trong lượt quét gặp HTTP 429 hai lần, retry luỹ thừa tự phục hồi, không mất ô nào.
 - Cache hoạt động: chạy lại lượt quét thứ hai không tốn thêm request nào.
+
+---
+
+# PHẦN 2 — Đã giải quyết bằng phân tích tự động (15/09/2026)
+
+Công cụ: `python -m src.features.river_id` · Hình: `reports/figures/w1_river_id.png`
+
+Không cần nhìn bản đồ bằng mắt. Ba nguồn bằng chứng độc lập, chạy lại được.
+
+## 1. Hình học — sông có tên từ OpenStreetMap
+
+Tải đường tim sông qua Overpass API (`data/external/osm_rivers.json`, có cache).
+Vùng có **42 sông có tên**, trong đó có đủ Sông Hương, Sông Bồ, Tả Trạch, Hữu Trạch.
+
+⚠️ Riêng cách này **không đủ**: OSM "Sông Ô Lâu" trải tới vùng phá Tam Giang nên
+"sông gần nhất" của ô lớn nhất lại ra Ô Lâu. Gần nhất về khoảng cách **không**
+đồng nghĩa đúng về thuỷ văn.
+
+## 2. Tương quan chuỗi lưu lượng
+
+58 ô có dòng chảy nhưng chỉ **35 pixel GloFAS phân biệt** — nhiều toạ độ rơi vào cùng ô.
+
+Lộ ra **hai hệ thống sông tách biệt**:
+
+| Cụm | Ô | Tương quan nội bộ | Tương quan chéo |
+|---|---|---|---|
+| A — vùng Hương | (16.60·107.55), (16.55·107.50), (16.45·107.50) | 0,95–0,99 | 0,83–0,92 |
+| B — phía bắc | (16.90·107.15), (16.85·107.05), (16.75·107.15) | 0,986–0,995 | |
+
+Cụm B là lưu vực khác (Ô Lâu / Thạch Hãn), **loại khỏi phạm vi**.
+
+Trong cụm A, (16.45·107.50) và (16.55·107.50) tương quan **0,992** ⇒ **cùng một dòng**,
+nối tiếp thượng–hạ lưu, không phải hai sông.
+
+## 3. ⭐ Suy ngược diện tích lưu vực — bằng chứng quyết định
+
+Lưu lượng trung bình nhiều năm ≈ diện tích lưu vực × dòng chảy đơn vị.
+Vùng Huế: mưa ~2 800–3 200 mm/năm, hệ số dòng chảy ~0,45–0,50
+⇒ dòng chảy đơn vị **~0,041–0,051 m³/s trên mỗi km²**.
+
+| Ô | Q_tb (m³/s) | Diện tích suy ra (km²) | Đối chiếu |
+|---|---|---|---|
+| (16.45 · 107.50) | 120,7 | **2 366 – 2 943** | ✅ **sông Hương 2 830 km², lệch 7 %** |
+| (16.55 · 107.50) | 194,5 | 3 814 – 4 745 | Hương + Bồ 3 768 km², lệch 12 % |
+| (16.60 · 107.55) | 313,3 | 6 144 – 7 643 | ✗ vượt xa cả hai, lệch 81 % |
+
+Ba dòng này nhất quán với nhau và với thứ tự dòng chảy: đi từ thượng xuống hạ lưu,
+lưu vực tích luỹ lớn dần — Hương đơn lẻ → Hương cộng Bồ → cộng thêm lưu vực ngoài.
+
+## 4. ✅ Kết luận đã chốt
+
+**Ô dùng cho sông Hương / trạm Kim Long: `(16.45, 107.50)`**
+Lưu lượng trung bình 120,7 m³/s · đỉnh 3 588 m³/s · cách đường tim sông Hương 2,93 km.
+
+Đã ghi vào `src/config.py:RIVER_POINTS`, kèm `REJECTED_POINTS` để giải trình.
+
+**Sông Bồ: GloFAS không tách được thành dòng riêng.** Mọi ô ứng viên đều lệch
+≥ 84 % so với diện tích lưu vực 938 km². ⇒ **Thu hẹp còn một trạm (Kim Long)**,
+đúng như phương án (a) đề xuất ở Phần 1 §4.
+
+## 5. Phải nêu trong Limitations
+
+- Ở độ phân giải ~5 km, GloFAS **không phân giải được sông Bồ (938 km²)** thành dòng riêng ⇒ nghiên cứu giới hạn ở lưu vực sông Hương.
+- Ô lưới cách trạm Kim Long ~2,9 km theo đường tim sông; mạng sông mô phỏng lệch khỏi vị trí thật.
+- Diện tích lưu vực là **suy ra từ dòng chảy đơn vị giả định**, không phải đo đạc. Sai số ±10 % của dòng chảy đơn vị kéo theo ±10 % diện tích. Dù vậy ba ô xếp đúng thứ tự và biên độ, nên kết luận **tương đối** (ô nào lớn hơn ô nào) vững hơn con số tuyệt đối.
+
+## 6. Ba cách đều có thể sai ở đâu
+
+| Cách | Điểm yếu |
+|---|---|
+| Hình học OSM | Tên sông gần cửa biển chồng lấn; gần nhất ≠ đúng |
+| Tương quan | Hai sông kề nhau cùng chịu một trận mưa vẫn tương quan cao |
+| Diện tích suy ra | Phụ thuộc dòng chảy đơn vị giả định |
+
+Ba cách **hội tụ về cùng một kết luận** nên độ tin cậy cao hơn bất kỳ cách đơn lẻ nào.
+Một phép kiểm tôi đã **bỏ** vì không đáng tin: cân bằng khối lượng (cộng lưu lượng
+hai nhánh). Hai ô nối tiếp trên cùng một dòng cộng lại vẫn ra đúng số do đếm trùng
+phần thượng nguồn — bản đầu đã suýt kết luận sai vì phép này.

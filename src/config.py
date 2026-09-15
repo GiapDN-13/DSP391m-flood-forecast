@@ -28,20 +28,29 @@ SEED = 42
 
 # ---------- Vùng nghiên cứu ----------
 # ---------- Điểm lưới GloFAS ----------
-# ⚠️ PHÁT HIỆN 15/09/2026 (quét lưới lần 1, step 0.1°, xem data/external/grid_candidates.csv):
-#   Toạ độ (16.46, 107.59) trong kế hoạch gốc KHÔNG nằm trên dòng chảy chính.
-#   Quét quanh đó cho kết quả chênh nhau ~54 lần:
-#       (16.46, 107.59)  q_mean ≈   5.7 m³/s   đỉnh ≈    29 m³/s   <- kế hoạch gốc, SAI ô
-#       (16.56, 107.59)  q_mean ≈ 308.3 m³/s   đỉnh ≈  5584 m³/s   <- ứng viên dòng chính
-#   Đỉnh ~5.600 m³/s hợp lý với lũ lớn trên sông Hương; ~29 m³/s thì không.
-#   Nhiều ô lân cận trả về NaN = nằm ngoài mặt nạ sông của GloFAS (không có sông).
+# CHỐT 15/09/2026 bằng src/features/river_id.py (xem docs/FINDINGS_GRID.md).
+# Căn cứ mạnh nhất là suy ngược diện tích lưu vực từ lưu lượng trung bình
+# nhiều năm: Q_tb ≈ diện tích × dòng chảy đơn vị (~0,046 m³/s/km² ở vùng Huế).
 #
-# VIỆC TIẾP THEO (G, W1): quét lại quanh (16.56, 107.59) với step 0.05°, đối chiếu
-# toạ độ top-1 trên bản đồ sông (OSM) rồi chốt. Làm tương tự cho trạm Phú Ốc / sông Bồ.
+#   (16.45, 107.50)  120,7 m³/s  → 2 366–2 943 km²  ≈ sông Hương 2 830 km²  (lệch 7 %)
+#   (16.55, 107.50)  194,5 m³/s  → 3 814–4 745 km²  ≈ Hương + Bồ 3 768 km²  (lệch 12 %)
+#   (16.60, 107.55)  313,3 m³/s  → 6 144–7 643 km²  vượt xa cả hai → đã gộp lưu vực khác
+#
+# Toạ độ kế hoạch gốc (16.46, 107.59) chỉ cho 5,7 m³/s — không nằm trên dòng chính.
 RIVER_POINTS = {
-    "huong_kim_long": (16.56, 107.59),  # tạm chốt sau quét lần 1 — cần xác nhận bản đồ
-    "bo_phu_oc": (16.55, 107.50),       # CHƯA quét, làm ở W1
+    "huong_kim_long": (16.45, 107.50),   # đại diện lưu vực sông Hương
 }
+
+# Ô đã xét nhưng KHÔNG dùng, giữ lại để giải trình trong báo cáo:
+REJECTED_POINTS = {
+    "hop_luu_huong_bo": (16.55, 107.50),  # gộp cả Hương lẫn Bồ
+    "ha_luu_pha_tam_giang": (16.60, 107.55),  # gộp thêm lưu vực ngoài
+    "ke_hoach_goc_sai_o": (16.46, 107.59),    # nhánh nhỏ, 5,7 m³/s
+}
+
+# Sông Bồ: GloFAS ở độ phân giải ~5 km KHÔNG tách được thành dòng riêng trong
+# vùng này — mọi ô ứng viên đều lệch ≥ 84 % so với diện tích lưu vực 938 km².
+# ⇒ Phạm vi thu hẹp còn MỘT trạm (Kim Long / sông Hương). Nêu rõ ở Limitations.
 
 BBOX = {"lat_min": 16.0, "lat_max": 16.9, "lon_min": 107.0, "lon_max": 108.0}
 GRID_STEP_DEG = 0.05  # ~5 km

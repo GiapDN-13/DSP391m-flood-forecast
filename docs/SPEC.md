@@ -68,7 +68,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 | **FR-D2** | Lấy mưa ERA5 theo **giờ** (2015–2026) và theo **ngày** (2010–2026), lưới 0,10° (64 điểm) | **M** | ≥ 95 % điểm × năm có dữ liệu; phần thiếu liệt kê trong log | G | ✅ **xong 15/09** |
 | **FR-D3** | Lấy **mưa dự báo đã phát trong quá khứ** (Historical Forecast API) phủ tập test 07/2022 → 2026, horizon 1–3 ngày | **S** | Có chuỗi mưa dự báo cho ≥ 90 % ngày trong tập test | G | W5 |
 | **FR-D4** | Crawler chịu lỗi: retry luỹ thừa, cache theo request, checkpoint để resume | **M** | Ngắt mạng giữa chừng rồi chạy lại **không mất dữ liệu và không gọi lại request đã xong** | G | W1 |
-| **FR-D5** | Xác định ô lưới GloFAS nằm đúng dòng chảy chính cho từng trạm | **M** | `grid_candidates.csv` có bảng xếp hạng; toạ độ chốt đã **đối chiếu bản đồ sông bằng mắt**; ghi vào `config.RIVER_POINTS` | G | W1 |
+| **FR-D5** | Xác định ô lưới GloFAS nằm đúng dòng chảy chính | **M** | Chốt bằng 3 bằng chứng độc lập (hình học OSM · tương quan · diện tích lưu vực suy ra), tái lập được bằng `python -m src.features.river_id`; ghi vào `config.RIVER_POINTS` | G | ✅ **xong 15/09** |
 | **FR-D6** | Sao lưu dữ liệu ra ngoài máy cá nhân | **M** | `daily_panel.parquet` tải về được từ Google Drive **và** HF Datasets bởi cả 3 người | G | W3 |
 | **FR-D7** | Bộ sự kiện lũ lịch sử ≥ 15 đợt, có nguồn trích dẫn được | **M** | `flood_events.csv` đủ cột; mọi dòng có `source_url` + `accessed_date`; ≥ 10 dòng `confidence=cao` | H | W2–W3 |
 | **FR-D8** | Ranh giới hành chính cấp xã bản sau 01/07/2025 | **S** | GeoJSON tải được, ghi rõ ngày phiên bản. Không có → chuyển sang tiểu lưu vực (`FR-P1`) | D | W3 |
@@ -192,7 +192,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 |---|---|---|
 | A1 | Open-Meteo giữ miễn phí, không đổi API trong 9 tuần | Dùng dữ liệu đã cache và backup; nêu trong Limitations |
 | A2 | Thu được ≥ 10 sự kiện lũ có công bố đỉnh mực nước | Lùi về ngưỡng phân vị R4, **đổi tên nhãn**, hạ tuyên bố |
-| A3 | Ô lưới GloFAS đại diện được dòng chảy thật tại trạm | ⚠️ **ĐÃ SAI MỘT PHẦN** — mạng sông GloFAS lệch ~7 km khỏi trạm, và có thể không tách được Hương/Bồ. Xem `FINDINGS_GRID.md` |
+| A3 | Ô lưới GloFAS đại diện được dòng chảy thật tại trạm | ✅ **ĐÃ GIẢI QUYẾT 15/09** — chốt ô (16.45, 107.50) cho sông Hương bằng `src/features/river_id.py`; diện tích lưu vực suy ra lệch 7 % so với thực tế. **Sông Bồ không tách được** ⇒ thu hẹp còn 1 trạm | 
 | A4 | Số ngày vượt BĐ II trong test đủ ≥ 30 | Áp `AC-6`, chuyển sang báo cáo theo đợt lũ |
 | A5 | Ngày nộp suy ra từ session number gần đúng | Lấy ngày thật từ LMS ở W1 |
 
@@ -219,4 +219,5 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 | 15/09/2026 | 1.0 | Bản đầu tiên | G |
 | 15/09/2026 | 1.1 | Loại FR-T6 (không xin được số liệu trạm). Cập nhật giả định A3 theo kết quả quét lưới | G |
 | 15/09/2026 | 1.2 | ~~FR-D2 đổi sang mưa ngày, lưới 25 điểm~~ — **đã huỷ ở 1.3** | G |
-| 15/09/2026 | 1.3 | **Khôi phục FR-D2** (mưa giờ, lưới 0,10°). Lần cắt ở 1.2 dựa trên chẩn đoán sai về hạn mức: cơn 429 là do tự chạy trùng tiến trình, không phải quota (`FINDINGS_QUOTA.md` §3) | G |
+| 15/09/2026 | 1.3 | **Khôi phục FR-D2** (mưa giờ, lưới 0,10°). Lần cắt ở 1.2 dựa trên chẩn đoán sai về hạn mức (`FINDINGS_QUOTA.md` §3) | G |
+| 15/09/2026 | 1.4 | **Thu hẹp phạm vi còn MỘT trạm (Kim Long / sông Hương)** — GloFAS ~5 km không phân giải được sông Bồ. FR-D5 hoàn thành (`FINDINGS_GRID.md` Phần 2) | G |

@@ -19,7 +19,7 @@ Cập nhật mỗi thứ 4 trong buổi họp. `P` = xác suất, `I` = mức �
 | R13 | Mất mạng / lỗi demo lúc thuyết trình | 2 | 4 | — | Quay sẵn video demo + screenshot dự phòng trong slide | D |
 | R17 | Không bật được bảo vệ nhánh (repo private, tài khoản free) | — | 2 | Có commit vào `main` không qua PR | Quy ước thay thế trong `GIT_WORKFLOW.md` §2; G rà `git log --first-parent main` hằng tuần | G |
 | R15 | Không thu đủ 15 sự kiện lũ có công bố đỉnh mực nước | 3 | **5** ⬆ | Hết W2 mà `flood_events.csv` < 10 dòng | ⬆ **Mức ảnh hưởng tăng vì R1 đã bị loại — R2 giờ là đường duy nhất.** Hạ xuống 10 sự kiện + nới cửa sổ ghép ±3 ngày; không đủ thì lùi R4 và đổi tên nhãn | H |
-| R16 | GloFAS không phân giải được sông Hương và sông Bồ thành 2 dòng riêng | 3 | 4 | Chỉ tìm thấy 1 dòng > 100 m³/s trong vùng quét | Thu hẹp còn 1 trạm Kim Long, hoặc phát biểu lại bài toán ở mức hệ thống sông gộp — `FINDINGS_GRID.md` §4 | G |
+| R16 | ~~GloFAS không phân giải được Hương và Bồ~~ **ĐÃ XẢY RA, ĐÃ XỬ LÝ** | — | 3 | — | Xác nhận bằng diện tích lưu vực suy ra (mọi ô ứng viên lệch ≥ 84 % so với 938 km²). Đã thu hẹp còn trạm Kim Long, nêu ở Limitations | G |
 | R14 | G vắng mặt đột xuất — **ảnh hưởng nặng nhất** | 2 | 5 | — | `docs/RUNBOOK.md` + push code mỗi ngày + chia sẻ credential | G |
 
 ## Chốt kiểm tra & cắt scope
