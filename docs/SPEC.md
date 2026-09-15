@@ -65,7 +65,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 | ID | Yêu cầu | Ưu tiên | Tiêu chí nghiệm thu | Ai | Tuần |
 |---|---|---|---|---|---|
 | **FR-D1** | Lấy lưu lượng GloFAS theo ngày cho các điểm đã chốt, 1984-01-01 → 2026-08-31 | **M** | File Parquet tồn tại; số ngày khớp khoảng yêu cầu; 0 ngày trùng; `q_mean` của ô chính > 100 m³/s | G | W1–W2 |
-| **FR-D2** | Lấy mưa ERA5 theo giờ, ~50 điểm lưới, 2010-01-01 → 2026-08-31 | **M** | ≥ 95 % ô × năm có dữ liệu; phần thiếu được liệt kê trong log | G | W2–W3 |
+| **FR-D2** | Lấy mưa ERA5 **theo ngày**, 25 điểm lưới (0,15°), 2010-01-01 → 2026-08-31 | **M** | ≥ 95 % điểm có chuỗi đầy đủ; phần thiếu liệt kê trong log. *Sửa 15/09: theo NGÀY thay vì theo giờ, lưới 25 thay vì 50 — do hạn mức tính theo khối lượng, xem `FINDINGS_QUOTA.md`* | G | W2–W3 |
 | **FR-D3** | Lấy **mưa dự báo đã phát trong quá khứ** (Historical Forecast API) phủ tập test 07/2022 → 2026, horizon 1–3 ngày | **S** | Có chuỗi mưa dự báo cho ≥ 90 % ngày trong tập test | G | W5 |
 | **FR-D4** | Crawler chịu lỗi: retry luỹ thừa, cache theo request, checkpoint để resume | **M** | Ngắt mạng giữa chừng rồi chạy lại **không mất dữ liệu và không gọi lại request đã xong** | G | W1 |
 | **FR-D5** | Xác định ô lưới GloFAS nằm đúng dòng chảy chính cho từng trạm | **M** | `grid_candidates.csv` có bảng xếp hạng; toạ độ chốt đã **đối chiếu bản đồ sông bằng mắt**; ghi vào `config.RIVER_POINTS` | G | W1 |
@@ -218,3 +218,4 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 |---|---|---|---|
 | 15/09/2026 | 1.0 | Bản đầu tiên | G |
 | 15/09/2026 | 1.1 | Loại FR-T6 (không xin được số liệu trạm). Cập nhật giả định A3 theo kết quả quét lưới | G |
+| 15/09/2026 | 1.2 | FR-D2 đổi sang mưa **ngày**, lưới 25 điểm — hạn mức API tính theo khối lượng (`FINDINGS_QUOTA.md`) | G |
