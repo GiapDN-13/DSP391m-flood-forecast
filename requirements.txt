@@ -17,7 +17,7 @@ tenacity==9.0.0
 # --- Mô hình ---
 scikit-learn==1.6.0
 lightgbm==4.5.0
-statsmodels==0.14.4
+statsmodels==0.15.0
 torch==2.5.1
 optuna==4.1.0
 shap==0.46.0

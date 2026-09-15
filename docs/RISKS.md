@@ -12,7 +12,8 @@ Cập nhật mỗi thứ 4 trong buổi họp. `P` = xác suất, `I` = mức �
 | R6 | Có người kẹt mà không báo | 3 | 4 | Issue đứng yên > 2 ngày | Rule 45 phút + cột `Blocked` + pair-programming hằng tuần | G |
 | R7 | Khối lượng biên tập dồn vào tuần nộp báo cáo | 3 | 3 | Trễ deadline nội bộ 2 lần liên tiếp | Deadline nội bộ sớm 2–3 ngày; G nhận lại phần viết nội dung; giảm scope slide | G |
 | R8 | Ranh giới xã sau sáp nhập 2025 không tìm được GeoJSON | 3 | 3 | Hết W3 chưa có file | Đổi đơn vị không gian sang tiểu lưu vực / ô lưới (xem `GAPS.md` mục 2) | D |
-| R9 | Mô hình không tốt hơn dự báo GloFAS gốc | 2 | 4 | Baseline GloFAS thắng ở W5 | **Đã phòng từ thiết kế:** GloFAS là feature đầu vào nên mô hình chỉ học phần dư (`RESEARCH_DESIGN.md` §1.2) | G |
+| R9 | Mô hình không thắng nổi persistence | **3** ⬆ | 5 | Persistence đã đạt NSE 0,542 ở h=1 | ⚠️ **Lập luận phòng vệ cũ đã mất** — không có dự báo GloFAS quá khứ để làm feature. Mốc đối chứng giờ là persistence, và nó mạnh ở h=1. Cơ hội thật nằm ở h=2 và h=3 nơi persistence sụp | G |
+| R18 | GloFAS không mô phỏng vận hành hồ chứa (Tả Trạch, Bình Điền) | 3 | 4 | Đỉnh lưu lượng lớn mà không có mưa, ví dụ 2025-06-14: 2 055 m³/s với 0,9 mm mưa | Kiểm khi EDA; nếu đúng thì đây là hạn chế lớn phải nêu rõ trong Limitations | D |
 | R10 | Rò rỉ dữ liệu tương lai trong lag feature | 2 | 5 | Kết quả đẹp bất thường (NSE > 0.98) | Test #5 trong `tests/`; walk-forward nghiêm ngặt; review chéo code split | G |
 | R11 | Mất dữ liệu (ổ cứng / máy hỏng) | 2 | 5 | — | Backup Google Drive + HF Datasets **ngay sau khi crawl xong**, không đợi | G |
 | R12 | Trùng lịch thi các môn khác | 4 | 4 | — | Lịch 9 tuần gần như không có buffer — bám chốt kiểm tra trong `PLAN.md`, trễ là cắt scope ngay | Cả 3 |
