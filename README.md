@@ -21,7 +21,7 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical 
 | Ngưỡng báo động BĐ I/II/III | [`docs/THRESHOLDS.md`](docs/THRESHOLDS.md) |
 | Chạy lại mọi thứ từ số 0 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) |
 | Rủi ro & chốt cắt scope | [`docs/RISKS.md`](docs/RISKS.md) |
-| **Kết quả quét ô lưới GloFAS** | [`docs/FINDINGS_GRID.md`](docs/FINDINGS_GRID.md) |
+| **Chọn ô lưới GloFAS (đã chốt)** | [`docs/FINDINGS_GRID.md`](docs/FINDINGS_GRID.md) — `python -m src.features.river_id` |
 | **Hạn mức API & chi phí crawl** | [`docs/FINDINGS_QUOTA.md`](docs/FINDINGS_QUOTA.md) |
 | Theo dõi crawl (dark mode) | mở `reports/live/index.html` bằng trình duyệt |
 | Dự báo phát hằng ngày | `reports/forecast_log/` — GitHub Actions ghi tự động mỗi 05:00 |
