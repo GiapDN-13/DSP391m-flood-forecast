@@ -189,10 +189,12 @@ def render(counts, prog, disc, rain) -> dict:
     # ---- Đỉnh lũ từng năm ở ô lớn nhất ----
     ax = fig.add_subplot(gs[1, 2])
     done = False
-    if len(disc):
-        top = disc.dropna(subset=["q_mean"]).nlargest(1, "q_mean")
-        if len(top):
-            r = top.iloc[0]
+    if len(disc) and "full" in disc:
+        # Chỉ chọn trong số ô ĐÃ CÓ chuỗi 42 năm — ô probe chỉ có 1 năm,
+        # vẽ lên sẽ thành cột đơn độc vô nghĩa.
+        cand = disc[disc["full"]].dropna(subset=["q_mean"]).nlargest(1, "q_mean")
+        if len(cand):
+            r = cand.iloc[0]
             f = cfg.DATA_RAW / "discharge" / f"q_{r.lat}_{r.lon}.parquet"
             if f.exists():
                 d = pd.read_parquet(f)

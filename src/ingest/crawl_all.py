@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import time
 from datetime import date, datetime
@@ -36,6 +37,7 @@ from src import config as cfg
 RAW = cfg.DATA_RAW
 MANIFEST = RAW / "_manifest.csv"
 PROGRESS = RAW / "_progress.jsonl"
+LOCKFILE = RAW / "_crawl.lock"
 
 MIN_FREE_GB = 5.0          # dừng khi ổ đĩa còn ít hơn ngần này
 MAX_CONSECUTIVE_FAIL = 25  # dừng khi API hỏng liên tục
@@ -129,6 +131,43 @@ def est_weight(params: dict, block: str) -> int:
     if block == "hourly":
         w *= 24
     return int(w)
+
+
+class SingleInstance:
+    """Khoá chống chạy trùng.
+
+    Hai crawler chạy song song sẽ đốt gấp đôi quota và ép nhau vào 429 —
+    đã dính đúng lỗi này một lần vì `pkill` của Git Bash không giết được
+    tiến trình Python trên Windows.
+    """
+
+    def __enter__(self):
+        if LOCKFILE.exists():
+            try:
+                old = int(LOCKFILE.read_text().split()[0])
+            except Exception:
+                old = None
+            if old is not None and _pid_alive(old):
+                raise SystemExit(
+                    f"Đã có crawler đang chạy (PID {old}). "
+                    f"Dừng nó trước, hoặc xoá {LOCKFILE} nếu chắc chắn nó đã chết."
+                )
+            print(f"Dọn khoá cũ của tiến trình đã chết (PID {old})")
+        LOCKFILE.write_text(f"{os.getpid()} {datetime.now().isoformat()}")
+        return self
+
+    def __exit__(self, *exc):
+        LOCKFILE.unlink(missing_ok=True)
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        import subprocess
+        out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}"],
+                             capture_output=True, text=True, timeout=10).stdout
+        return str(pid) in out
+    except Exception:
+        return False
 
 
 def _free_gb() -> float:
@@ -338,7 +377,7 @@ def main() -> None:
         return
 
     budget = Budget()
-    _log({"event": "start", "phases": list(args.phase)})
+    _log({"event": "start", "phases": list(args.phase), "pid": os.getpid()})
     stop = False
 
     for name in args.phase:
@@ -387,4 +426,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    with SingleInstance():
+        main()
