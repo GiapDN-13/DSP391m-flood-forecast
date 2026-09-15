@@ -17,14 +17,32 @@ Cần một ánh xạ **H → Q**. Cả file này là quy trình xây dựng án
 
 **Nguồn pháp lý cần trích dẫn:** Quyết định **05/2020/QĐ-TTg** ngày 31/01/2020 của Thủ tướng Chính phủ *"Quy định mực nước tương ứng với các cấp báo động lũ trên các sông thuộc phạm vi cả nước"* — xem Phụ lục phần sông thuộc Thừa Thiên Huế (nay là TP. Huế).
 
-| Trạm | Sông | BĐ I (m) | BĐ II (m) | BĐ III (m) | Đã đối chiếu văn bản gốc? |
+| Trạm | Sông | BĐ I (m) | BĐ II (m) | BĐ III (m) | Trạng thái |
 |---|---|---|---|---|---|
-| **Kim Long** | **Hương** | 1,00 | 2,00 | 3,50 | ☐ ← **chỉ còn trạm này** |
-| ~~Phú Ốc~~ | ~~Bồ~~ | ~~1,50~~ | ~~3,00~~ | ~~4,50~~ | ĐÃ LOẠI 15/09 — GloFAS không tách được sông Bồ, xem `FINDINGS_GRID.md` Phần 2 |
+| **Kim Long** | **Hương** | **1,00** | **2,00** | **3,50** | ☑ đã kiểm chứng chéo 15/09/2026 |
+| ~~Phú Ốc~~ | ~~Bồ~~ | ~~1,50~~ | ~~3,00~~ | ~~4,50~~ | ĐÃ LOẠI — GloFAS không tách được sông Bồ (`FINDINGS_GRID.md` Phần 2) |
 
-> ⚠️ **Các số trên là giá trị được trích dẫn phổ biến trong bản tin KTTV, CHƯA phải là số đã tra từ văn bản gốc.** H tra Phụ lục QĐ 05/2020/QĐ-TTg trên `vanban.chinhphu.vn` hoặc `thuvienphapluat.vn`, xác nhận hoặc sửa lại, rồi tick ô cuối và ghi số hiệu trang. **Sai một con số ở đây là sai toàn bộ nhãn của bài toán phân loại.**
+### Cách kiểm chứng (không phải chỉ chép lại)
+
+Phụ lục QĐ 05/2020/QĐ-TTg nằm trong file PDF đính kèm, `thuvienphapluat.vn` chặn truy cập tự động (HTTP 403). Nên đã kiểm gián tiếp bằng **số học từ bản tin của Đài KTTV**: mỗi bản tin ghi đồng thời *mực nước đo được* và *chênh so với cấp báo động*, trừ ra là ra ngưỡng.
+
+| Bản tin ghi | Suy ra | Khớp |
+|---|---|---|
+| Kim Long **1,37 m**, trên BĐ I **0,37 m** | BĐ I = 1,00 m | ✅ |
+| Kim Long **2,70 m**, trên BĐ II **0,70 m** | BĐ II = 2,00 m | ✅ |
+| Kim Long **2,81 m**, trên BĐ II **0,81 m** | BĐ II = 2,00 m | ✅ (nguồn thứ 2) |
+| Kim Long **3,63 m**, trên BĐ III **0,13 m** | BĐ III = 3,50 m | ✅ |
+| Kim Long **3,75 m**, trên BĐ III **0,25 m** | BĐ III = 3,50 m | ✅ (nguồn thứ 2) |
+
+Cả ba mức đều khớp, mỗi mức có ít nhất một nguồn độc lập, hai mức có hai nguồn. Xác suất năm bản tin khác nhau cùng sai theo đúng một hướng là rất thấp.
+
+> ⚠️ **Vẫn còn một việc cho Report 2:** đây là kiểm chứng **gián tiếp**. Khi trích dẫn trong báo cáo **phải dẫn nguồn gốc là QĐ 05/2020/QĐ-TTg** (tải PDF `05.signed.pdf` từ `vanban.chinhphu.vn`, xem Phụ lục phần Thừa Thiên Huế), không được dẫn báo chí. Bản tin KTTV chỉ dùng để tự kiểm tra nội bộ.
 >
-> Cũng kiểm tra luôn: sau sáp nhập hành chính 2025 có văn bản nào thay thế/điều chỉnh QĐ 05/2020 không.
+> Cũng cần kiểm: sau sắp xếp hành chính 2025 có văn bản nào thay thế QĐ 05/2020 không.
+
+### 💡 Thu hoạch phụ cho `FR-D7`
+
+Các bản tin dùng để kiểm chứng ở trên **chính là loại nguồn cần cho `flood_events.csv`** — chúng ghi rõ ngày, mực nước đỉnh và cấp báo động. Trong lúc tra đã thấy vài đợt dùng được ngay (lũ 11/2025, các đợt 9–11/2026). H bắt đầu từ đây thay vì tìm lại từ đầu.
 
 ## 3. Ba đường quy đổi H → Q
 

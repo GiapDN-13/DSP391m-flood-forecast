@@ -85,11 +85,17 @@ Q_LAGS = list(range(1, 15))
 FLOOD_SEASON_MONTHS = [9, 10, 11, 12]
 
 # --- Nguong bao dong ---
-# Muc nuoc BD I/II/III (m) theo QD 05/2020/QD-TTg. H xac nhan o W1 (docs/THRESHOLDS.md §2).
+# Muc nuoc BD I/II/III (m) theo QD 05/2020/QD-TTg.
+# DA KIEM CHUNG CHEO 15/09/2026 bang so hoc tu 5 ban tin Dai KTTV
+# (moi ban tin ghi ca muc nuoc do duoc lan chenh so voi cap bao dong):
+#   1.37 m = tren BD I  0.37  -> BD I  = 1.00
+#   2.70 m = tren BD II 0.70  -> BD II = 2.00   (them nguon: 2.81 = tren BD II 0.81)
+#   3.63 m = tren BD III 0.13 -> BD III = 3.50  (them nguon: 3.75 = tren BD III 0.25)
+# Bao cao PHAI trich dan nguon goc la QD 05/2020/QD-TTg, khong trich bao chi.
 ALERT_LEVELS_M = {
     "kim_long": {"BD1": 1.00, "BD2": 2.00, "BD3": 3.50},
-    "phu_oc": {"BD1": 1.50, "BD2": 3.00, "BD3": 4.50},
 }
+# Phu Oc da loai: GloFAS khong tach duoc song Bo (docs/FINDINGS_GRID.md Phan 2).
 # Nguong luu luong (m3/s) tuong ung - dien o W3 sau khi chay anh xa H->Q (duong R2).
 ALERT_LEVELS_Q = {}
 # Du phong R4 neu khong thu du su kien: phan vi mua lu. Khi dung PHAI doi ten nhan.
