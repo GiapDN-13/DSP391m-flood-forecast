@@ -1,0 +1,12 @@
+# Cấu hình lint tối thiểu cho repo phân tích dữ liệu.
+line-length = 100
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",  # độ dài dòng: để formatter lo, không chặn merge vì chuyện này
+]
+
+[lint.per-file-ignores]
+"notebooks/*" = ["E402", "F401"]  # notebook hay import giữa chừng

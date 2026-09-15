@@ -145,7 +145,8 @@ def render(counts, prog, disc, rain) -> dict:
         ax.text(.5, .5, "chờ dữ liệu…", ha="center", va="center", color=MUTED)
     _nfull = int(disc["full"].sum()) if len(disc) and "full" in disc else 0
     _dark(ax, f"Mạng sông GloFAS — {len(disc)} ô · {_nfull} ô có chuỗi 42 năm")
-    ax.set_xlabel("Kinh độ"); ax.set_ylabel("Vĩ độ")
+    ax.set_xlabel("Kinh độ")
+    ax.set_ylabel("Vĩ độ")
 
     # ---- Bản đồ mưa ----
     ax = fig.add_subplot(gs[0, 1])

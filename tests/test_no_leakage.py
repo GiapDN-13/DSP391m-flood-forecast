@@ -59,7 +59,7 @@ def test_rolling_khong_can_giua(toy_series):
 
 def test_split_khong_chong_lan():
     """Train/valid/test phải tách rời và đúng thứ tự thời gian."""
-    from src.config import TRAIN_END, VALID_END, GLOFAS_REGIME_BREAK
+    from src.config import GLOFAS_REGIME_BREAK, TRAIN_END, VALID_END
 
     assert TRAIN_END < VALID_END < GLOFAS_REGIME_BREAK
 
@@ -68,6 +68,7 @@ def test_walk_forward_co_gap():
     """Phải có khoảng trống giữa cuối train và đầu test, ít nhất bằng horizon lớn nhất."""
     pytest.importorskip("src.eval.walk_forward")
     from src.eval.walk_forward import make_folds
+
     from src.config import HORIZONS
 
     folds = make_folds(

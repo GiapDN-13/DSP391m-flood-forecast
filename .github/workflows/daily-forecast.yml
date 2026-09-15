@@ -1,15 +1,27 @@
-# Pipeline dự báo hằng ngày — thay thế "home server" trong kế hoạch gốc.
-# Bật từ W11. Trước đó để workflow_dispatch thủ công cho đỡ tốn quota.
+# Pipeline dự báo hằng ngày (FR-P4) — thay cho "home server" trong kế hoạch gốc.
+#
+# Bật NGAY từ W1 dù chưa có mô hình: mỗi ngày trôi qua là một bản dự báo thật
+# không lấy lại được. Tới W8 sẽ có sẵn nhiều tuần dữ liệu dự báo–thực tế để
+# đánh giá kịch bản B (docs/RESEARCH_DESIGN.md §2).
 name: daily-forecast
 
 on:
   schedule:
-    - cron: "0 22 * * *"   # 22:00 UTC = 05:00 giờ VN
-  workflow_dispatch:
+    - cron: "0 22 * * *"      # 22:00 UTC = 05:00 giờ Việt Nam
+  workflow_dispatch:           # chạy tay từ tab Actions
+
+concurrency:                   # không để hai lần chạy chồng nhau
+  group: daily-forecast
+  cancel-in-progress: false
+
+permissions:
+  contents: write              # cần để commit kết quả ngược lại repo
 
 jobs:
   forecast:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     steps:
       - uses: actions/checkout@v4
 
@@ -18,25 +30,46 @@ jobs:
           python-version: "3.11"
           cache: pip
 
-      - run: pip install -r requirements.txt
+      - name: Cài dependency tối thiểu
+        # Không cài cả requirements.txt: job này chỉ gọi API và ghi CSV,
+        # không cần torch/lightgbm — cài đủ dùng cho nhanh.
+        run: pip install requests pandas pyarrow
 
-      - name: Tải model đã train từ Release
+      - name: Tải mô hình mới nhất (nếu đã có)
+        continue-on-error: true
         run: |
-          gh release download v1.0 --pattern "*.pkl" --dir models/ || \
-            echo "Chưa có release v1.0 — bỏ qua, chạy thử pipeline thôi"
+          mkdir -p models
+          gh release download v1.0 --pattern "*.pkl" --dir models/ \
+            || echo "Chưa có release v1.0 — chạy chế độ chỉ ghi GloFAS thô (bình thường tới W5)"
         env:
           GH_TOKEN: ${{ github.token }}
 
       - name: Chạy dự báo
         run: python -m src.models.predict_daily
 
-      - name: Lưu kết quả
+      - name: Commit kết quả vào repo
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/forecast_log/
+          if git diff --staged --quiet; then
+            echo "Không có gì thay đổi."
+          else
+            git commit -m "data(forecast): ban du bao ngay $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Lưu bản sao ngoài repo
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: forecast-${{ github.run_number }}
-          path: data/processed/forecast_latest.csv
-          retention-days: 30
+          path: reports/forecast_log/
+          retention-days: 90
 
       - name: Báo khi thất bại
         if: failure()
-        run: echo "::warning::Pipeline hằng ngày lỗi — kiểm tra trước buổi họp thứ 4"
+        run: |
+          echo "::warning::Job dự báo hằng ngày lỗi — kiểm tra trước buổi họp thứ 4."
+          echo "Thường gặp: Open-Meteo trả 429 kéo dài, hoặc toạ độ trong"
+          echo "src/config.py:RIVER_POINTS bị sửa sai."

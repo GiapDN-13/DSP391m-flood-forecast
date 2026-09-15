@@ -94,7 +94,8 @@ def plot(df: pd.DataFrame) -> None:
                     xytext=(6, -14), textcoords="offset points")
 
         ax.set_title(title, fontsize=12, fontweight="bold")
-        ax.set_xlabel("Kinh độ"); ax.set_ylabel("Vĩ độ")
+        ax.set_xlabel("Kinh độ")
+        ax.set_ylabel("Vĩ độ")
         ax.set_aspect("equal")
 
     # --- Bảng xếp hạng ---
@@ -127,7 +128,9 @@ def plot(df: pd.DataFrame) -> None:
         ax4.plot(d["date"], d["discharge"], color=color, lw=1.6, label=label)
     ax4.set_yscale("log")
     ax4.set_title("Đợt lũ 10/2020 — thang log", fontsize=11, fontweight="bold")
-    ax4.set_ylabel("m³/s"); ax4.legend(fontsize=8.5); ax4.grid(alpha=0.3)
+    ax4.set_ylabel("m³/s")
+    ax4.legend(fontsize=8.5)
+    ax4.grid(alpha=0.3)
     ax4.tick_params(axis="x", labelrotation=30, labelsize=8)
 
     fig.suptitle("GloFAS — chọn ô lưới cho sông Hương / sông Bồ  (FR-D5)",
