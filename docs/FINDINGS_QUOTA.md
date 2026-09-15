@@ -1,63 +1,63 @@
-# PHÁT HIỆN — hạn mức Open-Meteo tính theo KHỐI LƯỢNG, không theo số request
+# PHÁT HIỆN — chi phí crawl và hạn mức Open-Meteo
 
-**Ngày:** 15/09/2026 · **Liên quan:** `RISKS.md` R3 · `SPEC.md` NFR-2, NFR-13 · `PLAN.md` scope dữ liệu
+**Ngày:** 15/09/2026 · **Liên quan:** `RISKS.md` R3 · `SPEC.md` NFR-2, NFR-13
+**Trạng thái:** đã đo lại, bản v1 của tài liệu này kết luận sai — xem §3.
 
-## 1. Chuyện gì xảy ra
+## 1. Kết quả đo thật
 
-Lượt crawl đầu tiên xin **trọn 42 năm cho mỗi ô** lưu lượng. Sau 44 request, API trả 429 liên tục, nhịp gọi bị đẩy lên kịch trần 8 giây và gần như đứng hình — **không phải vì gọi quá nhanh, mà vì xin quá nhiều dữ liệu mỗi lần**.
+Toàn bộ dữ liệu thô của dự án crawl xong trong **~35 phút**:
 
-## 2. Cách tính hạn mức
-
-Hạn mức miễn phí không đếm số request mà đếm **đơn vị khối lượng**, xấp xỉ:
-
-```
-weight ≈ ceil(số ngày / 14) × ceil(số biến / 10)        (nhân thêm 24 nếu lấy theo giờ)
-```
-
-Hạn mức tham khảo: **~10.000 đơn vị/ngày**, **~5.000/giờ**.
-
-Hệ quả cụ thể:
-
-| Loại request | Số ngày | Trọng số | Gọi được bao nhiêu lần/ngày |
+| Pha | Số task | Thời gian | Lỗi 429 |
 |---|---|---|---|
-| Discharge 42 năm (1984–2026) | 15 584 | **~1 113** | **9** |
-| Discharge 1 năm (probe) | 365 | ~27 | 370 |
-| Mưa ngày 2010–2026 | 6 087 | ~435 | 23 |
-| Mưa **giờ** 1 năm | 365 | **~648** | 15 |
+| Mưa ngày ERA5 2010–2026 | 26 | ~3 phút | 0 |
+| Quét mạng sông (probe 1 năm, mọi ô) | 316 | ~10 phút | 0 |
+| Mưa dự báo lưu trữ 2022–nay | 26 | ~2 phút | 0 |
+| Lưu lượng 1984–2026 (ô có sông) | 40 | ~6 phút | 15 |
+| **Mưa giờ ERA5 2015–2026** | **300** | **14 phút** | **0** |
 
-👉 Chỉ **9 request** chuỗi 42 năm là hết hạn mức cả ngày. Đó chính xác là điều đã xảy ra.
+**Tổng ~48 MB Parquet.** Không phải 5–15 GB như ước tính trong kế hoạch gốc.
 
-## 3. Chi phí thực tế của kế hoạch ban đầu
+Tài nguyên máy: **RAM ~105 MB, CPU ~2 %**. Crawler gần như chỉ ngồi chờ mạng.
 
-| Pha | Số task | Trọng số |
+## 2. Nguyên nhân thật của cơn 429 ban đầu
+
+**Không phải do hạn mức.** Do `pkill` của Git Bash không giết được tiến trình Python trên Windows, nên sau vài lần khởi động lại đã có **3 crawler và 4 monitor chạy song song**. Chúng tự ép nhau vào 429, nhịp gọi bị đẩy lên kịch trần 12 giây.
+
+Chạy đúng **một** tiến trình: 429 về 0, nhịp về mức sàn 0,7 giây, tốc độ ~22 task/phút ổn định.
+
+👉 Đã thêm khoá chống chạy trùng (`SingleInstance` trong `crawl_all.py`) để không tái diễn.
+
+## 3. ⚠️ Bản v1 của tài liệu này đã kết luận sai
+
+Bản đầu tiên quy cơn 429 thành "hạn mức tính theo khối lượng, ~10.000 đơn vị/ngày", rồi suy ra rằng `rain_hourly` tốn "~189.000 đơn vị ≈ 19 ngày hạn mức" và **đề xuất loại nó khỏi phạm vi**.
+
+Thực tế: `rain_hourly` chạy **14 phút, 0 lỗi 429**. Tổng cả dự án tiêu ~190.000 đơn vị theo công thức ước lượng mà không hề bị chặn.
+
+Rút ra:
+- Công thức `ceil(ngày/14) × ceil(biến/10)` có thể đúng về cách Open-Meteo *đếm*, nhưng **con số hạn mức 10.000/ngày là tôi đoán, không phải đo**.
+- Sai lầm về phương pháp: **quy một triệu chứng cho nguyên nhân chưa kiểm chứng**, rồi cắt phạm vi dự án dựa trên đó. Đúng ra phải loại trừ nguyên nhân tự gây ra trước.
+- Bài học cho cả nhóm: gặp 429 thì việc đầu tiên là **đếm xem đang chạy bao nhiêu tiến trình**, không phải vội đổ cho nhà cung cấp.
+
+## 4. Phạm vi đã khôi phục
+
+| Hạng mục | Bản v1 (sai) | Hiện tại |
 |---|---|---|
-| Mưa ngày (25 điểm, lưới 0,15°) | 25 | ~10 900 |
-| Quét mạng sông (probe 1 năm, 316 ô) | 316 | ~8 500 |
-| Mưa dự báo lưu trữ (25 điểm) | 25 | ~2 800 |
-| **Mưa giờ (300 task)** | 300 | **~189 000** |
-| **Tổng** | | **~211 000** |
+| `rain_hourly` | loại khỏi phạm vi | **giữ lại**, nằm trong lượt mặc định |
+| Lưới mưa | thưa xuống 0,15° (25 điểm) | **0,10° (64 điểm)** như kế hoạch gốc |
+| `FR-D2` trong SPEC | đổi sang "mưa ngày" | **khôi phục "mưa giờ"** |
 
-**~211.000 đơn vị ÷ 10.000/ngày ≈ 21 ngày.** Không có cách nào lấy hết trong 9 tuần mà không ảnh hưởng việc khác.
+Phần **giữ nguyên** vì tự thân nó đúng, không liên quan tới hạn mức:
+- **Tách probe / full** khi quét mạng sông: xin 1 năm cho mọi ô rồi mới xin 42 năm cho ô có dòng chảy. Tiết kiệm thật, và cho bản đồ mạng sông đầy đủ 316 ô.
+- **Nhịp gọi tự điều chỉnh** và **khoá chống chạy trùng**.
 
-## 4. Đã xử lý thế nào
+## 5. Kết luận cho dự án
 
-1. **Loại `rain_hourly` khỏi lượt chạy mặc định.** Một mình nó chiếm 90 % chi phí (~19 ngày hạn mức) trong khi mô hình chỉ cần **dữ liệu ngày** — horizon là 1–3 ngày, không có feature dưới ngày nào. Vẫn chạy tay được:
-   `python -m src.ingest.crawl_all --phase rain_hourly`
-   Chỉ nên chạy cho **vài điểm, vài mùa lũ**, đủ để D kiểm chứng `FR-E2` (gộp giờ → ngày).
-2. **Tách quét mạng sông thành 2 bước:** probe 1 năm cho mọi ô (rẻ, ~27 đơn vị/ô) → chỉ xin chuỗi 42 năm cho ô **thật sự có dòng chảy** (`FULL_MIN_QMEAN = 1 m³/s`, trần `MAX_FULL_CELLS = 40`).
-3. **Thưa lưới mưa** từ 0,10° (64 điểm) xuống **0,15° (25 điểm)**. Mưa biến đổi chậm theo không gian; ở quy mô lưu vực này 25 điểm là đủ, mà tiết kiệm 60 % chi phí.
-4. **Sắp lại thứ tự pha theo giá trị trên mỗi đơn vị quota**, không theo thứ tự pipeline. Mưa ngày chạy trước vì nó là thứ **bắt buộc** mà chưa có; lưu lượng đã có sẵn 45 ô chuỗi đầy đủ từ lượt trước.
-5. **Nhịp gọi tự phục hồi nhanh hơn**: cứ 8 lần thành công liên tiếp thì giảm nhịp 25 %. Bản trước giảm quá chậm nên dính trần 8 giây cả đêm.
-6. **Ghi và hiển thị trọng số đã tiêu** trên màn hình theo dõi, để biết còn bao nhiêu hạn mức.
+- Dữ liệu thô **không phải là nút thắt**. Toàn bộ crawl lại từ đầu mất chưa tới 1 giờ.
+- Chốt kiểm tra "hết W3 phải có dữ liệu" trong `PLAN.md` giờ rất thoải mái.
+- **Nút thắt thật vẫn là `docs/FINDINGS_GRID.md`**: chọn đúng ô lưới, và câu hỏi GloFAS có tách được sông Hương với sông Bồ hay không. Đó là việc cần mắt người, không phải việc cần thêm dữ liệu.
+- `NFR-13` (chi phí 0 đồng) giữ nguyên, không phải đánh đổi gì.
 
-## 5. Cần đưa vào báo cáo
+## 6. Đưa vào báo cáo
 
-- **Report 2 – Data Collection:** nêu rõ cơ chế hạn mức và cách nhóm thiết kế crawl để sống chung với nó. Đây là chi tiết kỹ thuật thật, cho thấy nhóm hiểu nguồn dữ liệu chứ không chỉ gọi API.
-- **Limitations:** lý do dữ liệu mưa là **theo ngày** chứ không theo giờ — là quyết định do hạn mức, và không ảnh hưởng bài toán vì horizon tính bằng ngày.
-- **`NFR-13` (chi phí 0 đồng)** vẫn giữ được, nhưng phải trả giá bằng thời gian crawl. Nêu rõ đánh đổi này.
-
-## 6. Việc cho G
-
-- [ ] Cập nhật `docs/API_NOTES.md` §3 bằng số đo thật ở đây (mục đang để trống chờ D điền).
-- [ ] Quyết định có cần `rain_hourly` không. Khuyến nghị: **chỉ lấy 3 điểm × mùa lũ 2020 và 2023**, đủ để chứng minh khâu gộp giờ→ngày đúng, tốn ~2.600 đơn vị.
-- [ ] Nếu cần nhiều dữ liệu hơn nữa: Open-Meteo có gói học thuật miễn phí cho nghiên cứu — nhưng cân nhắc thời gian xin so với lịch 9 tuần.
+- **Report 2 – Data Collection:** nêu quy mô thật (số điểm lưới, khoảng thời gian, dung lượng, thời gian crawl) và thiết kế crawler chịu lỗi (retry, cache, checkpoint, khoá chống chạy trùng). Đây là chi tiết kỹ thuật thật, ăn điểm.
+- **Không cần** đưa phần hạn mức vào Limitations nữa — hoá ra không phải hạn chế.

@@ -48,7 +48,7 @@ DISCHARGE_STEP = 0.05
 
 # Lưới mưa trên lưu vực — thưa hơn vì mưa biến đổi chậm theo không gian
 RAIN_BOX = {"lat_min": 16.10, "lat_max": 16.80, "lon_min": 107.10, "lon_max": 107.80}
-RAIN_STEP = 0.15   # thưa hơn 0.10 vì quota tính theo khối lượng
+RAIN_STEP = 0.10   # ~11 km; đủ dày cho lưu vực này và chi phí chấp nhận được
 
 RAIN_DAILY_VARS = ("precipitation_sum,temperature_2m_mean,temperature_2m_max,"
                    "temperature_2m_min,wind_speed_10m_max")
@@ -316,10 +316,10 @@ PHASES = {
     "rain_hourly": tasks_rain_hourly,           # ~189k đơn vị — xem ghi chú
 }
 
-# rain_hourly tốn ~189.000 đơn vị quota = ~19 ngày hạn mức miễn phí, trong khi
-# mô hình chỉ cần dữ liệu NGÀY. Vì vậy nó KHÔNG nằm trong lượt chạy mặc định.
-# Muốn chạy thì gọi tay:  python -m src.ingest.crawl_all --phase rain_hourly
-DEFAULT_PHASES = ["rain_daily", "discharge_probe", "fc_rain", "discharge_full"]
+# Đo thực tế 15/09: cả 5 pha chạy hết trong ~35 phút, 0 lần 429, 48 MB.
+# Hạn mức thật rộng hơn nhiều so với ước lượng ban đầu — xem FINDINGS_QUOTA.md §3.
+DEFAULT_PHASES = ["rain_daily", "discharge_probe", "fc_rain",
+                  "discharge_full", "rain_hourly"]
 
 
 # ---------------------------------------------------------------- vòng chạy
