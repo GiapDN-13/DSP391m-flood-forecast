@@ -142,7 +142,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 | **FR-P1** | Bản đồ nguy cơ theo tiểu lưu vực (hoặc xã nếu có `FR-D8`), tô màu theo cấp BĐ | **M** | Mở được, chọn được ngày, hiển thị đúng cấp | D | W7 |
 | **FR-P2** | Biểu đồ dự báo lưu lượng 1–3 ngày, có vẽ **đường ngưỡng BĐ I/II/III** | **M** | Hiển thị lịch sử 30 ngày + dự báo 3 ngày | D | W7 |
 | **FR-P3** | Trang giải thích: cảnh báo dựa trên gì, hạn chế là gì, SHAP | **S** | Người ngoài đọc hiểu không cần giải thích thêm | H/D | W7 |
-| **FR-P4** | Pipeline dự báo chạy tự động hằng ngày | **S** | GitHub Actions cron chạy xanh **3 ngày liên tiếp** | G | W8 |
+| **FR-P4** | Pipeline dự báo chạy tự động hằng ngày | **S** | GitHub Actions cron chạy xanh **3 ngày liên tiếp** | G | ✅ **bật sớm 15/09** — chạy từ W1 để tích luỹ dự báo thật, xem `predict_daily.py` |
 | **FR-P5** | Tuyên bố miễn trừ trách nhiệm hiển thị **trên mọi màn hình** | **M** | Có ở footer mọi trang — xem `NFR-9` | D | W7 |
 | **FR-R1** | Report 1 — Proposal | **M** | Theo `SUBMIT_CHECKLIST.md` | H | W2 |
 | **FR-R2** | Report 2 — Data & EDA | **M** | Mỗi hình kèm 1 insight | H | W4 |

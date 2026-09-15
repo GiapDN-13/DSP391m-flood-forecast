@@ -21,14 +21,25 @@ gh api -X PUT repos/:owner/DSP391m-flood-forecast/collaborators/<github-cua-huye
 
 ## 2. Bảo vệ nhánh `main`
 
-Settings → Branches → Add rule cho `main`:
+> ⚠️ **Không bật được trên repo này.** GitHub chỉ cho bảo vệ nhánh ở repo **public**, hoặc repo private có tài khoản **Pro**. Repo của nhóm là private trên tài khoản free nên API trả `403`.
 
-- ☑ Require a pull request before merging — **1 approval**
-- ☑ Require status checks to pass — chọn `ci`
-- ☑ Require conversation resolution before merging
-- ☐ *Không* bật "Include administrators" (để G còn hotfix được khi gấp)
+Ba lựa chọn:
 
-Hoặc bằng CLI:
+| Cách | Đánh đổi |
+|---|---|
+| **Giữ private, không có bảo vệ tự động** ← đang dùng | CI vẫn chạy trên mọi PR và vẫn báo đỏ, chỉ là không *chặn* được merge. Phải tự giữ kỷ luật |
+| Chuyển repo sang **public** | Được bảo vệ nhánh miễn phí, nhưng bài đang làm sẽ công khai trước khi nộp — rủi ro về liêm chính học thuật |
+| Nâng **GitHub Pro** | Mất tiền, và `NFR-13` yêu cầu chi phí 0 đồng |
+
+**Quy ước thay thế, cả ba phải tuân thủ:**
+
+- Vẫn **mở PR cho mọi thay đổi**, không ai push thẳng vào `main`.
+- **Không merge khi CI đang đỏ** — kiểm tra bằng mắt ở tab Checks trước khi bấm merge.
+- G rà lịch sử `main` mỗi tuần: `git log --oneline --first-parent main` — commit nào không đi qua PR thì hỏi lại.
+
+Sau khi nộp Report 4 xong, chuyển repo sang public là có bảo vệ nhánh miễn phí, và tiện làm portfolio.
+
+Nếu sau này đủ điều kiện bật, file cấu hình đã có sẵn:
 
 ```powershell
 gh api -X PUT repos/:owner/DSP391m-flood-forecast/branches/main/protection `
