@@ -90,3 +90,64 @@ Ghi lại mọi thứ phải làm bằng tay, kèm **ai biết làm**:
 - [ ] Repo đã tag `final`
 - [ ] Cả 3 người đã đọc `docs/EXPLAINER.md` và `docs/EXAM_QUESTION_BANK.md`
 - [ ] File báo cáo bản cuối có ở cả Drive lẫn máy từng người
+
+---
+
+# 8. Theo dõi job dự báo hằng ngày
+
+Job `daily-forecast` chạy **05:00 giờ Việt Nam** mỗi ngày trên GitHub Actions.
+
+## 8.1 Xem nhanh từ terminal
+
+```powershell
+gh run list --workflow=daily-forecast.yml --limit 10   # 10 lần chạy gần nhất
+gh run watch                                           # bám theo lần đang chạy, cập nhật realtime
+gh run view --log                                      # xem log đầy đủ
+gh run view --log-failed                               # chỉ xem bước hỏng
+gh workflow run daily-forecast.yml                     # chạy tay ngay, không đợi tới 05:00
+```
+
+Một dòng gọn để hỏi "hôm nay chạy chưa, kết quả gì":
+
+```powershell
+gh run list --workflow=daily-forecast.yml --limit 5 --json createdAt,conclusion -q '.[] | "\(.createdAt[:16])  \(.conclusion)"'
+```
+
+## 8.2 Xem trên web
+
+`https://github.com/GiapDN-13/DSP391m-flood-forecast/actions` → tab **daily-forecast**.
+Bấm vào một lần chạy để xem log từng bước. Mỗi lần chạy còn đính kèm **artifact** giữ 90 ngày.
+
+> Repo đang private nên **không gắn được badge trạng thái** vào README — ảnh badge của repo private cần token, người xem sẽ thấy "unknown". Sau khi nộp Report 4, chuyển repo sang public là gắn được.
+
+## 8.3 Bằng chứng job đã chạy — không cần mở Actions
+
+Job **commit thẳng kết quả vào repo**. Nên chỉ cần:
+
+```powershell
+git pull
+ls reports/forecast_log/          # mỗi ngày phát báo một file YYYY-MM-DD.csv
+git log --oneline --author=github-actions -5
+```
+
+Thiếu file của ngày nào ⇒ ngày đó job không chạy hoặc hỏng.
+
+## 8.4 Nhận thông báo khi hỏng
+
+GitHub **tự gửi email cho chủ repo khi workflow theo lịch thất bại** — không phải cấu hình gì. Kiểm tra bật/tắt tại Settings → Notifications → Actions.
+
+Cài **GitHub Mobile** thì có thông báo đẩy, tiện hơn email.
+
+## 8.5 ⚠️ Ba cái bẫy của workflow theo lịch
+
+| Bẫy | Hệ quả | Cách tránh |
+|---|---|---|
+| **GitHub tự tắt lịch sau 60 ngày repo không có hoạt động** | Job im lặng ngừng chạy, không báo gì | Dự án kéo 9 tuần ≈ 63 ngày — sát ngưỡng. Vì job tự commit mỗi ngày nên repo luôn "có hoạt động", coi như đã tránh được. Nhưng **nếu có lúc job hỏng liên tiếp nhiều ngày thì đồng hồ 60 ngày bắt đầu chạy** |
+| **Cron chạy trễ giờ cao điểm** | Có ngày chạy muộn 10–30 phút | Bình thường, không phải lỗi. Đừng đặt logic phụ thuộc đúng phút |
+| **Giờ UTC, không phải giờ Việt Nam** | Đặt nhầm giờ | `0 22 * * *` = 22:00 UTC = **05:00 VN sáng hôm sau** |
+
+## 8.6 Kiểm mỗi tuần (G, trong buổi họp thứ 4)
+
+- [ ] `reports/forecast_log/` có đủ file cho 7 ngày qua chưa?
+- [ ] Lần chạy nào `failure` không? Lý do?
+- [ ] Sau khi có mô hình (W5+): file có cột dự báo của nhóm chưa, hay vẫn chỉ GloFAS thô?

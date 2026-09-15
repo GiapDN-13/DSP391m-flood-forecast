@@ -25,6 +25,7 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical 
 | **Hạn mức API & chi phí crawl** | [`docs/FINDINGS_QUOTA.md`](docs/FINDINGS_QUOTA.md) |
 | Theo dõi crawl (dark mode) | mở `reports/live/index.html` bằng trình duyệt |
 | Dự báo phát hằng ngày | `reports/forecast_log/` — GitHub Actions ghi tự động mỗi 05:00 |
+| **Theo dõi job hằng ngày** | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) §8 |
 | Checklist EDA (Report 2) | [`docs/EDA_CHECKLIST.md`](docs/EDA_CHECKLIST.md) |
 | Ôn thi vấn đáp | [`docs/EXAM_QUESTION_BANK.md`](docs/EXAM_QUESTION_BANK.md) |
 
