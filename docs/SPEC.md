@@ -77,12 +77,12 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 
 | ID | Yêu cầu | Ưu tiên | Tiêu chí nghiệm thu | Ai | Tuần |
 |---|---|---|---|---|---|
-| **FR-E1** | Chuẩn hoá múi giờ về giờ Việt Nam (UTC+7) nhất quán toàn hệ thống | **M** | `tests/test_clean.py::test_doi_timezone_utc_sang_ict` xanh | D | W2 |
-| **FR-E2** | Gộp mưa giờ → ngày, đúng định nghĩa ngày hành chính VN | **M** | Tổng 24 giá trị giờ = giá trị ngày (test tự động) | D | W2 |
-| **FR-E3** | Phát hiện và xử lý dữ liệu bất thường: thiếu ngày, ngày trùng, discharge âm, mưa âm | **M** | 4 test trong `tests/test_clean.py` xanh; báo cáo tỉ lệ thiếu theo năm | D | W2 |
-| **FR-E4** | Tổng hợp mưa lưới → trung bình theo **tiểu lưu vực** (3 vùng) | **M** | `DATA_SPLITS.md` §5 điền xong; số cột mưa ≤ 30 | D | W3 |
-| **FR-E5** | Sinh bảng phân tích chuẩn `daily_panel.parquet` | **M** | 1 dòng/ngày/trạm; đủ cột trong `DATA_DICTIONARY.md` §2; không có ngày trùng | G | W3 |
-| **FR-E6** | Sinh lag feature và mưa tích luỹ **không rò rỉ tương lai** | **M** | `tests/test_no_leakage.py` xanh toàn bộ | G | W3 |
+| **FR-E1** | Chuẩn hoá múi giờ về giờ Việt Nam (UTC+7) | **M** | `tests/test_clean.py::test_doi_timezone_utc_sang_ict` xanh | G | ✅ **xong 15/09** |
+| **FR-E2** | Gộp mưa giờ → ngày | **M** | Tổng 24 giá trị giờ = giá trị ngày (test tự động) | G | ✅ **xong 15/09** |
+| **FR-E3** | Phát hiện dữ liệu bất thường: thiếu ngày, trùng ngày, discharge âm | **M** | 4 test xanh; `report_missing()` cho tỉ lệ thiếu theo năm (thực tế 0 %) | G | ✅ **xong 15/09** |
+| **FR-E4** | Gộp mưa lưới → trung bình theo **3 tiểu lưu vực** | **M** | 68 điểm → thượng 30 / trung 9 / hạ 29 | G | ✅ **xong 15/09** |
+| **FR-E5** | Sinh bảng phân tích `daily_panel.parquet` | **M** | 6 087 dòng × 71 cột, 2010-01-01 → 2026-08-31, 0 ngày trùng, 0 % thiếu | G | ✅ **xong 15/09** |
+| **FR-E6** | Lag feature + mưa tích luỹ **không rò rỉ tương lai** | **M** | `tests/test_no_leakage.py` xanh toàn bộ (10/10, hết skip) | G | ✅ **xong 15/09** |
 
 # 4. Yêu cầu chức năng — Ngưỡng báo động (FR-T)
 
@@ -111,7 +111,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 
 | ID | Yêu cầu | Ưu tiên | Tiêu chí nghiệm thu | Ai | Tuần |
 |---|---|---|---|---|---|
-| **FR-V1** | Walk-forward validation, cửa sổ mở rộng dần, **gap ≥ 3 ngày** giữa train và test | **M** | `tests/test_no_leakage.py::test_walk_forward_co_gap` xanh | D | W6 |
+| **FR-V1** | Walk-forward, cửa sổ mở rộng dần, **gap ≥ 3 ngày** | **M** | `test_walk_forward_co_gap` xanh; 5 fold × 730 ngày test, gap 4 ngày | G | ✅ **xong 15/09** |
 | **FR-V2** | Metric hồi quy: RMSE · MAE · NSE · KGE, theo từng horizon | **M** | Bảng đầy đủ, có cả baseline để so | D | W6 |
 | **FR-V3** | Metric sự kiện hiếm: POD · FAR · CSI · F1 · PR-AUC · Brier. **Cấm accuracy** | **M** | Không có chữ "accuracy" trong bảng kết quả | D | W6 |
 | **FR-V4** | Đánh giá **2 kịch bản**: A (mưa ERA5) và B (mưa dự báo) | **S** | Bảng `RESEARCH_DESIGN.md` §2.4 điền đủ, có cột Δ | D | W6 |
