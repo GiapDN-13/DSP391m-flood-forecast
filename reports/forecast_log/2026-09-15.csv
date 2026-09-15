@@ -1,0 +1,15 @@
+run_date,point,lat,lon,target_date,glofas_discharge,rain_forecast,temp_forecast,horizon_days,alert_glofas
+2026-09-15,huong_kim_long,16.56,107.59,2026-09-15,2593.18,5.1,27.5,0,chua_co_nguong
+2026-09-15,huong_kim_long,16.56,107.59,2026-09-16,1195.74,5.5,27.1,1,chua_co_nguong
+2026-09-15,huong_kim_long,16.56,107.59,2026-09-17,730.14,2.9,27.6,2,chua_co_nguong
+2026-09-15,huong_kim_long,16.56,107.59,2026-09-18,548.54,7.0,26.9,3,chua_co_nguong
+2026-09-15,huong_kim_long,16.56,107.59,2026-09-19,486.53,12.3,26.4,4,chua_co_nguong
+2026-09-15,huong_kim_long,16.56,107.59,2026-09-20,422.64,8.6,26.9,5,chua_co_nguong
+2026-09-15,huong_kim_long,16.56,107.59,2026-09-21,323.34,3.9,27.0,6,chua_co_nguong
+2026-09-15,bo_phu_oc,16.55,107.5,2026-09-15,1232.11,5.4,27.3,0,chua_co_nguong
+2026-09-15,bo_phu_oc,16.55,107.5,2026-09-16,462.45,5.7,27.1,1,chua_co_nguong
+2026-09-15,bo_phu_oc,16.55,107.5,2026-09-17,319.63,7.4,27.2,2,chua_co_nguong
+2026-09-15,bo_phu_oc,16.55,107.5,2026-09-18,276.33,7.8,26.7,3,chua_co_nguong
+2026-09-15,bo_phu_oc,16.55,107.5,2026-09-19,263.85,12.8,26.0,4,chua_co_nguong
+2026-09-15,bo_phu_oc,16.55,107.5,2026-09-20,219.29,7.4,26.8,5,chua_co_nguong
+2026-09-15,bo_phu_oc,16.55,107.5,2026-09-21,148.62,3.7,27.0,6,chua_co_nguong
