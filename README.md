@@ -22,6 +22,8 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical 
 | Chạy lại mọi thứ từ số 0 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) |
 | Rủi ro & chốt cắt scope | [`docs/RISKS.md`](docs/RISKS.md) |
 | **Kết quả quét ô lưới GloFAS** | [`docs/FINDINGS_GRID.md`](docs/FINDINGS_GRID.md) |
+| **Hạn mức API & chi phí crawl** | [`docs/FINDINGS_QUOTA.md`](docs/FINDINGS_QUOTA.md) |
+| Theo dõi crawl (dark mode) | mở `reports/live/index.html` bằng trình duyệt |
 | Checklist EDA (Report 2) | [`docs/EDA_CHECKLIST.md`](docs/EDA_CHECKLIST.md) |
 | Ôn thi vấn đáp | [`docs/EXAM_QUESTION_BANK.md`](docs/EXAM_QUESTION_BANK.md) |
 

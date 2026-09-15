@@ -6,7 +6,7 @@ Cập nhật mỗi thứ 4 trong buổi họp. `P` = xác suất, `I` = mức �
 |---|---|---|---|---|---|---|
 | R1 | Ô lưới GloFAS không trùng dòng sông thật | ~~3~~ **ĐÃ XẢY RA** | 5 | Discharge trung bình quá nhỏ hoặc phẳng lì | ✅ Đã quét 121 ô ngày 15/09: toạ độ kế hoạch gốc sai (5,7 vs 308 m³/s), mạng sông lệch ~7 km. **Việc còn lại: đối chiếu OSM bằng mắt** — xem `FINDINGS_GRID.md` | G |
 | R2 | **Crawl không kịp trước W3** | 4 | 5 | Hết W2 mà < 70 % lưới xong | Cắt tiếp: mưa còn 2015–2026, lưới còn 25 điểm | G |
-| R3 | Rate limit API | 3 | 3 | HTTP 429 | Gộp nhiều ngày vào 1 request, sleep 1–2 s, cache theo file, chạy đêm | G |
+| R3 | ~~Rate limit API~~ **ĐÃ XẢY RA 15/09** | — | 4 | HTTP 429 liên tục, nhịp gọi dính trần | Hạn mức tính theo **khối lượng** (~10k đơn vị/ngày), không theo số request. Đã tách probe/full, thưa lưới mưa, loại `rain_hourly`. Xem `FINDINGS_QUOTA.md` | G |
 | R4 | ~~Không xin được số liệu trạm thực~~ **ĐÃ XẢY RA** | — | 2 | — | Không gửi công văn. R1 loại khỏi phạm vi; dùng R2 + R3. Nêu trong Limitations | H |
 | R5 | LSTM ngốn thời gian | 4 | 1 | — | **Đã cắt khỏi phạm vi chính từ W1.** Chỉ làm ở W8 nếu dư thời gian | G |
 | R6 | Có người kẹt mà không báo | 3 | 4 | Issue đứng yên > 2 ngày | Rule 45 phút + cột `Blocked` + pair-programming hằng tuần | G |
