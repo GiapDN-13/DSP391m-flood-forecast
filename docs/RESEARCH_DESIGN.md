@@ -24,10 +24,13 @@ GloFAS là mô hình **toàn cầu**, lưới ~5 km, hiệu chuẩn cho lưu v�
 - **Chứng minh:** so RMSE / MAE / NSE / KGE giữa *GloFAS thô* và *GloFAS đã hiệu chỉnh* trên cùng tập test 07/2022–2026.
 - Đây là hướng đã có nền tảng trong tài liệu (statistical post-processing of ensemble streamflow forecasts) → H tìm 2 bài về hướng này cho literature review ở W1.
 
-> 🔑 **Quyết định thiết kế quan trọng nhất của cả dự án:**
-> **Dự báo GloFAS thô vừa là BASELINE, vừa là FEATURE đầu vào của mô hình.**
-> Khi GloFAS là feature, mô hình chỉ cần học phần *sai số còn lại* — về mặt lý thuyết nó **không thể tệ hơn** GloFAS một cách hệ thống. Đây là cách biến rủi ro lớn nhất (R9: "thua GloFAS") thành thứ gần như không thể xảy ra.
-> Nếu bỏ GloFAS ra khỏi feature, nhóm đang tự trói tay mình.
+> 🔴 **CẬP NHẬT 15/09/2026 — lập luận dưới đây KHÔNG thực hiện được.**
+>
+> ~~Dự báo GloFAS thô vừa là BASELINE, vừa là FEATURE đầu vào của mô hình.~~
+>
+> Open-Meteo **không có kho lưu trữ dự báo lưu lượng quá khứ** (`historical-forecast-api.../flood` → 404). Không có dự báo GloFAS quá khứ thì **không có cột feature đó trong tập huấn luyện**. Dùng chuỗi *phân tích* GloFAS tại t+h thay thế là **rò rỉ dữ liệu trắng trợn** — tuyệt đối không làm.
+>
+> **Thay bằng:** đối chứng với persistence / climatology / ARIMA trên lịch sử, và đối chứng với GloFAS thô trên phần `reports/forecast_log/` tích luỹ từ W1. Chi tiết: `FINDINGS_BASELINE.md` §2.
 
 ### Đóng góp 2 — Ánh xạ sang hệ cấp báo động của Việt Nam
 

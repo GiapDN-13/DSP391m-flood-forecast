@@ -126,9 +126,9 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 
 | ID | Tiêu chí | Ngưỡng | Ghi chú |
 |---|---|---|---|
-| **AC-1** | Chất lượng hồi quy tại horizon 1 ngày, kịch bản A | **NSE ≥ 0,5** trên tập test | NSE > 0,5 là mức "chấp nhận được" thường dùng trong tài liệu thuỷ văn — H tra và trích dẫn nguồn chuẩn (thường dẫn Moriasi et al.) |
+| **AC-1** | Chất lượng hồi quy, kịch bản A | **h=1: NSE ≥ 0,70** và RMSE tốt hơn persistence ≥ 20 %<br>**h=2: NSE ≥ 0,40** · **h=3: NSE ≥ 0,25** | ⚠️ **Sửa 15/09 sau khi chạy baseline**: ngưỡng cũ 0,5 quá dễ — persistence đơn thuần đã đạt 0,542 ở h=1. Persistence sụp nhanh (h=2: 0,008 · h=3: −0,198), đó mới là khoảng trống mô hình phải lấp. Xem `FINDINGS_BASELINE.md` §1 |
 | **AC-2** | Khả năng bắt sự kiện tại ngưỡng **≥ BĐ II**, horizon 1 ngày | **POD ≥ 0,7** kèm FAR được báo cáo | Ưu tiên POD vì bỏ sót nguy hiểm hơn báo nhầm |
-| **AC-3** | **So với GloFAS thô** | RMSE của LightGBM **≤** RMSE GloFAS thô tại h=1 trên cùng tập test | Đây là tiêu chí sống còn của phần Contribution. Vì GloFAS là feature đầu vào nên khó trượt — nếu vẫn trượt thì có lỗi trong pipeline, phải điều tra |
+| **AC-3** | So với baseline | RMSE **≤** baseline tốt nhất (persistence) ở **cả 3 horizon** trên tập test | ⚠️ **Sửa 15/09**: Open-Meteo **không có kho dự báo GloFAS quá khứ** (404), nên không so trực tiếp trên lịch sử được. Đối chứng với GloFAS chuyển sang dùng `reports/forecast_log/` tích luỹ từ W1 — mẫu nhỏ, báo cáo riêng. Xem `FINDINGS_BASELINE.md` §2 |
 | **AC-4** | Ánh xạ ngưỡng đáng tin | 3/3 đợt lũ lịch sử lệch **≤ 1 cấp** BĐ | Xem `FR-T4` |
 | **AC-5** | Không rò rỉ dữ liệu | Toàn bộ `tests/test_no_leakage.py` xanh **và** NSE < 0,98 | NSE > 0,98 là dấu hiệu rò rỉ, không phải thành tích |
 | **AC-6** | Đủ mẫu để kết luận | Ngưỡng dùng làm kết luận chính có **≥ 30 ngày dương** trong test | Không đủ → lùi xuống ngưỡng thấp hơn, xem `RESEARCH_DESIGN.md` §3.4 |
@@ -221,3 +221,4 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 | 15/09/2026 | 1.2 | ~~FR-D2 đổi sang mưa ngày, lưới 25 điểm~~ — **đã huỷ ở 1.3** | G |
 | 15/09/2026 | 1.3 | **Khôi phục FR-D2** (mưa giờ, lưới 0,10°). Lần cắt ở 1.2 dựa trên chẩn đoán sai về hạn mức (`FINDINGS_QUOTA.md` §3) | G |
 | 15/09/2026 | 1.4 | **Thu hẹp phạm vi còn MỘT trạm (Kim Long / sông Hương)** — GloFAS ~5 km không phân giải được sông Bồ. FR-D5 hoàn thành (`FINDINGS_GRID.md` Phần 2) | G |
+| 15/09/2026 | 1.5 | **Siết AC-1** (0,5 → 0,70/0,40/0,25 theo horizon) vì persistence đã đạt ngưỡng cũ. **Sửa AC-3**: không có kho dự báo GloFAS quá khứ nên đổi mốc đối chứng sang persistence (`FINDINGS_BASELINE.md`) | G |
