@@ -262,7 +262,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
 <div class="deck-viewport">
   <div class="deck-stage" id="stage">
 
-<section class="slide" data-notes="Good morning. We are forecasting flood risk one to three days ahead for the Huong River in Hue, using only openly available data. Central Vietnam is the most flood-affected region in the country, but commune-level warning coverage is thin.">
+<section class="slide" data-notes="Good morning. We are team three. Our project is about floods in Hue. We want to predict flood risk one to three days before it happens. We use only free open data. Central Vietnam has the worst floods in the country, but warnings at village level are still weak. So our question is simple: can free data help?">
   <div class="hero-chart">
     <svg viewBox="0 0 1920 560" preserveAspectRatio="none" aria-hidden="true">
       <defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
@@ -299,7 +299,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide" data-notes="The Huong basin is about 2,830 square kilometres — small and steep. Rainfall becomes a flood peak within a day. On the right are the official alert stages at Kim Long: one, two and three and a half metres. We anchor our target to these stages instead of inventing our own scale, because these are the numbers local authorities already act on.">
+<section class="slide" data-notes="The Huong basin is small, about two thousand eight hundred square kilometres. It is also steep, so water moves fast. Rain today becomes a flood tomorrow — only one day. On the right are the official alert levels at Kim Long: one metre, two metres, three point five metres. We use these official numbers. We do not invent our own scale. Local officers already use them every day. If we use different numbers, nobody will use our model.">
   <div class="pad col2">
     <div>
       <div class="tag"><s></s>SUBJECT &amp; CONTEXT</div>
@@ -330,7 +330,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide" data-notes="We deliberately avoid claiming this is big data just because it is large. Volume is moderate. What makes it a data-engineering problem is variety and veracity. The discharge series is model output, not measurement, and upstream reservoir operation is not represented in it.">
+<section class="slide" data-notes="Many people think big data means a lot of data. We do not agree. Our data size is normal, about one thousand five hundred files. The hard part is variety and veracity. Six different types must fit into one table, day by day. And veracity means: can we trust it? Our river flow is not measured — it comes from a computer model. Dams upstream are not in the model. We say this clearly. We do not hide it.">
   <div class="pad">
     <div class="tag"><s></s>CONTEXT OF BIG DATA</div>
     <h2>Not the volume &mdash; <span class="thin">the variety and the veracity</span></h2>
@@ -351,7 +351,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide" data-notes="Two targets. Regression asks how much water. Classification asks which alert stage — positive days are rare, one to three percent, so accuracy is banned. They are linked by a unit conversion that is not trivial: legal thresholds are water levels in metres, our data is discharge in cubic metres per second, and we could not obtain a measured rating curve.">
+<section class="slide" data-notes="Two problems. First: how much water? River flow in cubic metres per second, for one, two and three days. Second: which alert level? Here is a trap - flood days are very rare, one to three percent. So we never use accuracy. If I say no flood every day I am correct ninety-eight percent, but my model is useless. We use POD, FAR and CSI. The hard part in the middle: official levels are in metres, our data is in cubic metres per second. We could not get real measurements, so we build the link from old flood records.">
   <div class="pad">
     <div class="tag"><s></s>PROBLEM STATEMENT</div>
     <h2>Two targets, <span class="thin">one awkward bridge</span></h2>
@@ -372,7 +372,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide" data-notes="Of the four classes of analytics, our work is primarily predictive. We exclude prescriptive deliberately: recommending an evacuation requires legal authority a student project does not have. A global system already forecasts this cell, so our contribution is local correction and translation, not replacement.">
+<section class="slide" data-notes="Four types of analytics. Descriptive: what happened - we use it to help. Diagnostic: why - a little, to explain warnings. Predictive: what will happen - this is our main work. Prescriptive: what should we do - we do not do this, because telling people to leave their homes needs legal power a student project does not have. The last line is our real contribution: a global system already predicts this river. We fix its errors for our small basin, and we translate it into Vietnamese alert levels.">
   <div class="pad">
     <div class="tag"><s></s>ANALYTICS APPROACH</div>
     <h2>Primarily <span class="thin">predictive</span></h2>
@@ -391,7 +391,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide" data-notes="Six inputs, one daily table. Five are already on disk. The one still in progress is documented flood peaks — our critical path. Without it we cannot convert the legal thresholds into discharge, so the classification target does not exist. That is manual reading work; it cannot be automated away.">
+<section class="slide" data-notes="Six types of data, one daily table. Five are done. Only the last row is not finished: old flood records. This is our biggest problem right now. Without it we cannot change metres into cubic metres per second, and the alert level problem cannot exist. This work is manual - we must read weather reports and news by hand. A computer cannot do it. One good point: all data is free and open. Our project costs zero.">
   <div class="pad">
     <div class="tag"><s></s>DATA REQUIREMENTS</div>
     <h2>Six inputs, <span class="thin">one daily table</span></h2>
@@ -417,7 +417,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide" data-notes="Collection is a four-stage pipeline. One engineering detail worth your time: we spent hours diagnosing rate-limit errors and blaming the data provider. The real cause was three of our own crawler processes running in parallel. With a single process the whole collection finished in thirty-five minutes with zero errors.">
+<section class="slide" data-notes="Four steps: select, crawl, clean, assemble. Step one has a story. Our first map point gave five point seven cubic metres per second - too small, impossible for this river. So we checked three hundred sixty-one points with three tests. The best test: from water flow we can guess the basin size. Our new point gives about two thousand six hundred square kilometres; the real basin is two thousand eight hundred and thirty. Only seven percent different. And one more story about our own mistake: we saw many too-many-requests errors and thought the website blocked us. The real reason was us - three programs running at the same time. With one program everything finished in thirty-five minutes, zero errors. Check your own computer first.">
   <div class="pad">
     <div class="tag"><s></s>COLLECTION METHOD</div>
     <h2>How the data <span class="thin">gets here</span></h2>
@@ -444,7 +444,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide" data-notes="This proposal is not speculative. The table is assembled, rainfall matches the published climatology of Hue, and the signal is there — rainfall leads discharge by exactly one day. Single-day rainfall beats every multi-day accumulation, which is physically consistent with a small steep catchment. We have also measured our baselines, so the model has a real bar to clear.">
+<section class="slide" data-notes="This is not just a plan - we already did the work. Six thousand rows, seventy-one columns. Average rain per year is two thousand nine hundred millimetres, which matches the official climate data for Hue, so our data is correct. Look at the chart: rain comes first, river flow comes one day later, correlation zero point seven nine. We also tested three, five and seven day rain - all lower. The river reacts fast. That matches a small steep basin and supports our short forecast time. We also measured simple models, so we know the target we must beat.">
   <div class="pad">
     <div class="tag"><s></s>FEASIBILITY &mdash; ALREADY DEMONSTRATED</div>
     <h2>The signal <span class="thin">is measurable</span></h2>
@@ -477,7 +477,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide" data-notes="Nine weeks, four graded submissions. Report 3 carries forty percent and covers modelling and evaluation. Data collection was scheduled across the first three weeks but finished in week one, so we are ahead on the data and the critical path has moved to the flood-event record. One detail shaped how we work: the viva is assessed individually, so every member must be able to explain the whole project.">
+<section class="slide" data-notes="Nine weeks, four reports. Report three is forty percent - the biggest one, covering the model and the results. Two things. First, we planned three weeks for data collection but finished in one week, so we are ahead of plan; now our main problem is the flood records. Second, the final exam is individual. That changed how we work: every member must explain the whole project, not only their own part. So we meet every Saturday - one person teaches, the others ask questions.">
   <div class="pad">
     <div class="tag"><s></s>SCHEDULE</div>
     <h2>Nine weeks, <span class="thin">four submissions</span></h2>
@@ -518,7 +518,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide closing" data-notes="Our contribution in one sentence is correction and localisation, not replacement. Three next steps, and three limitations we state openly rather than let a reviewer find. Thank you; we are happy to take questions.">
+<section class="slide closing" data-notes="One sentence to finish. We do not replace the global forecast - we fix it and translate it into Vietnamese alert levels. Three next steps: finish the flood records, train the model, check the dam problem. And three limits, said now not later. One: our river data is from a model, not measured. Two: the map is five kilometres wide, too big to see the small Bo river, so we study one station only. Three: this is a student project, not an official warning service. Thank you.">
   <div class="pad mid">
     <div class="tag"><s></s>IN ONE SENTENCE</div>
     <h1 class="big-claim">We correct and localise an open global flood forecast
