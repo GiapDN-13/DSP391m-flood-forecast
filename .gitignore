@@ -66,3 +66,7 @@ desktop.ini
 # ===== NGOẠI LỆ: hình cho báo cáo thì GIỮ =====
 !reports/figures/**
 !reports/**/*.png
+
+# ===== Slide: khong commit node_modules =====
+reports/report1/slides/node_modules/
+reports/report1/slides/package-lock.json
