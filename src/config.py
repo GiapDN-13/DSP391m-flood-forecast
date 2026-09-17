@@ -23,6 +23,17 @@ CACHE = ROOT / ".cache"
 for _p in (DATA_RAW, DATA_INTERIM, DATA_PROCESSED, DATA_EXTERNAL, FIGURES, CACHE):
     _p.mkdir(parents=True, exist_ok=True)
 
+# ---------- Thành viên ----------
+# NGUỒN SỰ THẬT DUY NHẤT cho tên. Mọi chỗ sinh báo cáo/slide phải import từ đây,
+# đừng viết lại tên trong từng file — đã một lần sửa tên mà quên build lại PDF.
+TEAM = [
+    {"vi": "Đặng Nguyên Giáp", "ascii": "Dang Nguyen Giap", "role": "Tech Lead"},
+    {"vi": "Hồ Anh Đức",       "ascii": "Ho Anh Duc",       "role": "Data Analyst"},
+    {"vi": "Mai Thị Lệ Huyền", "ascii": "Mai Thi Le Huyen", "role": "Research & Docs"},
+]
+TEAM_VI = [m["vi"] for m in TEAM]
+TEAM_ASCII = [m["ascii"] for m in TEAM]
+
 # ---------- Tái lập kết quả ----------
 SEED = 42
 

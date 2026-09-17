@@ -87,7 +87,7 @@ def slides(hg: dict) -> str:
   </div>
 
   <div class="byline">
-    <b>Đặng Nguyên Giáp</b>Hồ Anh Đức<br>Mai Thị Lệ Huyền
+    <b>{cfg.TEAM_VI[0]}</b>{cfg.TEAM_VI[1]}<br>{cfg.TEAM_VI[2]}
   </div>
 
   <div class="pad top">
