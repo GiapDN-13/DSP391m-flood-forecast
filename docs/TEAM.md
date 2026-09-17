@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | **G** | Giáp | **Tech Lead** — Data Engineering, Modeling, tích hợp, review | **50 %** | 14–16 h |
 | **D** | Đức | **Data Analyst** — EDA, feature engineering, baseline, dashboard | **32 %** | 9–11 h |
-| **H** | Huyền | **Research & Documentation Lead** — literature review, nguồn pháp lý, data dictionary, biên tập & format 4 báo cáo, slide | **18 %** | 5–6 h |
+| **H** | Mai Thị Lệ Huyền | **Research & Documentation Lead** — literature review, nguồn pháp lý, data dictionary, biên tập & format 4 báo cáo, slide | **18 %** | 5–6 h |
 
 Ghi vào `docs/CONTRIBUTION_LOG.md` mỗi tuần để có bằng chứng khi giảng viên chấm đóng góp cá nhân.
 

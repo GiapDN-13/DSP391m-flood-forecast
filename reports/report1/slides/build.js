@@ -109,7 +109,7 @@ function row(s, x, y, w, num, head, body, circle = C.river) {
 
   s.addText(
     [{ text: "Team", options: { fontSize: 11, color: C.muted, breakLine: true } },
-     { text: "Dang Nguyen Giap  ·  Hoang Anh Duc  ·  Le Thi Huyen",
+     { text: "Dang Nguyen Giap  ·  Hoang Anh Duc  ·  Mai Thi Le Huyen",
        options: { fontSize: 14.5, color: C.paper } }],
     { x: M, y: 4.62, w: 6.4, h: 0.9, isTextBox: true, fontFace: BODY, margin: 0 });
 

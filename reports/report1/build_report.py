@@ -1,0 +1,525 @@
+"""Sinh Report 1 theo định dạng IEEE hai cột (FR-R1).
+
+    python reports/report1/build_report.py
+
+Khổ trang, bề rộng cột và cỡ chữ theo mẫu IEEE conference:
+lề 0,625 in hai bên · hai cột rộng 3,5 in · khe giữa 0,2 in · thân bài 10 pt Times.
+
+Không dùng LaTeX vì máy không có bản cài; reportlab cho đủ quyền kiểm soát bố cục.
+"""
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+from reportlab.lib.pagesizes import LETTER
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import (BaseDocTemplate, Frame, Image, KeepTogether,
+                                NextPageTemplate, PageBreak, PageTemplate,
+                                Paragraph, Spacer, Table, TableStyle)
+
+ROOT = Path(__file__).resolve().parents[2]
+FIGS = ROOT / "reports" / "figures" / "report"
+OUT = ROOT / "reports" / "report1" / "DSP391m_Report1_Proposal_IEEE.pdf"
+
+PW, PH = LETTER
+LM = RM = 0.625 * inch
+TM = 0.75 * inch
+BM = 1.0 * inch
+GUT = 0.2 * inch
+COLW = (PW - LM - RM - GUT) / 2          # ≈ 3,54 in
+
+# ----------------------------------------------------------------- styles
+def S(name, **kw):
+    base = dict(fontName="Times-Roman", fontSize=10, leading=11.6,
+                alignment=TA_JUSTIFY, spaceAfter=0)
+    base.update(kw)
+    return ParagraphStyle(name, **base)
+
+
+ST = {
+    "title": S("title", fontName="Times-Bold", fontSize=20, leading=23,
+               alignment=TA_CENTER, spaceAfter=10),
+    "author": S("author", fontSize=11, leading=13, alignment=TA_CENTER),
+    "affil": S("affil", fontName="Times-Italic", fontSize=9.5, leading=11.5,
+               alignment=TA_CENTER, textColor=colors.HexColor("#333333")),
+    "abstract": S("abstract", fontName="Times-Bold", fontSize=9, leading=10.8),
+    "abstext": S("abstext", fontSize=9, leading=10.8),
+    "keywords": S("keywords", fontSize=9, leading=10.8, spaceBefore=5),
+    "h1": S("h1", fontName="Times-Bold", fontSize=10, leading=12,
+            alignment=TA_CENTER, spaceBefore=11, spaceAfter=4),
+    "h2": S("h2", fontName="Times-BoldItalic", fontSize=10, leading=12,
+            spaceBefore=7, spaceAfter=3),
+    "body": S("body", firstLineIndent=0.18 * inch),
+    "body0": S("body0"),
+    "bullet": S("bullet", leftIndent=0.16 * inch, bulletIndent=0.04 * inch,
+                spaceAfter=2.5),
+    "caption": S("caption", fontSize=8.5, leading=10, alignment=TA_CENTER,
+                 spaceBefore=4, spaceAfter=8),
+    "tabhead": S("tabhead", fontName="Times-Bold", fontSize=8, leading=9.5,
+                 alignment=TA_CENTER),
+    "tabcell": S("tabcell", fontSize=8, leading=9.5, alignment=TA_JUSTIFY),
+    "tabcap": S("tabcap", fontSize=8.5, leading=10, alignment=TA_CENTER,
+                spaceAfter=4),
+    "ref": S("ref", fontSize=8, leading=9.6, leftIndent=0.16 * inch,
+             bulletIndent=0, spaceAfter=1.5),
+}
+
+
+def p(text, st="body"):
+    return Paragraph(text, ST[st])
+
+
+def bullets(items):
+    return [Paragraph(t, ST["bullet"], bulletText="•") for t in items]
+
+
+def h1(n, text):
+    return p(f"{n}.&nbsp;&nbsp;{text.upper()}", "h1")
+
+
+def table(rows, widths, caption_no, caption):
+    data = [[Paragraph(c, ST["tabhead"]) for c in rows[0]]]
+    data += [[Paragraph(c, ST["tabcell"]) for c in r] for r in rows[1:]]
+    t = Table(data, colWidths=widths, hAlign="CENTER")
+    t.setStyle(TableStyle([
+        ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#999999")),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e8e8e8")),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("LEFTPADDING", (0, 0), (-1, -1), 3),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 3),
+        ("TOPPADDING", (0, 0), (-1, -1), 2.5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5),
+    ]))
+    return KeepTogether([
+        Paragraph(f"TABLE {caption_no}<br/>{caption}", ST["tabcap"]),
+        t, Spacer(1, 9)])
+
+
+def figure(fname, no, caption, width=COLW - 0.1 * inch):
+    f = FIGS / fname
+    if not f.exists():
+        return Spacer(1, 0)
+    # giữ đúng tỉ lệ ảnh
+    from reportlab.lib.utils import ImageReader
+    iw, ih = ImageReader(str(f)).getSize()
+    return KeepTogether([
+        Image(str(f), width=width, height=width * ih / iw),
+        Paragraph(f"Fig. {no}.&nbsp; {caption}", ST["caption"])])
+
+
+# ----------------------------------------------------------------- content
+def story():
+    s = []
+
+    # ---- I. Introduction
+    s.append(h1("I", "Introduction"))
+    s.append(p(
+        "Central Vietnam is the region of the country most frequently and most severely "
+        "affected by river flooding. The city of Hue lies on the Huong River, whose "
+        "catchment of roughly 2,830 km&#178; is short and steep: intense rainfall generated by "
+        "tropical depressions and the northeast monsoon is converted into a flood peak "
+        "within a single day. Communes along the river and in the adjacent Tam Giang "
+        "lagoon belt are inundated repeatedly, yet commune-scale warning products remain "
+        "scarce, and the density of in-situ gauging is limited relative to the damage at "
+        "stake.", "body0"))
+    s.append(p(
+        "At the same time, global hydro-meteorological datasets have become openly "
+        "available at a resolution and latency that were unavailable a decade ago. The "
+        "Global Flood Awareness System (GloFAS) publishes simulated daily river discharge "
+        "on an approximately 5 km grid from 1984 onward [1], and the ERA5 reanalysis "
+        "supplies hourly precipitation and near-surface meteorology over the same "
+        "period [2]. Both are redistributed without cost and without an access key, which "
+        "removes the procurement risk that commonly derails student projects."))
+    s.append(p(
+        "This report proposes a project that exploits those open datasets to forecast "
+        "flood risk one to three days ahead for the Huong River basin, and — critically — "
+        "to express that forecast in the alert-stage vocabulary that Vietnamese "
+        "authorities already use, rather than in an ad-hoc scale of our own invention."))
+
+    # ---- II. Problem statement
+    s.append(h1("II", "Problem Statement and Objectives"))
+    s.append(p("A. Context of big data", "h2"))
+    s.append(p(
+        "The project is a data-engineering problem before it is a modelling problem. "
+        "Volume is moderate rather than extreme: 42 years of daily discharge and 11 years "
+        "of hourly precipitation across 68 grid points amount to approximately 1,500 "
+        "Parquet files. The difficulty lies in the other dimensions. <i>Variety</i> is high: "
+        "simulated discharge, reanalysis meteorology, archived precipitation forecasts, "
+        "river-network geometry, a legal threshold document and narrative flood bulletins "
+        "must all be reconciled onto one daily timeline. <i>Velocity</i> is non-trivial: "
+        "forecast products are re-issued several times per day, so an operational pipeline "
+        "must ingest on a schedule rather than in a single batch. <i>Veracity</i> is the "
+        "binding constraint: the discharge series is model output, not measurement, and "
+        "reservoir operation upstream is not represented in it.", "body0"))
+    s.append(p("B. Research questions", "h2"))
+    s.extend(bullets([
+        "<b>RQ1.</b> Can daily mean river discharge be predicted 1, 2 and 3 days ahead "
+        "from gridded precipitation and antecedent discharge, and with what error?",
+        "<b>RQ2.</b> With what detection rate and false-alarm ratio can a classifier "
+        "identify days that exceed an official flood-alert stage?",
+        "<b>RQ3.</b> Which sub-basins carry the highest seasonal flood risk?",
+    ]))
+    s.append(Spacer(1, 4))
+    s.append(p("C. Analytics approach", "h2"))
+    s.append(p(
+        "Of the four canonical classes of analytics, this project is <i>primarily "
+        "predictive</i>. Table I states the position taken on each class and the reason. "
+        "The exclusion of prescriptive analytics is deliberate rather than incidental: "
+        "issuing an evacuation recommendation requires legal authority and accountability "
+        "that an academic project does not possess, and presenting one would be "
+        "irresponsible regardless of model quality.", "body0"))
+
+    s.append(table(
+        [["Class", "Position", "Reason"],
+         ["Descriptive", "Supporting",
+          "Seasonality, rainfall&#8211;discharge lag structure and historical event "
+          "reconstruction establish that the signal exists."],
+         ["Diagnostic", "Partial",
+          "Feature attribution explains which driver produced a given warning, but no "
+          "formal causal design is claimed."],
+         ["Predictive", "<b>Core</b>",
+          "Both RQ1 and RQ2 are forecasting problems at a 1&#8211;3 day horizon."],
+         ["Prescriptive", "Out of scope",
+          "Response and evacuation decisions require authority the project does not hold."]],
+        [0.62 * inch, 0.72 * inch, COLW - 1.48 * inch],
+        "I", "Position on the Four Classes of Analytics"))
+
+    s.append(p("D. Objectives", "h2"))
+    s.extend(bullets([
+        "Assemble a reproducible daily analysis table for the basin from open sources.",
+        "Convert the legal water-level alert stages into discharge thresholds so that the "
+        "classification target is defined in official terms.",
+        "Establish measured baselines, then train and evaluate forecasting models against "
+        "them under both idealised and operational input conditions.",
+        "Deliver an interpretable risk product at sub-basin scale, with limitations stated "
+        "explicitly.",
+    ]))
+
+    # ---- III. Related work
+    s.append(h1("III", "Related Work"))
+    s.append(p(
+        "GloFAS couples a hydrological model to meteorological forcing to produce global "
+        "ensemble streamflow forecasts and has been evaluated extensively at continental "
+        "scale [1]. Its known weakness is precisely our study area: performance degrades "
+        "in small, steep, monsoon-driven catchments that the global calibration does not "
+        "resolve well. This motivates local post-processing rather than direct use.", "body0"))
+    s.append(p(
+        "Machine-learning approaches to streamflow prediction have matured substantially. "
+        "Gradient-boosted decision trees remain strong on tabular hydrological features and "
+        "train in seconds on datasets of our size [6]. Recurrent architectures have been "
+        "shown to learn transferable catchment behaviour across large samples [8], although "
+        "their advantage is clearest where many catchments are pooled, which is not our "
+        "setting."))
+    s.append(p(
+        "Evaluation practice in hydrology is well established. The Nash&#8211;Sutcliffe "
+        "efficiency [3] remains the reference skill score, with the Kling&#8211;Gupta "
+        "efficiency [4] decomposing error into correlation, variability and bias "
+        "components; published guidance places a satisfactory threshold near 0.5 for "
+        "streamflow simulation [5]. For rare-event classification, the meteorological "
+        "contingency measures (probability of detection, false-alarm ratio, critical "
+        "success index) are preferred to accuracy. Model-agnostic attribution [7] provides "
+        "the interpretability that operational users require of any warning product."))
+    s.append(p(
+        "<i>Scope note.</i> This section states the technical foundations the project "
+        "builds on. A broader review of flood forecasting specific to the Huong&#8211;Bo "
+        "river system is in preparation and will be consolidated in Report 2."))
+
+    # ---- IV. Data
+    s.append(h1("IV", "Data Requirements and Collection"))
+    s.append(p("A. Required datasets", "h2"))
+    s.append(p(
+        "Table II lists the six inputs, their role in the model and their current "
+        "acquisition status. Five are already on disk; the sixth is the project's critical "
+        "path and is discussed in Section VI.", "body0"))
+
+    s.append(table(
+        [["Dataset", "Role", "Span", "Status"],
+         ["River discharge, GloFAS v4 [1]", "Target and lag features",
+          "1984&#8211;2026, daily", "Collected"],
+         ["Precipitation and meteorology, ERA5 [2]", "Primary predictors",
+          "2010&#8211;2026, daily and hourly", "Collected"],
+         ["Archived precipitation forecasts", "Operational input scenario",
+          "2022&#8211;2026, daily", "Collected"],
+         ["River centre-lines, OpenStreetMap", "Grid-cell to river assignment",
+          "Current extract", "Collected"],
+         ["Legal alert stages [9]", "Defines classification target",
+          "Decision 05/2020/QD-TTg", "Verified"],
+         ["Documented flood peaks", "Calibrates level to discharge",
+          "&#8805; 15 events, 1999&#8211;2026", "In progress"]],
+        [1.22 * inch, 0.92 * inch, 0.82 * inch, COLW - 3.06 * inch],
+        "II", "Data Requirements and Acquisition Status"))
+
+    s.append(p("B. Grid-cell selection", "h2"))
+    s.append(p(
+        "Because GloFAS represents the river network on a coarse grid, the modelled "
+        "channel does not coincide exactly with the mapped river. The coordinate initially "
+        "proposed for the Kim Long gauge returned a long-term mean discharge of only "
+        "5.7 m&#179;/s, which is physically implausible for this basin. Three independent "
+        "lines of evidence were combined to select the correct cell: proximity to named "
+        "river centre-lines obtained from OpenStreetMap; correlation between candidate "
+        "discharge series, which distinguishes separate rivers from successive reaches of "
+        "one river; and inversion of long-term mean discharge into an implied catchment "
+        "area using a regional specific-runoff coefficient.", "body0"))
+    s.append(p(
+        "The third test proved decisive. Cell (16.45&#176;N, 107.50&#176;E) yields a mean "
+        "discharge of 120.7 m&#179;/s, implying a catchment of 2,366&#8211;2,943 km&#178; "
+        "against the documented 2,830 km&#178; of the Huong basin, an error of 7%. Two "
+        "larger candidate cells imply catchments of 3,814&#8211;4,745 km&#178; and "
+        "6,144&#8211;7,643 km&#178; respectively, consistent with positions downstream of "
+        "successive confluences. The same analysis established that the 5 km grid does not "
+        "resolve the neighbouring Bo River (938 km&#178;) as a separate channel, and the "
+        "study was therefore narrowed to a single gauging station."))
+
+    s.append(p("C. Collection method", "h2"))
+    s.append(p(
+        "Acquisition is implemented as a set of independent tasks, each writing one Parquet "
+        "file. A task whose output already exists is skipped, so an interrupted run resumes "
+        "without re-requesting data. Request pacing adapts to the server response: it "
+        "widens on rate-limit replies and tightens again during clean runs. A lock file "
+        "prevents concurrent crawler instances.", "body0"))
+    s.append(p(
+        "That last safeguard was added in response to a diagnostic error worth recording. "
+        "Persistent rate-limit responses were initially attributed to the provider, and a "
+        "substantial scope reduction was proposed on that basis. The actual cause was three "
+        "crawler processes running in parallel on the authors' machine and competing with "
+        "one another. With a single process, the entire collection completed in "
+        "approximately 35 minutes with no rate-limit response at all, and the proposed "
+        "scope reduction was withdrawn."))
+
+    s.append(p("D. Processing", "h2"))
+    s.append(p(
+        "Raw files are normalised to Vietnam local time, hourly precipitation is aggregated "
+        "to daily totals, and validation functions raise an error rather than silently "
+        "repairing anomalies such as negative discharge, duplicated dates or gaps in the "
+        "daily index. Gridded precipitation is averaged over three sub-basins (upper, "
+        "middle and lower) rather than over the whole catchment, preserving the spatial "
+        "information that upstream rainfall carries for downstream discharge. Lag features, "
+        "rolling accumulations and an antecedent precipitation index are then derived. All "
+        "rolling windows are trailing; automated tests assert that no feature reads a value "
+        "from the future.", "body0"))
+
+    # ---- V. Preliminary results
+    s.append(h1("V", "Preliminary Results"))
+    s.append(p(
+        "The proposal is supported by data already collected and processed. The assembled "
+        "table contains 6,087 daily records and 71 columns spanning 2010-01-01 to "
+        "2026-08-31, with no duplicated dates and no missing discharge values.", "body0"))
+    s.append(p(
+        "Mean annual precipitation over the basin is 2,929 mm, consistent with the "
+        "published climatology of Hue and providing independent support for the "
+        "specific-runoff assumption used in cell selection. Fig. 1 shows the "
+        "cross-correlation between basin-mean daily precipitation and discharge: the "
+        "maximum occurs at a lag of one day (r = 0.790), falling to 0.608 at two days and "
+        "0.382 at three. Single-day precipitation outperforms 3-, 5- and 7-day "
+        "accumulations, which is physically consistent with a small, steep catchment and "
+        "supports the short forecast horizon proposed."))
+    s.append(figure("fig_lag.png", "1",
+                    "Cross-correlation between basin-mean precipitation and discharge. "
+                    "The maximum at one day defines the dominant predictive lag."))
+    s.append(p(
+        "Seasonality is pronounced (Fig. 2). The months September to December account for "
+        "32% of days but 59% of total runoff volume, confirming by measurement the flood "
+        "season assumed a priori."))
+    s.append(figure("fig_seasonal.png", "2",
+                    "Monthly distribution of daily discharge. Hatched boxes mark the "
+                    "flood season (September&#8211;December)."))
+    s.append(p(
+        "Four reference models were evaluated on the held-out period from July 2022 "
+        "(Fig. 3 and Table III). Persistence is the strongest, reaching NSE = 0.542 at a "
+        "one-day horizon but collapsing to 0.008 at two days and &#8722;0.198 at three. "
+        "This result had an immediate methodological consequence: the acceptance threshold "
+        "originally set at NSE &#8805; 0.5 was already met by a trivial baseline and was "
+        "therefore raised, and differentiated by horizon. The opportunity for a learned "
+        "model lies at two and three days, where every baseline fails.", "body0"))
+    s.append(figure("fig_baseline.png", "3",
+                    "Baseline skill by forecast horizon. All reference models lose "
+                    "predictive skill beyond one day."))
+
+    s.append(table(
+        [["Model", "h=1", "h=2", "h=3"],
+         ["Persistence", "<b>0.542</b>", "0.008", "&#8722;0.198"],
+         ["Climatology", "0.097", "0.097", "0.096"],
+         ["ARIMA(2,1,2) on log flow", "&#8722;0.093", "&#8722;0.093", "&#8722;0.093"],
+         ["Seasonal naive", "&#8722;0.434", "&#8722;0.434", "&#8722;0.435"]],
+        [1.62 * inch, 0.64 * inch, 0.64 * inch, COLW - 2.9 * inch],
+        "III", "Baseline Nash&#8211;Sutcliffe Efficiency, Test Period 2022&#8211;2026"))
+
+    s.append(p(
+        "A scheduled job has additionally issued and archived a fresh seven-day forecast "
+        "every morning since the project began. This forward record is the only available "
+        "route to a like-for-like comparison against the raw global forecast, because no "
+        "archive of past GloFAS discharge forecasts is published; the historical series is "
+        "model analysis, not forecasts issued in advance. This constraint was discovered "
+        "during implementation and required revising the evaluation design.", "body0"))
+
+    # ---- VI. Timeline and risk
+    s.append(h1("VI", "Timeline and Risk Management"))
+    s.append(p(
+        "The project runs over a nine-week term with four graded submissions. Report 1 "
+        "(this document, 10%) is due in week 2; Report 2, covering data and exploratory "
+        "analysis (20%), in week 4; Report 3, covering modelling and evaluation (40%), in "
+        "week 8; and a consolidated final report (10%) in week 9, followed by an "
+        "individually assessed oral examination (20%).", "body0"))
+    s.append(p(
+        "Data acquisition, originally scheduled across the first three weeks, completed "
+        "within week 1. The critical path is now the compilation of documented flood peaks "
+        "required to convert alert stages into discharge thresholds. A request for observed "
+        "stage&#8211;discharge records was not viable, leaving event-based calibration as "
+        "the sole route; if fewer than ten usable events are obtained, the fallback is a "
+        "percentile-based risk scale, which must then be renamed so that it is not "
+        "presented as the official alert system."))
+    s.append(p(
+        "Two further risks are recorded. First, the anomaly of 14 June 2025, where a "
+        "discharge of 2,055 m&#179;/s coincides with basin-mean precipitation of 0.9 mm, "
+        "suggests reservoir release; the basin contains the Ta Trach and Binh Dien "
+        "reservoirs, whose operation GloFAS does not represent. Second, model inputs during "
+        "training are reanalysis precipitation whereas operational inputs are forecast "
+        "precipitation, so results will be reported under both an idealised and an "
+        "operational scenario, and the difference between them treated as a result in its "
+        "own right."))
+
+    # ---- VII. Conclusion
+    s.append(h1("VII", "Conclusion"))
+    s.append(p(
+        "This project does not seek to replace an existing global flood forecast. It aims "
+        "to correct that forecast locally for the Huong River basin and to translate it "
+        "into the alert stages that Vietnamese authorities act upon, at sub-basin "
+        "resolution and with interpretable attribution. The data required has been "
+        "collected and verified, the predictive signal has been measured, and reference "
+        "baselines have been established, so the modelling work proceeds against a "
+        "quantified bar rather than an assumed one.", "body0"))
+    s.append(p(
+        "Three limitations are stated at the outset rather than deferred: the discharge "
+        "series is simulated and not measured; the grid resolution does not separate the "
+        "neighbouring Bo River, restricting the study to one gauging station; and the "
+        "product is academic work, not an official warning service."))
+
+    # ---- References
+    s.append(h1("", "References"))
+    refs = [
+        "L. Alfieri, P. Burek, E. Dutra, B. Krzeminski, D. Muraro, J. Thielen, and "
+        "F. Pappenberger, &#8220;GloFAS &#8211; global ensemble streamflow forecasting and "
+        "flood early warning,&#8221; <i>Hydrol. Earth Syst. Sci.</i>, vol. 17, no. 3, "
+        "pp. 1161&#8211;1175, 2013.",
+        "H. Hersbach <i>et al.</i>, &#8220;The ERA5 global reanalysis,&#8221; <i>Q. J. R. "
+        "Meteorol. Soc.</i>, vol. 146, no. 730, pp. 1999&#8211;2049, 2020.",
+        "J. E. Nash and J. V. Sutcliffe, &#8220;River flow forecasting through conceptual "
+        "models part I &#8211; a discussion of principles,&#8221; <i>J. Hydrol.</i>, "
+        "vol. 10, no. 3, pp. 282&#8211;290, 1970.",
+        "H. V. Gupta, H. Kling, K. K. Yilmaz, and G. F. Martinez, &#8220;Decomposition of "
+        "the mean squared error and NSE performance criteria: implications for improving "
+        "hydrological modelling,&#8221; <i>J. Hydrol.</i>, vol. 377, no. 1&#8211;2, "
+        "pp. 80&#8211;91, 2009.",
+        "D. N. Moriasi, J. G. Arnold, M. W. Van Liew, R. L. Bingner, R. D. Harmel, and "
+        "T. L. Veith, &#8220;Model evaluation guidelines for systematic quantification of "
+        "accuracy in watershed simulations,&#8221; <i>Trans. ASABE</i>, vol. 50, no. 3, "
+        "pp. 885&#8211;900, 2007.",
+        "G. Ke <i>et al.</i>, &#8220;LightGBM: a highly efficient gradient boosting "
+        "decision tree,&#8221; in <i>Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)</i>, "
+        "2017, pp. 3146&#8211;3154.",
+        "S. M. Lundberg and S.-I. Lee, &#8220;A unified approach to interpreting model "
+        "predictions,&#8221; in <i>Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)</i>, "
+        "2017, pp. 4765&#8211;4774.",
+        "F. Kratzert, D. Klotz, G. Shalev, G. Klambauer, S. Hochreiter, and G. Nearing, "
+        "&#8220;Towards learning universal, regional, and local hydrological behaviors via "
+        "machine learning applied to large-sample datasets,&#8221; <i>Hydrol. Earth Syst. "
+        "Sci.</i>, vol. 23, no. 12, pp. 5089&#8211;5110, 2019.",
+        "Prime Minister of Vietnam, <i>Decision No. 05/2020/QD-TTg on water levels "
+        "corresponding to flood alert levels on rivers nationwide</i>, Hanoi, 31 Jan. 2020.",
+        "Open-Meteo, &#8220;Free open-source weather API.&#8221; [Online]. Available: "
+        "https://open-meteo.com. Data licensed under CC BY 4.0. [Accessed: 17 Sep. 2026].",
+    ]
+    for i, r in enumerate(refs, 1):
+        s.append(Paragraph(r, ST["ref"], bulletText=f"[{i}]"))
+
+    return s
+
+
+# ----------------------------------------------------------------- layout
+def build() -> int:
+    if not OUT.parent.exists():
+        OUT.parent.mkdir(parents=True)
+
+    doc = BaseDocTemplate(str(OUT), pagesize=LETTER,
+                          leftMargin=LM, rightMargin=RM,
+                          topMargin=TM, bottomMargin=BM,
+                          title="DSP391m Report 1 — Project Proposal",
+                          author="Dang Nguyen Giap, Hoang Anh Duc, Mai Thi Le Huyen")
+
+    avail_h = PH - TM - BM
+    # Trang 1: khối tiêu đề chiếm hết bề rộng, rồi hai cột bên dưới
+    head_h = 2.55 * inch
+    f_head = Frame(LM, PH - TM - head_h, PW - LM - RM, head_h, id="head",
+                   leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
+    f_l1 = Frame(LM, BM, COLW, avail_h - head_h, id="c1l",
+                 leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
+    f_r1 = Frame(LM + COLW + GUT, BM, COLW, avail_h - head_h, id="c1r",
+                 leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
+    # Trang tiếp: hai cột đầy trang
+    f_l = Frame(LM, BM, COLW, avail_h, id="cl",
+                leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
+    f_r = Frame(LM + COLW + GUT, BM, COLW, avail_h, id="cr",
+                leftPadding=0, rightPadding=0, topPadding=0, bottomPadding=0)
+
+    def footer(canvas, d):
+        canvas.saveState()
+        canvas.setFont("Times-Roman", 8.5)
+        canvas.setFillColor(colors.HexColor("#555555"))
+        canvas.drawCentredString(PW / 2, BM - 26, str(d.page))
+        canvas.drawString(LM, BM - 26,
+                          "DSP391m — Data Science Project — Report 1")
+        canvas.drawRightString(PW - RM, BM - 26, "FPT University, Fall 2026")
+        canvas.restoreState()
+
+    doc.addPageTemplates([
+        PageTemplate(id="first", frames=[f_head, f_l1, f_r1], onPage=footer),
+        PageTemplate(id="rest", frames=[f_l, f_r], onPage=footer),
+    ])
+
+    head = [
+        p("Forecasting Flood Risk One to Three Days Ahead for the "
+          "Huong River Basin from Open Hydro-Meteorological Data", "title"),
+        p("Dang Nguyen Giap&nbsp;&nbsp;&nbsp;&nbsp;Hoang Anh Duc"
+          "&nbsp;&nbsp;&nbsp;&nbsp;Mai Thi Le Huyen", "author"),
+        Spacer(1, 3),
+        p("Department of Information Technology, FPT University<br/>"
+          "DSP391m &#8212; Data Science Project &#8212; Fall 2026<br/>"
+          "Hue, Vietnam", "affil"),
+        Spacer(1, 9),
+        Paragraph(
+            "<b><i>Abstract</i></b>&#8212;<font size=9>Central Vietnam is the most "
+            "flood-affected region of the country, yet commune-scale warning products for "
+            "the Huong River basin remain scarce. This project proposes to forecast river "
+            "discharge and official flood-alert stage one to three days ahead using only "
+            "open data: simulated discharge from GloFAS, reanalysis precipitation from "
+            "ERA5, and archived precipitation forecasts. The work is primarily predictive; "
+            "prescriptive analytics are explicitly excluded. A 42-year discharge record and "
+            "an 11-year hourly precipitation grid have already been collected and assembled "
+            "into a 6,087-record daily table. Preliminary analysis establishes a dominant "
+            "one-day precipitation&#8211;discharge lag (r = 0.790) and measures four "
+            "reference baselines, the strongest of which reaches NSE = 0.542 at a one-day "
+            "horizon but loses all skill beyond it. The contribution is therefore framed as "
+            "local correction and translation of an existing global forecast into Vietnam's "
+            "own alert stages at sub-basin resolution, not as its replacement.</font>",
+            ST["abstext"]),
+        Paragraph(
+            "<b><i>Keywords</i></b>&#8212;<font size=9>flood forecasting, streamflow "
+            "prediction, GloFAS, ERA5, open data, gradient boosting, rare-event "
+            "classification, Huong River</font>", ST["keywords"]),
+    ]
+
+    s = head + [NextPageTemplate("rest")] + story()
+    doc.build(s)
+    print(f"→ {OUT}  ({OUT.stat().st_size // 1024} KB)")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(build())
