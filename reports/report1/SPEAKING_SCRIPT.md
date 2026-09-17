@@ -2,7 +2,7 @@
 
 **Tiếng Anh đơn giản.** Câu ngắn, từ dễ, dễ nói trôi. Tiếng Việt ngay dưới để hiểu ý.
 
-**Tổng: 9–10 phút** · Chia phần: **Giáp** slide 1–2 và 7–8 · **Đức** slide 3–4 · **Huyền** slide 5–6 và 9–10.
+**Tổng: 8–9 phút** · Chia phần: **Giáp** slide 1–2 và 7–8 · **Đức** slide 3–4 · **Huyền** slide 5–6 và 9.
 
 Cách dùng:
 - Đọc **dòng EN**. Phần **VI** chỉ để hiểu khi tập.
@@ -159,23 +159,7 @@ Cách dùng:
 
 ---
 
-## Slide 9 — Schedule · ~50 giây · **Huyền**
-
-> **EN.**
-> Nine weeks. Four reports.
-> Look at report three. It is **forty percent**. It is the biggest one. It covers the model and the results.
-> Two things I want to say.
-> First, we planned three weeks for data collection. We finished in **one week**.
-> So we are **ahead of plan** on data. Now our main problem is the flood records.
-> Second, the final exam is **individual**.
-> This changed how we work. Every member must explain the **whole** project. Not only his or her own part.
-> So we meet every Saturday. One person teaches. The others ask questions.
-
-**VI.** *Chín tuần, bốn báo cáo. Nhìn Report 3: 40 %, là mục lớn nhất, bao gồm mô hình và kết quả. Hai điều muốn nói. Thứ nhất, dự kiến ba tuần cho thu thập dữ liệu, nhưng xong trong một tuần — nên đang đi trước kế hoạch về dữ liệu, giờ vấn đề chính là hồ sơ lũ. Thứ hai, thi cuối kỳ chấm cá nhân. Điều đó đổi cách nhóm làm việc: mỗi người phải giải thích được toàn bộ dự án, không chỉ phần mình. Nên chúng tôi gặp nhau mỗi thứ Bảy, một người giảng, những người kia hỏi.*
-
----
-
-## Slide 10 — Closing · ~45 giây · **Huyền**
+## Slide 9 — Closing · ~45 giây · **Huyền**
 
 > **EN.**
 > One sentence to finish.
@@ -263,6 +247,6 @@ Cách dùng:
 4. **Ba câu phải thuộc, không cần nhìn:**
    - Slide 5: *"We fix its errors and translate it."*
    - Slide 7: *"The real reason was us."*
-   - Slide 10: *"This is a student project, not an official warning service."*
+   - Slide 9: *"This is a student project, not an official warning service."*
 5. **Đổi người thì nói một câu bắc cầu**, ví dụ: *"Now Duc will talk about the data."* Đừng im lặng bước sang.
 6. **Tập 3 lần:** lần 1 đọc script · lần 2 nhìn gạch đầu dòng · lần 3 không nhìn gì.
