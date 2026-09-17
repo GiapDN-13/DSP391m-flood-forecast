@@ -110,15 +110,17 @@ Chia phần: **Giáp** slide 1–2 và 7–8 · **Đức** slide 3–4 · **Huy�
 
 ---
 
-## Slide 9 — Deliverables & schedule · ~50 giây
+## Slide 9 — Nine-week schedule · ~50 giây
 
-> **EN.** Two deliverables for this slot: the IEEE-format report as a PDF, and this presentation in English.
-> On the right is the full nine-week schedule. Report 3 carries **forty percent** — it is the heaviest single item, and it covers modelling and evaluation.
-> One detail shaped how we work: the final examination is **assessed individually**. So our team agreed that every member has to be able to explain the whole project, not only the part they built. We hold a twenty-minute knowledge handoff every Saturday for exactly that reason.
+> **EN.** Nine weeks, four graded submissions. **Report 3 carries forty percent** — it is the heaviest single item, and it covers modelling and evaluation.
+> Two things worth pointing out. First, data collection was scheduled across weeks one to three; it finished in **week one**. So we are ahead on the data, and the critical path has moved to the flood-event record.
+> Second, the final examination is **assessed individually**. That shaped how our team works: every member has to be able to explain the whole project, not only the part they built. We hold a twenty-minute knowledge handoff every Saturday for exactly that reason.
 
-**VI.** *Hai sản phẩm cho slot này: báo cáo định dạng IEEE dạng PDF, và bài thuyết trình này bằng tiếng Anh.*
-*Bên phải là toàn bộ lịch 9 tuần. Report 3 chiếm **40 %** — là mục nặng nhất, và nó bao phủ phần xây mô hình và đánh giá.*
-*Một chi tiết định hình cách chúng tôi làm việc: kỳ thi cuối **chấm theo từng cá nhân**. Nên nhóm đã thống nhất là mỗi người phải giải thích được toàn bộ dự án, không chỉ phần mình làm. Chúng tôi có buổi chia sẻ kiến thức 20 phút mỗi thứ Bảy đúng vì lý do đó.*
+**VI.** *Chín tuần, bốn lần nộp có điểm. **Report 3 chiếm 40 %** — là mục nặng nhất, bao phủ phần xây mô hình và đánh giá.*
+*Hai điều đáng nói. Thứ nhất, khâu thu thập dữ liệu dự kiến trải tuần 1 đến tuần 3; nó xong trong **tuần 1**. Nên chúng tôi đang đi trước về dữ liệu, và đường găng đã chuyển sang bộ sự kiện lũ.*
+*Thứ hai, kỳ thi cuối **chấm theo từng cá nhân**. Điều đó định hình cách nhóm làm việc: mỗi người phải giải thích được toàn bộ dự án, không chỉ phần mình làm. Chúng tôi có buổi chia sẻ kiến thức 20 phút mỗi thứ Bảy đúng vì lý do đó.*
+
+> 💡 Slide này **không liệt kê "IEEE report + oral presentation"** nữa. Đó là yêu cầu của môn, không phải nội dung đáng trình bày cho người nghe — họ đang ngồi xem chính hai thứ đó.
 
 ---
 

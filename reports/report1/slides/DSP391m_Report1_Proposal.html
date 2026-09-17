@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DSP391m · Report 1 — Forecasting Flood Risk, Hương River</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* ===========================================
+   FIXED 16:9 STAGE: MANDATORY BASE STYLES
+   =========================================== */
+html, body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--stage-bg,#000); }
+.deck-viewport { position:fixed; inset:0; overflow:hidden; background:var(--stage-bg,#000); }
+.deck-stage { position:absolute; left:0; top:0; width:1920px; height:1080px; overflow:hidden; transform-origin:0 0; background:var(--slide-bg,#fff); }
+.slide { position:absolute; inset:0; width:1920px; height:1080px; overflow:hidden; display:block; visibility:hidden; opacity:0; pointer-events:none; background:var(--slide-bg,#fff); }
+.slide.active, .slide.visible { visibility:visible; opacity:1; pointer-events:auto; z-index:1; }
+img, video, canvas, svg { max-width:100%; max-height:100%; }
+.deck-controls { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:1000; }
+@media print {
+  @page { size:1920px 1080px; margin:0 }
+  html, body { width:1920px; height:auto; overflow:visible; background:#fff; }
+  .deck-viewport { position:static; overflow:visible; background:#fff; }
+  .deck-stage { position:static; width:auto; height:auto; transform:none !important; background:none; }
+  .slide { position:relative; display:block !important; visibility:visible !important; opacity:1 !important; pointer-events:auto !important; width:1920px; height:1080px; break-after:page; page-break-after:always; }
+  .slide:last-child { break-after:auto; page-break-after:auto; }
+  .deck-controls, .hud, .prog, .notes { display:none !important; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:0.01ms !important; transition-duration:0.2s !important; } }
+
+/* ===========================================
+   GAUGE — the deck reads as a river gauge chart
+   =========================================== */
+:root{
+  --water:#07141A; --water-2:#0C222B; --edge:#16313C;
+  --ink:#EAF4F5; --muted:#6D8F99; --dim:#3F5F6A;
+  --flow:#2FC2CC;
+  --bd1:#E8BE55; --bd2:#E0833C; --bd3:#D2453B;
+  --stage-bg:#03080B; --slide-bg:var(--water);
+}
+*{ box-sizing:border-box }
+.slide{
+  background:radial-gradient(1500px 900px at 80% 12%, #113240 0%, transparent 60%), var(--water);
+  color:var(--ink);
+  font-family:"Be Vietnam Pro", system-ui, sans-serif;
+}
+/* faint contour texture — water, not graph paper */
+.slide::before{
+  content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background:repeating-linear-gradient(to bottom, rgba(47,194,204,.045) 0 1px, transparent 1px 7px);
+}
+.pad{ position:absolute; inset:92px 120px; z-index:2;
+  display:flex; flex-direction:column; justify-content:center }
+.pad.top{ inset:92px 120px auto; display:block }
+.pad.mid{ display:flex; flex-direction:column; justify-content:center }
+
+.tag{ display:inline-flex; align-items:center; gap:16px; font:500 19px/1 "JetBrains Mono",monospace;
+  letter-spacing:.22em; color:var(--flow); margin-bottom:34px }
+.tag s{ width:52px; height:2px; background:var(--flow); display:block }
+
+h1.mega{ font-weight:900; font-size:152px; line-height:.92; letter-spacing:-.045em; margin:0; max-width:1250px }
+h2{ font-weight:800; font-size:78px; line-height:1.03; letter-spacing:-.035em; margin:0 0 46px; max-width:1500px }
+h3{ font-weight:700; font-size:31px; line-height:1.2; letter-spacing:-.02em; margin:0 0 10px }
+.thin{ font-weight:300; color:var(--flow); letter-spacing:-.03em }
+.lede{ font:400 33px/1.42 "Be Vietnam Pro",sans-serif; color:var(--muted); margin:36px 0 0 }
+.w900{ max-width:900px }
+b{ font-weight:700; color:var(--ink) }
+
+/* ---- hero hydrograph ---- */
+.hero-chart{ position:absolute; left:0; right:0; bottom:0; height:560px; z-index:1 }
+.hero-chart svg{ width:1920px; height:560px; display:block }
+.bands{ position:absolute; left:0; right:120px; top:0; height:560px }
+.band{ position:absolute; left:0; right:0; height:1px }
+.band span{ position:absolute; right:0; top:-28px; font:700 17px/1 "JetBrains Mono",monospace; letter-spacing:.12em }
+.bd1{ background:rgba(232,190,85,.32) } .bd1 span{ color:var(--bd1) }
+.bd2{ background:rgba(224,131,60,.36) } .bd2 span{ color:var(--bd2) }
+.bd3{ background:rgba(210,69,59,.42) }  .bd3 span{ color:var(--bd3) }
+.chart-cap{ position:absolute; left:120px; bottom:78px; font:400 17px/1 "JetBrains Mono",monospace;
+  letter-spacing:.1em; color:rgba(109,143,153,.8) }
+
+.byline{ position:absolute; right:120px; top:92px; text-align:right; z-index:3;
+  font:400 22px/1.7 "Be Vietnam Pro",sans-serif; color:var(--muted) }
+.byline b{ display:block; margin-bottom:4px; color:var(--ink); font-weight:600 }
+
+.figrow{ display:flex; gap:76px; margin-top:54px }
+.fig .n{ display:block; font:700 50px/1 "JetBrains Mono",monospace; letter-spacing:-.03em }
+.fig .n u{ text-decoration:none; font-size:23px; color:var(--muted); margin-left:5px }
+.fig .k{ display:block; margin-top:11px; max-width:230px;
+  font:500 15px/1.4 "JetBrains Mono",monospace; letter-spacing:.14em; color:var(--muted);
+  white-space:nowrap }
+
+/* ---- two-column ---- */
+.col2{ display:grid; grid-template-columns:1fr 620px; gap:92px; align-items:center }
+.col2b{ display:grid; grid-template-columns:840px 1fr; gap:88px; align-items:center }
+.col2c{ display:grid; grid-template-columns:1fr 1fr; gap:90px; margin-top:58px }
+
+ul.big{ list-style:none; margin:0; padding:0 }
+ul.big li{ position:relative; padding-left:44px; margin-bottom:28px;
+  font:400 30px/1.42 "Be Vietnam Pro",sans-serif; color:var(--muted); max-width:820px }
+ul.big li::before{ content:""; position:absolute; left:0; top:18px; width:22px; height:2px; background:var(--flow) }
+
+/* ---- side panel ---- */
+.panel{ background:rgba(12,34,43,.72); border:1px solid var(--edge); padding:44px 42px; align-self:center }
+.panel-h{ font:700 18px/1 "JetBrains Mono",monospace; letter-spacing:.2em; color:var(--flow) }
+.panel-s{ font:400 19px/1.4 "Be Vietnam Pro",sans-serif; color:var(--dim); margin-top:12px }
+.panel-f{ font:400 18px/1.5 "Be Vietnam Pro",sans-serif; color:var(--dim); margin-top:34px }
+
+.gauge{ margin-top:36px; display:flex; flex-direction:column; gap:22px }
+.grow{ display:grid; grid-template-columns:96px 1fr 104px; align-items:center; gap:18px }
+.grow .lv{ font:700 22px/1 "JetBrains Mono",monospace }
+.grow .bar{ height:12px; background:rgba(47,194,204,.14); display:block }
+.grow .bar i{ display:block; height:100%; transform-origin:left; animation:gw .9s cubic-bezier(.2,.7,.2,1) both }
+.f1{ background:var(--bd1); animation-delay:.3s } .f2{ background:var(--bd2); animation-delay:.42s }
+.f3{ background:var(--bd3); animation-delay:.54s }
+@keyframes gw{ from{ transform:scaleX(0) } to{ transform:scaleX(1) } }
+.grow .m{ text-align:right; font:500 22px/1 "JetBrains Mono",monospace; color:var(--flow) }
+
+/* ---- quadrants ---- */
+.quad{ display:grid; grid-template-columns:1fr 1fr; gap:34px }
+.q{ background:rgba(12,34,43,.6); border:1px solid var(--edge); padding:36px 38px }
+.q.hot{ border-color:rgba(210,69,59,.55); background:rgba(45,20,18,.5) }
+.qn{ display:block; font:700 30px/1 "Be Vietnam Pro",sans-serif; color:var(--flow); margin-bottom:16px }
+.q.hot .qn{ color:var(--bd3) }
+.q p{ margin:0; font:400 24px/1.46 "Be Vietnam Pro",sans-serif; color:var(--muted) }
+
+/* ---- numbered steps ---- */
+.steps{ display:flex; flex-direction:column; gap:34px }
+.step{ display:grid; grid-template-columns:104px 1fr; gap:34px; align-items:start;
+  border-top:1px solid var(--edge); padding-top:30px }
+.step .sn{ font:700 54px/1 "JetBrains Mono",monospace; color:var(--dim); letter-spacing:-.04em }
+.step.hot .sn{ color:var(--bd2) }
+.step p{ margin:0; font:400 26px/1.45 "Be Vietnam Pro",sans-serif; color:var(--muted); max-width:1250px }
+
+/* ---- four cards ---- */
+.four{ display:grid; grid-template-columns:repeat(4,1fr); gap:26px }
+.c{ background:rgba(12,34,43,.6); border:1px solid var(--edge); padding:34px 30px }
+.c.core{ border-color:var(--flow); background:rgba(17,62,72,.6) }
+.c.out{ opacity:.58 }
+.ct{ display:block; font:700 14px/1 "JetBrains Mono",monospace; letter-spacing:.18em; color:var(--muted); margin-bottom:18px }
+.c.core .ct{ color:var(--flow) }
+.c h3{ font-size:34px; margin-bottom:14px }
+.c.core h3{ color:var(--flow) }
+.c p{ margin:0; font:400 21px/1.42 "Be Vietnam Pro",sans-serif; color:var(--muted) }
+.claim{ margin:46px 0 0; font:400 27px/1.45 "Be Vietnam Pro",sans-serif; color:var(--muted); max-width:1450px }
+.claim.warn{ color:var(--bd2) }
+
+/* ---- table ---- */
+table.dt{ width:100%; border-collapse:collapse }
+table.dt th{ text-align:left; font:700 17px/1 "JetBrains Mono",monospace; letter-spacing:.14em;
+  color:var(--flow); padding:0 0 18px; border-bottom:1.5px solid var(--flow) }
+table.dt td{ font:400 24px/1.35 "Be Vietnam Pro",sans-serif; color:var(--muted);
+  padding:19px 22px 19px 0; border-bottom:1px solid var(--edge) }
+table.dt td:first-child{ color:var(--ink) }
+tr.crit td{ color:var(--bd2) } tr.crit td:first-child{ color:var(--bd2) }
+td.ok{ font:500 19px/1 "JetBrains Mono",monospace; color:var(--flow) }
+td.wip{ font:500 19px/1 "JetBrains Mono",monospace; color:var(--bd2) }
+
+/* ---- pipeline ---- */
+.flow{ display:grid; grid-template-columns:1fr 46px 1fr 46px 1fr 46px 1fr; align-items:stretch; gap:0 }
+.fstep{ background:rgba(12,34,43,.6); border:1px solid var(--edge); padding:32px 28px }
+.fn{ display:block; font:700 24px/1 "JetBrains Mono",monospace; color:var(--bd1); margin-bottom:16px }
+.fstep h3{ font-size:30px }
+.fstep p{ margin:0; font:400 20px/1.4 "Be Vietnam Pro",sans-serif; color:var(--muted) }
+.farrow{ display:flex; align-items:center; justify-content:center; font-size:26px; color:var(--dim) }
+.lesson{ margin-top:46px; border-left:3px solid var(--bd2); padding:6px 0 6px 34px }
+.lt{ display:block; font:700 16px/1 "JetBrains Mono",monospace; letter-spacing:.2em; color:var(--bd2); margin-bottom:16px }
+.lesson p{ margin:0; font:400 26px/1.46 "Be Vietnam Pro",sans-serif; color:var(--muted); max-width:1500px }
+
+/* ---- lag chart ---- */
+.lagchart{ background:rgba(12,34,43,.6); border:1px solid var(--edge); padding:38px 40px 30px }
+.lc-h{ font:700 18px/1 "JetBrains Mono",monospace; letter-spacing:.16em; color:var(--flow); margin-bottom:34px }
+.lc-bars{ display:flex; align-items:flex-end; gap:30px; height:330px }
+.lb{ flex:1; display:flex; flex-direction:column; align-items:center; height:100% ; justify-content:flex-end }
+.lb i{ display:block; width:100%; background:rgba(47,194,204,.28); transform-origin:bottom;
+  animation:bgrow .8s cubic-bezier(.2,.7,.2,1) both }
+.lb:nth-child(1) i{animation-delay:.25s} .lb:nth-child(2) i{animation-delay:.35s}
+.lb:nth-child(3) i{animation-delay:.45s} .lb:nth-child(4) i{animation-delay:.55s}
+.lb:nth-child(5) i{animation-delay:.65s} .lb:nth-child(6) i{animation-delay:.75s}
+@keyframes bgrow{ from{ transform:scaleY(0) } to{ transform:scaleY(1) } }
+.lb.top i{ background:var(--flow) }
+.lb span{ font:500 19px/1 "JetBrains Mono",monospace; color:var(--muted); margin-top:16px }
+.lb b{ font:700 20px/1 "JetBrains Mono",monospace; color:var(--muted); margin-top:8px }
+.lb.top b{ color:var(--flow) }
+
+/* ---- horizontal milestone track ---- */
+.track{ display:grid; grid-template-columns:repeat(5,1fr); gap:0; margin:8px 0 0;
+  border-top:1.5px solid var(--edge) }
+.mil{ position:relative; padding:38px 30px 34px 0 }
+.mil::before{ content:""; position:absolute; left:0; top:-7px; width:13px; height:13px;
+  border-radius:50%; background:var(--edge) }
+.mil.now::before{ background:var(--bd1) }
+.mil.heavy::before{ background:var(--flow); width:17px; height:17px; top:-9px }
+.md{ display:block; font:500 17px/1 "JetBrains Mono",monospace; letter-spacing:.14em; color:var(--dim) }
+.mw{ display:block; margin-top:22px; font:700 40px/1 "JetBrains Mono",monospace;
+  letter-spacing:-.03em; color:var(--muted) }
+.mn{ display:block; margin-top:18px; font:700 30px/1.1 "Be Vietnam Pro",sans-serif }
+.mt{ display:block; margin-top:8px; font:400 20px/1.32 "Be Vietnam Pro",sans-serif;
+  color:var(--dim); max-width:230px }
+.mil.now .md, .mil.now .mw, .mil.now .mn{ color:var(--bd1) }
+.mil.heavy .mw, .mil.heavy .mn{ color:var(--flow) }
+
+.twonote{ display:grid; grid-template-columns:1fr 1fr; gap:78px; margin-top:74px }
+.tnote{ border-left:3px solid var(--bd1); padding:4px 0 4px 32px }
+.tnote.alt{ border-left-color:var(--flow) }
+.tnote p{ margin:0; font:400 25px/1.46 "Be Vietnam Pro",sans-serif; color:var(--muted) }
+.lt.cy{ color:var(--flow) }
+
+/* ---- closing ---- */
+.closing{ background:radial-gradient(1400px 900px at 22% 78%, #0F2E3A 0%, transparent 62%), #050F14 }
+h1.big-claim{ font-weight:800; font-size:86px; line-height:1.1; letter-spacing:-.035em;
+  margin:0; max-width:1560px }
+.ch{ display:block; font:700 17px/1 "JetBrains Mono",monospace; letter-spacing:.2em;
+  color:var(--flow); margin-bottom:26px }
+.ch.warnc{ color:var(--bd2) }
+ol.nx, ul.nx{ margin:0; padding-left:30px }
+ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--muted); margin-bottom:20px }
+.lim{ border-left:1px solid var(--edge); padding-left:56px }
+.thanks{ margin:64px 0 0; font:300 34px/1 "Be Vietnam Pro",sans-serif; color:var(--flow) }
+
+/* ---- deck chrome (outside the slide design system) ---- */
+.hud{ position:fixed; z-index:1000; font:500 15px/1 "JetBrains Mono",monospace;
+  letter-spacing:.14em; color:rgba(109,143,153,.75) }
+.hud.count{ right:26px; bottom:22px }
+.hud.hint{ left:26px; bottom:20px; opacity:.45 }
+.hud.hint:hover{ opacity:1 }
+.prog{ position:fixed; left:0; top:0; height:3px; background:var(--flow); z-index:1001;
+  transition:width .35s cubic-bezier(.2,.7,.2,1) }
+.notes{ position:fixed; left:0; right:0; bottom:0; max-height:36vh; overflow:auto;
+  background:rgba(3,10,14,.96); border-top:1px solid var(--edge); padding:26px 34px;
+  font:400 17px/1.6 "Be Vietnam Pro",sans-serif; color:#B9D3D9; z-index:1002; display:none }
+.notes.on{ display:block }
+.notes b{ color:var(--flow); font:700 14px/1 "JetBrains Mono",monospace; letter-spacing:.2em;
+  display:block; margin-bottom:12px }
+
+/* slide entry choreography */
+.slide.active .pad > *{ animation:rise .8s cubic-bezier(.2,.7,.2,1) both }
+.slide.active .pad > *:nth-child(1){ animation-delay:.06s }
+.slide.active .pad > *:nth-child(2){ animation-delay:.16s }
+.slide.active .pad > *:nth-child(3){ animation-delay:.26s }
+.slide.active .pad > *:nth-child(4){ animation-delay:.36s }
+.slide.active .pad > *:nth-child(5){ animation-delay:.46s }
+@keyframes rise{ from{ transform:translateY(26px) } to{ transform:none } }
+/* Noi dung luon hien du animation khong chay — xem ghi chu trong build_deck.py */
+@media print{ .slide .pad > *, .slide .trace, .slide .area, .slide .band,
+  .slide .grow .bar i, .slide .lb i{ animation:none !important; opacity:1 !important;
+  transform:none !important; stroke-dashoffset:0 !important } }
+.slide.active .trace{ stroke-dasharray:5425; stroke-dashoffset:5425;
+  animation:draw 2.8s .5s cubic-bezier(.35,.6,.25,1) forwards }
+@keyframes draw{ to{ stroke-dashoffset:0 } }
+.slide.active .area{ animation:fade 1.6s 1.6s ease backwards }
+@keyframes fade{ from{ opacity:0 } to{ opacity:1 } }
+.slide.active .band{ transform-origin:left center; animation:gw 1s both }
+.slide.active .bd1{ animation-delay:1.0s } .slide.active .bd2{ animation-delay:1.14s }
+.slide.active .bd3{ animation-delay:1.28s }
+
+[contenteditable]:focus{ outline:2px solid var(--flow); outline-offset:6px }
+</style>
+</head>
+<body>
+<div class="prog" id="prog"></div>
+<div class="deck-viewport">
+  <div class="deck-stage" id="stage">
+
+<section class="slide" data-notes="Good morning. We are forecasting flood risk one to three days ahead for the Huong River in Hue, using only openly available data. Central Vietnam is the most flood-affected region in the country, but commune-level warning coverage is thin.">
+  <div class="hero-chart">
+    <svg viewBox="0 0 1920 560" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2FC2CC" stop-opacity=".32"/>
+        <stop offset="100%" stop-color="#2FC2CC" stop-opacity="0"/>
+      </linearGradient></defs>
+      <path class="area" d="M0,518 L20,520 L40,259 L60,146 L80,176 L100,257 L120,324 L140,368 L160,405 L180,439 L200,466 L220,478 L240,485 L260,488 L280,434 L300,334 L320,327 L340,376 L360,353 L380,342 L400,362 L420,355 L440,220 L460,144 L480,123 L500,113 L520,98 L540,70 L560,116 L580,172 L600,264 L620,245 L640,148 L660,131 L680,153 L700,171 L720,200 L740,269 L760,355 L780,378 L800,274 L820,251 L840,251 L860,140 L880,115 L900,235 L920,297 L940,279 L960,343 L980,409 L1000,381 L1020,310 L1040,197 L1060,183 L1080,273 L1100,279 L1120,156 L1140,71 L1160,97 L1180,216 L1200,211 L1220,112 L1240,201 L1260,317 L1280,386 L1300,421 L1320,442 L1340,458 L1360,470 L1380,478 L1400,464 L1420,431 L1440,410 L1460,371 L1480,264 L1500,180 L1520,181 L1540,160 L1560,183 L1580,268 L1600,325 L1620,363 L1640,381 L1660,414 L1680,424 L1700,398 L1720,430 L1740,473 L1760,458 L1780,455 L1800,458 L1820,326 L1840,276 L1860,251 L1880,292 L1900,275 L1920,251 L1920,560 L0,560 Z" fill="url(#fade)"/>
+      <path class="trace" d="M0,518 L20,520 L40,259 L60,146 L80,176 L100,257 L120,324 L140,368 L160,405 L180,439 L200,466 L220,478 L240,485 L260,488 L280,434 L300,334 L320,327 L340,376 L360,353 L380,342 L400,362 L420,355 L440,220 L460,144 L480,123 L500,113 L520,98 L540,70 L560,116 L580,172 L600,264 L620,245 L640,148 L660,131 L680,153 L700,171 L720,200 L740,269 L760,355 L780,378 L800,274 L820,251 L840,251 L860,140 L880,115 L900,235 L920,297 L940,279 L960,343 L980,409 L1000,381 L1020,310 L1040,197 L1060,183 L1080,273 L1100,279 L1120,156 L1140,71 L1160,97 L1180,216 L1200,211 L1220,112 L1240,201 L1260,317 L1280,386 L1300,421 L1320,442 L1340,458 L1360,470 L1380,478 L1400,464 L1420,431 L1440,410 L1460,371 L1480,264 L1500,180 L1520,181 L1540,160 L1560,183 L1580,268 L1600,325 L1620,363 L1640,381 L1660,414 L1680,424 L1700,398 L1720,430 L1740,473 L1760,458 L1780,455 L1800,458 L1820,326 L1840,276 L1860,251 L1880,292 L1900,275 L1920,251" fill="none" stroke="#2FC2CC"
+            stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>
+    </svg>
+    <div class="bands">
+      <div class="band bd3" style="top:127px"><span>Q99 · 1 169 m³/s</span></div>
+      <div class="band bd2" style="top:173px"><span>Q98 · 746 m³/s</span></div>
+      <div class="band bd1" style="top:228px"><span>Q95 · 430 m³/s</span></div>
+    </div>
+    <div class="chart-cap">Observed discharge, flood season 2020 &middot; peak
+      2,060 m³/s on 12/10/2020</div>
+  </div>
+
+  <div class="byline">
+    <b>Đặng Nguyên Giáp</b>Hồ Anh Đức<br>Mai Thị Lệ Huyền
+  </div>
+
+  <div class="pad top">
+    <div class="tag"><s></s>DSP391m &middot; REPORT 01 &middot; PROPOSAL</div>
+    <h1 class="mega">Three days<br><span class="thin">of warning</span></h1>
+    <p class="lede w900">Flood risk for the Hương River, Huế — forecast from open
+      data and reported in Vietnam&rsquo;s own alert stages.</p>
+    <div class="figrow">
+      <div class="fig"><span class="n">42<u>yr</u></span><span class="k">DISCHARGE RECORD</span></div>
+      <div class="fig"><span class="n">0.790</span><span class="k">RAIN LEADS FLOW · 1 DAY</span></div>
+      <div class="fig"><span class="n">2,929<u>mm</u></span><span class="k">MEAN ANNUAL RAINFALL</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="The Huong basin is about 2,830 square kilometres — small and steep. Rainfall becomes a flood peak within a day. On the right are the official alert stages at Kim Long: one, two and three and a half metres. We anchor our target to these stages instead of inventing our own scale, because these are the numbers local authorities already act on.">
+  <div class="pad col2">
+    <div>
+      <div class="tag"><s></s>SUBJECT &amp; CONTEXT</div>
+      <h2>A basin that floods<br><span class="thin">in a single day</span></h2>
+      <ul class="big">
+        <li>Central Vietnam is the country&rsquo;s most flood-affected region.</li>
+        <li>Short, steep catchment — rain becomes a flood peak within <b>one day</b>.</li>
+        <li>Commune-level warning remains sparse relative to the damage.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <div class="panel-h">OFFICIAL ALERT STAGES</div>
+      <div class="panel-s">Kim Long station &middot; water level above datum</div>
+      <div class="gauge">
+        <div class="grow"><span class="lv">BĐ I</span>
+          <span class="bar"><i class="f1" style="width:28.6%"></i></span>
+          <span class="m">1.00 m</span></div>
+        <div class="grow"><span class="lv">BĐ II</span>
+          <span class="bar"><i class="f2" style="width:57.1%"></i></span>
+          <span class="m">2.00 m</span></div>
+        <div class="grow"><span class="lv">BĐ III</span>
+          <span class="bar"><i class="f3" style="width:100%"></i></span>
+          <span class="m">3.50 m</span></div>
+      </div>
+      <div class="panel-f">Decision 05/2020/QĐ-TTg &mdash; cross-checked against five
+        bulletins of the Huế Hydro-Meteorological Station.</div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="We deliberately avoid claiming this is big data just because it is large. Volume is moderate. What makes it a data-engineering problem is variety and veracity. The discharge series is model output, not measurement, and upstream reservoir operation is not represented in it.">
+  <div class="pad">
+    <div class="tag"><s></s>CONTEXT OF BIG DATA</div>
+    <h2>Not the volume &mdash; <span class="thin">the variety and the veracity</span></h2>
+    <div class="quad">
+      <div class="q"><span class="qn">Volume</span>
+        <p>42 years of daily discharge, 11 years of hourly rainfall, 68 grid points.
+           About <b>1,500 Parquet files</b> — moderate, not extreme.</p></div>
+      <div class="q"><span class="qn">Variety</span>
+        <p>Six source types on one daily timeline: simulated flow, reanalysis rain,
+           archived forecasts, river geometry, a legal document, news bulletins.</p></div>
+      <div class="q"><span class="qn">Velocity</span>
+        <p>Forecasts are re-issued several times a day. An automated job pulls a fresh
+           7-day forecast <b>every morning</b>.</p></div>
+      <div class="q hot"><span class="qn">Veracity</span>
+        <p>Discharge is <b>model output, not measurement</b>. Reservoir releases are
+           unmodelled. Stated, not hidden.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="Two targets. Regression asks how much water. Classification asks which alert stage — positive days are rare, one to three percent, so accuracy is banned. They are linked by a unit conversion that is not trivial: legal thresholds are water levels in metres, our data is discharge in cubic metres per second, and we could not obtain a measured rating curve.">
+  <div class="pad">
+    <div class="tag"><s></s>PROBLEM STATEMENT</div>
+    <h2>Two targets, <span class="thin">one awkward bridge</span></h2>
+    <div class="steps">
+      <div class="step"><span class="sn">01</span>
+        <div><h3>How much water?</h3>
+          <p>Daily discharge in m³/s at 1, 2 and 3 days. Continuous target &mdash;
+             RMSE, MAE, NSE, KGE.</p></div></div>
+      <div class="step"><span class="sn">02</span>
+        <div><h3>Which alert stage?</h3>
+          <p>Exceedance of BĐ I / II / III. Positive days are <b>1&ndash;3 %</b>, so
+             accuracy is banned &mdash; POD, FAR, CSI instead.</p></div></div>
+      <div class="step hot"><span class="sn">03</span>
+        <div><h3>The bridge between them</h3>
+          <p>Stages are <b>metres</b>; our data is <b>m³/s</b>. No measured rating curve
+             was available, so the mapping is built from documented flood peaks.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="Of the four classes of analytics, our work is primarily predictive. We exclude prescriptive deliberately: recommending an evacuation requires legal authority a student project does not have. A global system already forecasts this cell, so our contribution is local correction and translation, not replacement.">
+  <div class="pad">
+    <div class="tag"><s></s>ANALYTICS APPROACH</div>
+    <h2>Primarily <span class="thin">predictive</span></h2>
+    <div class="four">
+      <div class="c"><span class="ct">SUPPORTING</span><h3>Descriptive</h3>
+        <p>Seasonality, rainfall&ndash;discharge lag, historical events.</p></div>
+      <div class="c"><span class="ct">PARTIAL</span><h3>Diagnostic</h3>
+        <p>SHAP attributes each warning to rain, wetness or season.</p></div>
+      <div class="c core"><span class="ct">CORE</span><h3>Predictive</h3>
+        <p>Discharge and alert stage 1&ndash;3 days ahead. Both research questions.</p></div>
+      <div class="c out"><span class="ct">OUT OF SCOPE</span><h3>Prescriptive</h3>
+        <p>Evacuation decisions need authority we do not hold.</p></div>
+    </div>
+    <p class="claim">We do not replace the global forecast. We <b>correct it locally</b>
+      and <b>translate it</b> into Vietnam&rsquo;s alert stages at sub-basin scale.</p>
+  </div>
+</section>
+
+<section class="slide" data-notes="Six inputs, one daily table. Five are already on disk. The one still in progress is documented flood peaks — our critical path. Without it we cannot convert the legal thresholds into discharge, so the classification target does not exist. That is manual reading work; it cannot be automated away.">
+  <div class="pad">
+    <div class="tag"><s></s>DATA REQUIREMENTS</div>
+    <h2>Six inputs, <span class="thin">one daily table</span></h2>
+    <table class="dt">
+      <thead><tr><th>Dataset</th><th>Role</th><th>Span</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>River discharge &mdash; GloFAS v4</td><td>Target and lag features</td>
+            <td>1984&ndash;2026, daily</td><td class="ok">Collected</td></tr>
+        <tr><td>Rain &amp; meteorology &mdash; ERA5</td><td>Primary predictors</td>
+            <td>2010&ndash;2026, daily + hourly</td><td class="ok">Collected</td></tr>
+        <tr><td>Archived rainfall forecasts</td><td>Operational input scenario</td>
+            <td>2022&ndash;2026, daily</td><td class="ok">Collected</td></tr>
+        <tr><td>River centre-lines &mdash; OpenStreetMap</td><td>Grid cell to river</td>
+            <td>Current extract</td><td class="ok">Collected</td></tr>
+        <tr><td>Legal alert thresholds</td><td>Defines the target</td>
+            <td>05/2020/QĐ-TTg</td><td class="ok">Verified</td></tr>
+        <tr class="crit"><td>Documented flood peaks</td><td>Calibrates metres to m³/s</td>
+            <td>&ge; 15 events</td><td class="wip">In progress</td></tr>
+      </tbody>
+    </table>
+    <p class="claim warn">The last row is the <b>critical path</b>. Without it the
+      alert-stage target cannot be defined at all.</p>
+  </div>
+</section>
+
+<section class="slide" data-notes="Collection is a four-stage pipeline. One engineering detail worth your time: we spent hours diagnosing rate-limit errors and blaming the data provider. The real cause was three of our own crawler processes running in parallel. With a single process the whole collection finished in thirty-five minutes with zero errors.">
+  <div class="pad">
+    <div class="tag"><s></s>COLLECTION METHOD</div>
+    <h2>How the data <span class="thin">gets here</span></h2>
+    <div class="flow">
+      <div class="fstep"><span class="fn">1</span><h3>Select</h3>
+        <p>Scan 361 cells; keep the one whose inferred catchment matches the real basin.</p></div>
+      <div class="farrow">&rarr;</div>
+      <div class="fstep"><span class="fn">2</span><h3>Crawl</h3>
+        <p>Independent tasks, one file each. Retry, cache, checkpoint, lock.</p></div>
+      <div class="farrow">&rarr;</div>
+      <div class="fstep"><span class="fn">3</span><h3>Clean</h3>
+        <p>Normalise to Vietnam time, hourly&rarr;daily, validate and fail loudly.</p></div>
+      <div class="farrow">&rarr;</div>
+      <div class="fstep"><span class="fn">4</span><h3>Assemble</h3>
+        <p>Average rain over three sub-basins, build lags, block leakage.</p></div>
+    </div>
+    <div class="lesson">
+      <span class="lt">WHAT WE GOT WRONG</span>
+      <p>Persistent rate-limit errors were blamed on the provider &mdash; and a scope cut
+         was proposed. The real cause was <b>three of our own crawlers running in
+         parallel</b>. With one process the whole collection took <b>35 minutes,
+         zero errors</b>. Lesson: count your own processes first.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="This proposal is not speculative. The table is assembled, rainfall matches the published climatology of Hue, and the signal is there — rainfall leads discharge by exactly one day. Single-day rainfall beats every multi-day accumulation, which is physically consistent with a small steep catchment. We have also measured our baselines, so the model has a real bar to clear.">
+  <div class="pad">
+    <div class="tag"><s></s>FEASIBILITY &mdash; ALREADY DEMONSTRATED</div>
+    <h2>The signal <span class="thin">is measurable</span></h2>
+    <div class="col2b">
+      <div>
+        <div class="lagchart">
+          <div class="lc-h">Correlation of rainfall with discharge, by lag</div>
+          <div class="lc-bars">
+            <div class="lb"><i style="height:64%"></i><span>0d</span><b>.641</b></div>
+            <div class="lb top"><i style="height:79%"></i><span>1d</span><b>.790</b></div>
+            <div class="lb"><i style="height:61%"></i><span>2d</span><b>.608</b></div>
+            <div class="lb"><i style="height:38%"></i><span>3d</span><b>.382</b></div>
+            <div class="lb"><i style="height:28%"></i><span>4d</span><b>.284</b></div>
+            <div class="lb"><i style="height:23%"></i><span>5d</span><b>.233</b></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <ul class="big">
+          <li><b>6,087 × 71</b> daily table, 0 % missing discharge.</li>
+          <li>Rainfall <b>2,929 mm/yr</b> matches Huế&rsquo;s published climatology &mdash;
+              an independent check on our own data.</li>
+          <li>Single-day rain beats 3-, 5- and 7-day accumulations: the basin
+              <b>responds fast</b>.</li>
+          <li>Baselines measured, so the bar is real: persistence reaches
+              <b>NSE 0.542</b> at one day, then collapses.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-notes="Nine weeks, four graded submissions. Report 3 carries forty percent and covers modelling and evaluation. Data collection was scheduled across the first three weeks but finished in week one, so we are ahead on the data and the critical path has moved to the flood-event record. One detail shaped how we work: the viva is assessed individually, so every member must be able to explain the whole project.">
+  <div class="pad">
+    <div class="tag"><s></s>SCHEDULE</div>
+    <h2>Nine weeks, <span class="thin">four submissions</span></h2>
+    <div class="track">
+      <div class="mil now">
+        <span class="md">26 SEP</span><span class="mw">10 %</span>
+        <span class="mn">Report 1</span><span class="mt">Proposal</span>
+      </div>
+      <div class="mil">
+        <span class="md">09 OCT</span><span class="mw">20 %</span>
+        <span class="mn">Report 2</span><span class="mt">Data &amp; exploration</span>
+      </div>
+      <div class="mil heavy">
+        <span class="md">02 NOV</span><span class="mw">40 %</span>
+        <span class="mn">Report 3</span><span class="mt">Modelling &amp; evaluation</span>
+      </div>
+      <div class="mil">
+        <span class="md">10 NOV</span><span class="mw">10 %</span>
+        <span class="mn">Report 4</span><span class="mt">Final consolidated</span>
+      </div>
+      <div class="mil">
+        <span class="md">13&ndash;16 NOV</span><span class="mw">20 %</span>
+        <span class="mn">Viva</span><span class="mt">Assessed individually</span>
+      </div>
+    </div>
+    <div class="twonote">
+      <div class="tnote">
+        <span class="lt">AHEAD OF PLAN</span>
+        <p>Data collection was scheduled across weeks 1&ndash;3. It finished in
+           <b>week 1</b>. The critical path has moved to the flood-event record.</p>
+      </div>
+      <div class="tnote alt">
+        <span class="lt cy">WHY IT SHAPES OUR WORK</span>
+        <p>The viva is assessed <b>individually</b>. Every member must explain the
+           whole project &mdash; so we hold a knowledge handoff every Saturday.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide closing" data-notes="Our contribution in one sentence is correction and localisation, not replacement. Three next steps, and three limitations we state openly rather than let a reviewer find. Thank you; we are happy to take questions.">
+  <div class="pad mid">
+    <div class="tag"><s></s>IN ONE SENTENCE</div>
+    <h1 class="big-claim">We correct and localise an open global flood forecast
+      into <span class="thin">Vietnam&rsquo;s own alert stages</span>.</h1>
+    <div class="col2c">
+      <div>
+        <span class="ch">NEXT THREE STEPS</span>
+        <ol class="nx">
+          <li>Complete the flood-event record that unlocks the alert-stage target.</li>
+          <li>Train the model and beat the measured baselines.</li>
+          <li>Test whether reservoir operation explains the anomalies we found.</li>
+        </ol>
+      </div>
+      <div class="lim">
+        <span class="ch warnc">STATED PLAINLY IN THE REPORT</span>
+        <ul class="nx">
+          <li>Discharge data is <b>simulated, not measured</b>.</li>
+          <li>The 5 km grid cannot resolve the neighbouring Bồ River &mdash; so the study
+              covers <b>one station</b>.</li>
+          <li>Academic work, <b>not an official warning service</b>.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="thanks">Thank you &mdash; questions welcome.</p>
+  </div>
+</section>
+  </div>
+</div>
+<div class="hud hint">← → navigate &nbsp;·&nbsp; S speaker notes &nbsp;·&nbsp; E edit text</div>
+<div class="hud count" id="count">01 / 10</div>
+<div class="notes" id="notes"></div>
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var i=0, notes=document.getElementById('notes'), prog=document.getElementById('prog'),
+      count=document.getElementById('count');
+
+  function fit(){
+    var s=Math.min(innerWidth/1920, innerHeight/1080);
+    stage.style.transform='translate('+((innerWidth-1920*s)/2)+'px,'+
+      ((innerHeight-1080*s)/2)+'px) scale('+s+')';
+  }
+  function show(n){
+    i=Math.max(0, Math.min(slides.length-1, n));
+    slides.forEach(function(s,k){ s.classList.toggle('active', k===i); });
+    count.textContent=String(i+1).padStart(2,'0')+' / '+String(slides.length).padStart(2,'0');
+    prog.style.width=((i+1)/slides.length*100)+'%';
+    notes.innerHTML='<b>SPEAKER NOTES</b>'+(slides[i].dataset.notes||'');
+    location.hash='s'+(i+1);
+  }
+  addEventListener('resize',fit);
+  addEventListener('keydown',function(e){
+    if(e.target.isContentEditable) return;
+    if(['ArrowRight','ArrowDown','PageDown',' '].indexOf(e.key)>-1){ e.preventDefault(); show(i+1); }
+    else if(['ArrowLeft','ArrowUp','PageUp'].indexOf(e.key)>-1){ e.preventDefault(); show(i-1); }
+    else if(e.key==='Home'){ show(0); } else if(e.key==='End'){ show(slides.length-1); }
+    else if(e.key==='s'||e.key==='S'){ notes.classList.toggle('on'); }
+    else if(e.key==='e'||e.key==='E'){
+      var on=document.body.dataset.edit==='1';
+      document.body.dataset.edit=on?'0':'1';
+      document.querySelectorAll('.slide h1,.slide h2,.slide h3,.slide p,.slide li,.slide td')
+        .forEach(function(el){ el.contentEditable=on?'false':'true'; });
+    }
+  });
+  addEventListener('click',function(e){
+    if(e.target.isContentEditable||document.body.dataset.edit==='1') return;
+    show(e.clientX < innerWidth*0.28 ? i-1 : i+1);
+  });
+  var m=(location.hash.match(/^#s(\d+)$/));
+  fit(); show(m?parseInt(m[1],10)-1:0);
+})();
+</script>
+</body>
+</html>

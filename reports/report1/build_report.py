@@ -451,7 +451,7 @@ def build() -> int:
                           leftMargin=LM, rightMargin=RM,
                           topMargin=TM, bottomMargin=BM,
                           title="DSP391m Report 1 — Project Proposal",
-                          author="Dang Nguyen Giap, Hoang Anh Duc, Mai Thi Le Huyen")
+                          author="Dang Nguyen Giap, Ho Anh Duc, Mai Thi Le Huyen")
 
     avail_h = PH - TM - BM
     # Trang 1: khối tiêu đề chiếm hết bề rộng, rồi hai cột bên dưới
@@ -486,7 +486,7 @@ def build() -> int:
     head = [
         p("Forecasting Flood Risk One to Three Days Ahead for the "
           "Huong River Basin from Open Hydro-Meteorological Data", "title"),
-        p("Dang Nguyen Giap&nbsp;&nbsp;&nbsp;&nbsp;Hoang Anh Duc"
+        p("Dang Nguyen Giap&nbsp;&nbsp;&nbsp;&nbsp;Ho Anh Duc"
           "&nbsp;&nbsp;&nbsp;&nbsp;Mai Thi Le Huyen", "author"),
         Spacer(1, 3),
         p("Department of Information Technology, FPT University<br/>"
