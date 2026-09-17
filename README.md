@@ -3,7 +3,7 @@
 Dự án Capstone môn DSP391m, học kỳ Fall 2026. **Khung thời gian: 9 tuần, 15/09 → 16/11/2026.**
 Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical + Historical Forecast API (ERA5)**.
 
-**Team:** Giáp (Tech Lead) · Đức (Data Analyst) · Huyền (Research & Documentation Lead)
+**Team:** Giáp (Tech Lead) · Đức (Data Analyst) · Mai Thị Lệ Huyền (Research & Documentation Lead)
 
 ---
 
