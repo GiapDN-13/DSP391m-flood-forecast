@@ -15,7 +15,7 @@ Cập nhật mỗi thứ 4 trong buổi họp. `P` = xác suất, `I` = mức �
 | R9 | Mô hình không thắng nổi persistence | **3** ⬆ | 5 | Persistence đã đạt NSE 0,542 ở h=1 | ⚠️ **Lập luận phòng vệ cũ đã mất** — không có dự báo GloFAS quá khứ để làm feature. Mốc đối chứng giờ là persistence, và nó mạnh ở h=1. Cơ hội thật nằm ở h=2 và h=3 nơi persistence sụp | G |
 | R18 | GloFAS không mô phỏng vận hành hồ chứa (Tả Trạch, Bình Điền) | 3 | 4 | Đỉnh lưu lượng lớn mà không có mưa, ví dụ 2025-06-14: 2 055 m³/s với 0,9 mm mưa | Kiểm khi EDA; nếu đúng thì đây là hạn chế lớn phải nêu rõ trong Limitations | D |
 | R10 | Rò rỉ dữ liệu tương lai trong lag feature | 2 | 5 | Kết quả đẹp bất thường (NSE > 0.98) | Test #5 trong `tests/`; walk-forward nghiêm ngặt; review chéo code split | G |
-| R11 | Mất dữ liệu (ổ cứng / máy hỏng) | 2 | 5 | — | Backup Google Drive + HF Datasets **ngay sau khi crawl xong**, không đợi | G |
+| R11 | ~~Mất dữ liệu (ổ cứng / máy hỏng)~~ **ĐÃ XỬ LÝ 17/09** | 2 | 2 ⬇ | — | Release `data-2026-09-17` trên repo, 95 MB. `scripts/restore_data.py` đã kiểm khôi phục bit-for-bit. Tạo bản mới sau mỗi lần dữ liệu đổi đáng kể | G |
 | R12 | Trùng lịch thi các môn khác | 4 | 4 | — | Lịch 9 tuần gần như không có buffer — bám chốt kiểm tra trong `PLAN.md`, trễ là cắt scope ngay | Cả 3 |
 | R13 | Mất mạng / lỗi demo lúc thuyết trình | 2 | 4 | — | Quay sẵn video demo + screenshot dự phòng trong slide | D |
 | R17 | Không bật được bảo vệ nhánh (repo private, tài khoản free) | — | 2 | Có commit vào `main` không qua PR | Quy ước thay thế trong `GIT_WORKFLOW.md` §2; G rà `git log --first-parent main` hằng tuần | G |

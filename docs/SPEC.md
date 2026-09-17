@@ -69,7 +69,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 | **FR-D3** | Lấy **mưa dự báo đã phát trong quá khứ** (Historical Forecast API) phủ tập test 07/2022 → 2026, horizon 1–3 ngày | **S** | Có chuỗi mưa dự báo cho ≥ 90 % ngày trong tập test | G | W5 |
 | **FR-D4** | Crawler chịu lỗi: retry luỹ thừa, cache theo request, checkpoint để resume | **M** | Ngắt mạng giữa chừng rồi chạy lại **không mất dữ liệu và không gọi lại request đã xong** | G | W1 |
 | **FR-D5** | Xác định ô lưới GloFAS nằm đúng dòng chảy chính | **M** | Chốt bằng 3 bằng chứng độc lập (hình học OSM · tương quan · diện tích lưu vực suy ra), tái lập được bằng `python -m src.features.river_id`; ghi vào `config.RIVER_POINTS` | G | ✅ **xong 15/09** |
-| **FR-D6** | Sao lưu dữ liệu ra ngoài máy cá nhân | **M** | `daily_panel.parquet` tải về được từ Google Drive **và** HF Datasets bởi cả 3 người | G | W3 |
+| **FR-D6** | Sao lưu dữ liệu ra ngoài máy cá nhân | **M** | Release `data-2026-09-17` trên repo: 9 asset, 95 MB. `scripts/restore_data.py` kiểm checksum trước khi giải nén. **Đã kiểm khôi phục thật: khớp bit-for-bit** | G | ✅ **xong 17/09** |
 | **FR-D7** | Bộ sự kiện lũ lịch sử ≥ 15 đợt, có nguồn trích dẫn được | **M** | `flood_events.csv` đủ cột; mọi dòng có `source_url` + `accessed_date`; ≥ 10 dòng `confidence=cao` | H | W2–W3 |
 | **FR-D8** | Ranh giới hành chính cấp xã bản sau 01/07/2025 | **S** | GeoJSON tải được, ghi rõ ngày phiên bản. Không có → chuyển sang tiểu lưu vực (`FR-P1`) | D | W3 |
 
@@ -221,4 +221,5 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 | 15/09/2026 | 1.2 | ~~FR-D2 đổi sang mưa ngày, lưới 25 điểm~~ — **đã huỷ ở 1.3** | G |
 | 15/09/2026 | 1.3 | **Khôi phục FR-D2** (mưa giờ, lưới 0,10°). Lần cắt ở 1.2 dựa trên chẩn đoán sai về hạn mức (`FINDINGS_QUOTA.md` §3) | G |
 | 15/09/2026 | 1.4 | **Thu hẹp phạm vi còn MỘT trạm (Kim Long / sông Hương)** — GloFAS ~5 km không phân giải được sông Bồ. FR-D5 hoàn thành (`FINDINGS_GRID.md` Phần 2) | G |
+| 17/09/2026 | 1.6 | **FR-D6 hoàn thành** — sao lưu qua GitHub Release asset thay vì Google Drive/HF (không cần tài khoản mới, `gh` đã đăng nhập, quyền đọc thừa hưởng từ repo private) | G |
 | 15/09/2026 | 1.5 | **Siết AC-1** (0,5 → 0,70/0,40/0,25 theo horizon) vì persistence đã đạt ngưỡng cũ. **Sửa AC-3**: không có kho dự báo GloFAS quá khứ nên đổi mốc đối chứng sang persistence (`FINDINGS_BASELINE.md`) | G |
