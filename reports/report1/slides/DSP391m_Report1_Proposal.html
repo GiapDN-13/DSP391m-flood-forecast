@@ -183,29 +183,6 @@ td.wip{ font:500 19px/1 "JetBrains Mono",monospace; color:var(--bd2) }
 .lb b{ font:700 20px/1 "JetBrains Mono",monospace; color:var(--muted); margin-top:8px }
 .lb.top b{ color:var(--flow) }
 
-/* ---- horizontal milestone track ---- */
-.track{ display:grid; grid-template-columns:repeat(5,1fr); gap:0; margin:8px 0 0;
-  border-top:1.5px solid var(--edge) }
-.mil{ position:relative; padding:38px 30px 34px 0 }
-.mil::before{ content:""; position:absolute; left:0; top:-7px; width:13px; height:13px;
-  border-radius:50%; background:var(--edge) }
-.mil.now::before{ background:var(--bd1) }
-.mil.heavy::before{ background:var(--flow); width:17px; height:17px; top:-9px }
-.md{ display:block; font:500 17px/1 "JetBrains Mono",monospace; letter-spacing:.14em; color:var(--dim) }
-.mw{ display:block; margin-top:22px; font:700 40px/1 "JetBrains Mono",monospace;
-  letter-spacing:-.03em; color:var(--muted) }
-.mn{ display:block; margin-top:18px; font:700 30px/1.1 "Be Vietnam Pro",sans-serif }
-.mt{ display:block; margin-top:8px; font:400 20px/1.32 "Be Vietnam Pro",sans-serif;
-  color:var(--dim); max-width:230px }
-.mil.now .md, .mil.now .mw, .mil.now .mn{ color:var(--bd1) }
-.mil.heavy .mw, .mil.heavy .mn{ color:var(--flow) }
-
-.twonote{ display:grid; grid-template-columns:1fr 1fr; gap:78px; margin-top:74px }
-.tnote{ border-left:3px solid var(--bd1); padding:4px 0 4px 32px }
-.tnote.alt{ border-left-color:var(--flow) }
-.tnote p{ margin:0; font:400 25px/1.46 "Be Vietnam Pro",sans-serif; color:var(--muted) }
-.lt.cy{ color:var(--flow) }
-
 /* ---- closing ---- */
 .closing{ background:radial-gradient(1400px 900px at 22% 78%, #0F2E3A 0%, transparent 62%), #050F14 }
 h1.big-claim{ font-weight:800; font-size:86px; line-height:1.1; letter-spacing:-.035em;
@@ -477,47 +454,6 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </section>
 
-<section class="slide" data-notes="Nine weeks, four reports. Report three is forty percent - the biggest one, covering the model and the results. Two things. First, we planned three weeks for data collection but finished in one week, so we are ahead of plan; now our main problem is the flood records. Second, the final exam is individual. That changed how we work: every member must explain the whole project, not only their own part. So we meet every Saturday - one person teaches, the others ask questions.">
-  <div class="pad">
-    <div class="tag"><s></s>SCHEDULE</div>
-    <h2>Nine weeks, <span class="thin">four submissions</span></h2>
-    <div class="track">
-      <div class="mil now">
-        <span class="md">26 SEP</span><span class="mw">10 %</span>
-        <span class="mn">Report 1</span><span class="mt">Proposal</span>
-      </div>
-      <div class="mil">
-        <span class="md">09 OCT</span><span class="mw">20 %</span>
-        <span class="mn">Report 2</span><span class="mt">Data &amp; exploration</span>
-      </div>
-      <div class="mil heavy">
-        <span class="md">02 NOV</span><span class="mw">40 %</span>
-        <span class="mn">Report 3</span><span class="mt">Modelling &amp; evaluation</span>
-      </div>
-      <div class="mil">
-        <span class="md">10 NOV</span><span class="mw">10 %</span>
-        <span class="mn">Report 4</span><span class="mt">Final consolidated</span>
-      </div>
-      <div class="mil">
-        <span class="md">13&ndash;16 NOV</span><span class="mw">20 %</span>
-        <span class="mn">Viva</span><span class="mt">Assessed individually</span>
-      </div>
-    </div>
-    <div class="twonote">
-      <div class="tnote">
-        <span class="lt">AHEAD OF PLAN</span>
-        <p>Data collection was scheduled across weeks 1&ndash;3. It finished in
-           <b>week 1</b>. The critical path has moved to the flood-event record.</p>
-      </div>
-      <div class="tnote alt">
-        <span class="lt cy">WHY IT SHAPES OUR WORK</span>
-        <p>The viva is assessed <b>individually</b>. Every member must explain the
-           whole project &mdash; so we hold a knowledge handoff every Saturday.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="slide closing" data-notes="One sentence to finish. We do not replace the global forecast - we fix it and translate it into Vietnamese alert levels. Three next steps: finish the flood records, train the model, check the dam problem. And three limits, said now not later. One: our river data is from a model, not measured. Two: the map is five kilometres wide, too big to see the small Bo river, so we study one station only. Three: this is a student project, not an official warning service. Thank you.">
   <div class="pad mid">
     <div class="tag"><s></s>IN ONE SENTENCE</div>
@@ -548,7 +484,7 @@ ol.nx li, ul.nx li{ font:400 25px/1.45 "Be Vietnam Pro",sans-serif; color:var(--
   </div>
 </div>
 <div class="hud hint">← → navigate &nbsp;·&nbsp; S speaker notes &nbsp;·&nbsp; E edit text</div>
-<div class="hud count" id="count">01 / 10</div>
+<div class="hud count" id="count">01 / 09</div>
 <div class="notes" id="notes"></div>
 <script>
 (function(){
