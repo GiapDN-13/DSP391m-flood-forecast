@@ -13,18 +13,30 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import (BaseDocTemplate, Frame, Image, KeepTogether,
-                                NextPageTemplate, PageBreak, PageTemplate,
-                                Paragraph, Spacer, Table, TableStyle)
+from reportlab.platypus import (
+    BaseDocTemplate,
+    Frame,
+    Image,
+    KeepTogether,
+    NextPageTemplate,
+    PageTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+from src import config as cfg  # noqa: E402  (cần ROOT trên sys.path trước)
+
 FIGS = ROOT / "reports" / "figures" / "report"
 OUT = ROOT / "reports" / "report1" / "DSP391m_Report1_Proposal_IEEE.pdf"
 
@@ -451,7 +463,7 @@ def build() -> int:
                           leftMargin=LM, rightMargin=RM,
                           topMargin=TM, bottomMargin=BM,
                           title="DSP391m Report 1 — Project Proposal",
-                          author="Dang Nguyen Giap, Ho Anh Duc, Mai Thi Le Huyen")
+                          author=", ".join(cfg.TEAM_ASCII))
 
     avail_h = PH - TM - BM
     # Trang 1: khối tiêu đề chiếm hết bề rộng, rồi hai cột bên dưới
@@ -486,8 +498,7 @@ def build() -> int:
     head = [
         p("Forecasting Flood Risk One to Three Days Ahead for the "
           "Huong River Basin from Open Hydro-Meteorological Data", "title"),
-        p("Dang Nguyen Giap&nbsp;&nbsp;&nbsp;&nbsp;Ho Anh Duc"
-          "&nbsp;&nbsp;&nbsp;&nbsp;Mai Thi Le Huyen", "author"),
+        p(("&nbsp;" * 4).join(cfg.TEAM_ASCII), "author"),
         Spacer(1, 3),
         p("Department of Information Technology, FPT University<br/>"
           "DSP391m &#8212; Data Science Project &#8212; Fall 2026<br/>"
