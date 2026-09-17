@@ -13,7 +13,7 @@ flowchart TD
         A2["✅ FR-D1 Lưu lượng 1984–2026<br/>83 ô"]
         A3["✅ FR-D2 Mưa ERA5 ngày + giờ<br/>lưới 0,10° · 68 điểm"]
         A4["✅ FR-D3 Mưa dự báo lưu trữ<br/>2022–nay"]
-        A5["⬜ FR-D6 Backup Drive / HF"]
+        A5["✅ FR-D6 Backup GitHub Release"]
     end
 
     subgraph B["② NGƯỠNG BÁO ĐỘNG — ⛔ ĐANG CHẶN"]
@@ -83,10 +83,10 @@ flowchart TD
     classDef wip fill:#854d0e,stroke:#f59e0b,color:#fff
     classDef blocked fill:#7f1d1d,stroke:#ef4444,color:#fff
     classDef todo fill:#1e293b,stroke:#475569,color:#cbd5e1
-    class A1,A2,A3,A4,C1,C2,C3,F1,G1 done
+    class A1,A2,A3,A4,A5,C1,C2,C3,F1,G1 done
     class B1 wip
     class B2,B3,B4,E3 blocked
-    class A5,D1,D2,E1,E2,E4,F2,F3,F4,G2,G3,H1,H2 todo
+    class D1,D2,E1,E2,E4,F2,F3,F4,G2,G3,H1,H2 todo
 ```
 
 ---
@@ -102,7 +102,7 @@ flowchart TD
 | FR-D2 | Mưa ERA5 ngày + giờ | ✅ | 68 điểm lưới 0,10°; 2010–2026 ngày, 2015–2026 giờ |
 | FR-D3 | Mưa dự báo lưu trữ | ✅ | 70 file, 2022-07 → nay |
 | FR-D4 | Crawler chịu lỗi | ✅ | retry + cache + checkpoint + khoá chống chạy trùng |
-| FR-D6 | Backup ra Drive / HF | ⬜ | **chưa làm** — dữ liệu mới chỉ nằm trên 1 máy |
+| FR-D6 | Backup ra ngoài máy | ✅ | Release `data-2026-09-17`, 9 asset 95 MB, đã kiểm khôi phục bit-for-bit |
 | FR-D7 | `flood_events.csv` | ⛔ | 0/15 dòng — **nút thắt lớn nhất** |
 
 ### ② Ngưỡng báo động — ⛔ **đang chặn cả nhánh phân loại**
@@ -187,6 +187,6 @@ Việc **chưa làm được**: mọi thứ liên quan cấp báo động (`FR-M
 | Rủi ro | Mức | Xử lý |
 |---|---|---|
 | `flood_events.csv` không đủ 10 đợt | 🔴 cao | Lùi về R4 (ngưỡng phân vị) và **đổi tên nhãn** thành "mức nguy cơ", không gọi là BĐ |
-| Dữ liệu chỉ nằm trên 1 máy (FR-D6) | 🟠 | Backup Drive/HF — 10 phút, nên làm sớm |
+| ~~Dữ liệu chỉ nằm trên 1 máy~~ | ✅ | Đã sao lưu lên GitHub Release, khôi phục bằng `scripts/restore_data.py` |
 | Đỉnh lũ bất thường 04/2022 (2 635 m³/s ngoài mùa lũ) | 🟡 | Kiểm khi EDA; nếu là lỗi dữ liệu thì ảnh hưởng phân vị và ngưỡng |
 | Thi vấn đáp chấm cá nhân | 🟠 | `EXPLAINER.md` còn trống — bắt đầu viết từ W2 |

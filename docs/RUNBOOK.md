@@ -54,12 +54,36 @@ pytest -q tests        # phải xanh trước khi làm gì tiếp
 
 ## 4. Khôi phục dữ liệu từ backup
 
+Dữ liệu nằm trong **GitHub Release asset** của chính repo này — không cần tài khoản nào khác, `gh auth login` là đủ. Chỉ collaborator đọc được, vì repo private.
+
+Bản mới nhất: **`data-2026-09-17`** · 9 asset · 95 MB nén (124 MB giải nén)
+
 ```powershell
-# Google Drive: <dán link thư mục>
-# Hugging Face: huggingface-cli download <org>/<dataset> --repo-type dataset --local-dir data/
+python scripts/restore_data.py            # chỉ bảng phân tích (~2 MB) — đủ để chạy mô hình
+python scripts/restore_data.py --all      # toàn bộ, kể cả mưa giờ 72 MB
+python scripts/restore_data.py --list     # xem có gì mà không tải
+python scripts/restore_data.py --what interim raw_discharge
 ```
 
-Kiểm tra sau khi tải: số dòng `daily_panel.parquet` phải là ⬜____, khoảng ngày ⬜____ → ⬜____.
+Script **kiểm checksum SHA-256 trước khi giải nén**, nên tải lỗi sẽ không ghi rác vào `data/`.
+
+| Asset | Nén | Nội dung |
+|---|---|---|
+| `daily_panel.parquet` | 2,1 MB | **Bảng phân tích chính** — có cái này là chạy lại được EDA, baseline, mô hình |
+| `interim.tar.gz` | 2,5 MB | Dữ liệu đã làm sạch |
+| `raw_discharge.tar.gz` | 9,7 MB | Lưu lượng GloFAS 1984–2026, 83 ô lưới |
+| `raw_rain_daily.tar.gz` | 5,1 MB | Mưa ngày ERA5 2010–2026, 68 điểm |
+| `raw_rain_hourly.tar.gz` | 74,5 MB | Mưa giờ ERA5 2015–2026, 960 file |
+| `raw_fc_rain.tar.gz` | 0,3 MB | Mưa dự báo đã phát 2022–nay |
+| `raw_discharge_probe.tar.gz` | 0,2 MB | Probe 1 năm dò mạng sông |
+
+**Đã kiểm thật, không phải giả định:** xoá `daily_panel.parquet` rồi khôi phục — file về đúng **6 087 dòng × 71 cột**, 2010-01-01 → 2026-08-31, và **giống bản gốc bit-for-bit** (SHA-256 khớp).
+
+### Khi nào tạo bản sao lưu mới
+
+Sau mỗi lần dữ liệu thô đổi đáng kể (thêm điểm lưới, đổi ô lưới, crawl thêm năm). Cách làm: nén theo từng loại, tạo `SHA256SUMS.txt` + `MANIFEST.json`, rồi `gh release create data-<ngày> ... <các asset>`. Sửa `TAG` trong `scripts/restore_data.py` sang bản mới.
+
+> ⚠️ Đừng xoá release cũ. Nó là mốc để trả lời *"lúc nộp Report 2 thì dữ liệu ở trạng thái nào?"*
 
 ## 5. Bước thủ công — KHÔNG tự động hoá được
 

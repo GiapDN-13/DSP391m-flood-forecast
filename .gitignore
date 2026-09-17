@@ -71,3 +71,4 @@ desktop.ini
 reports/report1/slides/node_modules/
 reports/report1/slides/qa/
 .frontend-slides/slide-previews/
+.restore_tmp/
