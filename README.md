@@ -26,6 +26,7 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical 
 | Rủi ro & chốt cắt scope | [`docs/RISKS.md`](docs/RISKS.md) |
 | **Chọn ô lưới GloFAS (đã chốt)** | [`docs/FINDINGS_GRID.md`](docs/FINDINGS_GRID.md) — `python -m src.features.river_id` |
 | **Hạn mức API & chi phí crawl** | [`docs/FINDINGS_QUOTA.md`](docs/FINDINGS_QUOTA.md) |
+| **Crawl hoạt động thế nào** | [`docs/CRAWL_EXPLAINED.md`](docs/CRAWL_EXPLAINED.md) ← *giải thích cặn kẽ: làm gì, làm sao, output ra sao* |
 | Theo dõi crawl (dark mode) | mở `reports/live/index.html` bằng trình duyệt |
 | Dự báo phát hằng ngày | `reports/forecast_log/` — GitHub Actions ghi tự động mỗi 05:00; đọc `README.md` trong đó trước khi dùng để đánh giá |
 | **Kiểm nhật ký dự báo có đủ ngày** | `python scripts/check_forecast_log.py` — xem `RUNBOOK.md` §8.7 |
