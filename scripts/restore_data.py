@@ -34,7 +34,7 @@ TAG = "data-2026-09-17"
 ASSETS = {
     "daily_panel.parquet": (ROOT / "data" / "processed", "bảng phân tích chính"),
     "interim.tar.gz": (ROOT / "data", "dữ liệu đã làm sạch"),
-    "raw_discharge.tar.gz": (ROOT / "data" / "raw", "lưu lượng GloFAS 1984–2026"),
+    "raw_discharge.tar.gz": (ROOT / "data" / "raw", "lưu lượng GloFAS (có giá trị từ 1997)"),
     "raw_rain_daily.tar.gz": (ROOT / "data" / "raw", "mưa ngày ERA5"),
     "raw_fc_rain.tar.gz": (ROOT / "data" / "raw", "mưa dự báo đã phát"),
     "raw_discharge_probe.tar.gz": (ROOT / "data" / "raw", "probe dò mạng sông"),

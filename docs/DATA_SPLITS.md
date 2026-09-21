@@ -15,7 +15,7 @@ Từ tháng 07/2022, dữ liệu "lịch sử" của GloFAS trên Open-Meteo **k
 | **Test (chính)** | 2022-07-01 → 2026-08-31 | **Archived forecast** | ~1 520 | Báo cáo kết quả cuối |
 | *(kiểm chéo)* | fold cuối của walk-forward | Reanalysis | — | So hiệu năng trên **cùng chế độ dữ liệu**, để tách ảnh hưởng của mốc 07/2022 |
 
-⚠️ Mưa ERA5 **chỉ crawl từ 2010** (scope đã cắt, xem `PLAN.md`). Discharge vẫn lấy đủ 1984–2026 nên phần phân vị, return period và ghép sự kiện lũ cũ vẫn dùng được chuỗi dài.
+⚠️ Mưa ERA5 **chỉ crawl từ 2010** (scope đã cắt, xem `PLAN.md`). Discharge yêu cầu từ 1984 nhưng **thực tế chỉ có dữ liệu từ 1997** (1984–1996 rỗng 100 %, xem `FINDINGS_EVENTS.md` §3). Phân vị, return period và ghép sự kiện lũ cũ vẫn làm được nhưng trên **29 năm**, không phải 42 năm — phải nói đúng độ dài trong báo cáo.
 
 ## 3. Walk-forward validation
 

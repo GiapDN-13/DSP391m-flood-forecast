@@ -20,6 +20,7 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical 
 | **Kế hoạch còn thiếu gì** | [`docs/GAPS.md`](docs/GAPS.md) ← *đọc kỹ, nhiều thứ ăn điểm ở đây* |
 | Đóng góp / kịch bản đánh giá / lớp hiếm | [`docs/RESEARCH_DESIGN.md`](docs/RESEARCH_DESIGN.md) |
 | Ngưỡng báo động BĐ I/II/III | [`docs/THRESHOLDS.md`](docs/THRESHOLDS.md) |
+| **Sự kiện lũ lịch sử & ánh xạ ngưỡng** | [`docs/FINDINGS_EVENTS.md`](docs/FINDINGS_EVENTS.md) ← *đọc §3 và §5 trước khi dùng số* · `python -m src.features.thresholds` |
 | Chạy lại mọi thứ từ số 0 | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) |
 | **Tải dữ liệu về máy mới** | `python scripts/restore_data.py` — xem `RUNBOOK.md` §4 |
 | Rủi ro & chốt cắt scope | [`docs/RISKS.md`](docs/RISKS.md) |

@@ -37,7 +37,7 @@
 |---|---|---|
 | **Mưa ERA5 chỉ crawl 2010–2026** (không phải 1940/1984) | Tiết kiệm ~2 tuần crawl. 16 năm × mùa lũ vẫn đủ mẫu huấn luyện | Không — chỉ cần nêu trong Limitations |
 | **Lưới ~50 điểm** thay vì 200 | Giảm 4× thời gian crawl và dung lượng | Không |
-| **Discharge vẫn lấy đủ 1984–2026** | Chuỗi ngày, 1 request/điểm — rẻ. Cần cho phân vị & sự kiện lũ cũ | Giữ được phần return period |
+| **Discharge yêu cầu 1984–2026, thực có 1997–2026** | Chuỗi ngày, 1 request/điểm — rẻ. Cần cho phân vị & sự kiện lũ cũ | Giữ được return period, nhưng trên 29 năm — `FINDINGS_EVENTS.md` §3 |
 | **Bỏ NASA POWER** | Kế hoạch gốc đã ghi "tuỳ chọn" | Không |
 | **Bỏ LSTM/TFT** khỏi phạm vi chính | LightGBM là mô hình chính; LSTM chỉ làm nếu W8 còn dư thời gian | Nhỏ — cần giải thích lựa chọn trong Methodology |
 | **Bỏ PySpark** | DuckDB/Polars thừa sức với quy mô đã cắt | Không |
@@ -57,7 +57,7 @@ Nguyên tắc tuần này: **không có tuần "chuẩn bị"**. Crawl phải ch
 |---|---|---|
 | **G** | Push repo lên GitHub, branch protection, mời D + H | D + H clone được |
 | **G** | Chạy `scripts/bootstrap_github.ps1`, dựng Project board, **tạo issue cho từng FR ưu tiên M** | Board có issue W1–W2 |
-| **G** | ✅ *`src/ingest/openmeteo_flood.py` đã viết & chạy được (có cache + retry + quét lưới).* Còn lại: chạy chuỗi đầy đủ 1984–2026 trên ô đã chốt | `reports/figures/w1_discharge_*.png` |
+| **G** | ✅ *`src/ingest/openmeteo_flood.py` đã viết & chạy được (có cache + retry + quét lưới).* Còn lại: chạy chuỗi đầy đủ trên ô đã chốt | `reports/figures/w1_discharge_*.png` |
 | **G** | ✅ *Đã quét lần 1 (15/09): toạ độ kế hoạch gốc (16.46, 107.59) **sai ô lưới** — q_mean 5,7 m³/s so với 308 m³/s tại (16.56, 107.59).* Còn lại: **quét tinh step 0.05° quanh ô mới + đối chiếu bản đồ OSM + quét trạm Phú Ốc** | `data/external/grid_candidates.csv` |
 | **G** | Khởi động crawl discharge toàn bộ điểm (chạy nền) | Chạy được qua đêm |
 | **D** | `make setup`, chạy lại script của G, thử 1 toạ độ sông Bồ | `notebooks/01_first_call.ipynb` |
