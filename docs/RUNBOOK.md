@@ -71,7 +71,7 @@ Script **kiểm checksum SHA-256 trước khi giải nén**, nên tải lỗi s�
 |---|---|---|
 | `daily_panel.parquet` | 2,1 MB | **Bảng phân tích chính** — có cái này là chạy lại được EDA, baseline, mô hình |
 | `interim.tar.gz` | 2,5 MB | Dữ liệu đã làm sạch |
-| `raw_discharge.tar.gz` | 9,7 MB | Lưu lượng GloFAS 1984–2026, 83 ô lưới |
+| `raw_discharge.tar.gz` | 9,7 MB | Lưu lượng GloFAS, 83 ô lưới; dòng từ 1984 nhưng **có giá trị từ 1997** |
 | `raw_rain_daily.tar.gz` | 5,1 MB | Mưa ngày ERA5 2010–2026, 68 điểm |
 | `raw_rain_hourly.tar.gz` | 74,5 MB | Mưa giờ ERA5 2015–2026, 960 file |
 | `raw_fc_rain.tar.gz` | 0,3 MB | Mưa dự báo đã phát 2022–nay |

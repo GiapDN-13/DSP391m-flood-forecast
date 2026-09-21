@@ -145,7 +145,9 @@ def story():
         "At the same time, global hydro-meteorological datasets have become openly "
         "available at a resolution and latency that were unavailable a decade ago. The "
         "Global Flood Awareness System (GloFAS) publishes simulated daily river discharge "
-        "on an approximately 5 km grid from 1984 onward [1], and the ERA5 reanalysis "
+        "on an approximately 5 km grid. The service documents coverage from 1984, but "
+        "for this basin the endpoint returns values only from 1997 onward, which we "
+        "verified directly [1]; we therefore state the record as 1997-2026. The ERA5 reanalysis "
         "supplies hourly precipitation and near-surface meteorology over the same "
         "period [2]. Both are redistributed without cost and without an access key, which "
         "removes the procurement risk that commonly derails student projects."))
@@ -254,7 +256,7 @@ def story():
     s.append(table(
         [["Dataset", "Role", "Span", "Status"],
          ["River discharge, GloFAS v4 [1]", "Target and lag features",
-          "1984&#8211;2026, daily", "Collected"],
+          "1997&#8211;2026, daily", "Collected"],
          ["Precipitation and meteorology, ERA5 [2]", "Primary predictors",
           "2010&#8211;2026, daily and hourly", "Collected"],
          ["Archived precipitation forecasts", "Operational input scenario",
