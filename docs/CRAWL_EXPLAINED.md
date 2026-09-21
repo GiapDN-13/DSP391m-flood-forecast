@@ -50,7 +50,7 @@ API trả dữ liệu cho **một toạ độ mỗi lần gọi**. Nhưng:
 
 - **Lưu lượng:** ta chưa biết ô lưới nào thật sự nằm trên sông Hương. GloFAS
   phân giải ~5 km nên dòng sông trong mô hình lệch so với sông thật vài km.
-  Toạ độ trong kế hoạch gốc `(16.46, 107.59)` cho `q_mean` chỉ **5,7 m³/s`,
+  Toạ độ trong kế hoạch gốc `(16.46, 107.59)` cho `q_mean` chỉ **5,7 m³/s**,
   trong khi ô cách đó không xa cho **308 m³/s**. Muốn biết ô nào đúng thì phải
   **quét cả vùng rồi so sánh**.
 - **Mưa:** mưa gây lũ ở Huế rơi ở **thượng nguồn**, cách thành phố 30–50 km.
@@ -111,15 +111,16 @@ chạy. Đây là lý do thứ tự pha không thể đảo.
 
 ---
 
-## 5. Output: 1 497 file, ~118 MB
+## 5. Output: 1 295 file, ~98 MB
 
 ```
 data/raw/
 ├── discharge/          83 file    13 MB   q_<lat>_<lon>.parquet
 ├── discharge_probe/   316 file     3 MB   qp_<lat>_<lon>.parquet
-├── rain_daily/         68 file     7 MB   rd_<lat>_<lon>.parquet
-├── rain_hourly/       960 file    93 MB   rh_<lat>_<lon>_<năm>.parquet
-├── fc_rain/            70 file     2 MB   fc_<lat>_<lon>.parquet
+├── rain_daily/         64 file     7 MB   rd_<lat>_<lon>.parquet
+├── rain_hourly/       768 file    74 MB   rh_<lat>_<lon>_<năm>.parquet
+├── fc_rain/            64 file     2 MB   fc_<lat>_<lon>.parquet
+├── _stale/rain_grid_0.15/  224 file       lưới 0,15° đã loại, giữ để truy nguyên (§8b)
 ├── _progress.jsonl                        nhật ký từng task
 └── _crawl.log / _crawl.err                stdout / stderr
 ```
@@ -150,23 +151,23 @@ Toạ độ nằm ngay trong tên file, nên biết file nào là ô nào mà kh
 `rain_hourly/rh_16.1_107.1_2015.parquet` — **8 760 dòng** (= 365 × 24) × 6 cột.
 
 Cột `lat`/`lon` được nhét vào **từng dòng** dù lặp lại — có vẻ thừa, nhưng nhờ
-vậy gộp 68 file thành một bảng chỉ cần `pd.concat`, không phải tự nhớ file nào
+vậy gộp 64 file thành một bảng chỉ cần `pd.concat`, không phải tự nhớ file nào
 là ô nào. Parquet nén cột lặp lại gần như miễn phí.
 
 ---
 
-## 6. Từ 1 497 file thô thành 1 bảng duy nhất
+## 6. Từ 1 295 file thô thành 1 bảng duy nhất
 
 Crawl **không** tạo ra thứ mô hình ăn được. Còn một bước ETL nữa:
 
 ```
-1 497 file thô
+1 295 file thô
    │
    ├─ src/etl/clean.py        đổi UTC → giờ VN, gộp giờ → ngày,
    │                          kiểm giá trị bất thường (báo lỗi, KHÔNG tự sửa)
    │
    ├─ src/features/build_panel.py
-   │     • gộp 68 ô mưa thành 3 tiểu lưu vực: thượng / trung / hạ
+   │     • gộp 64 ô mưa thành 3 tiểu lưu vực: thượng / trung / hạ
    │     • tạo lag 1–14 ngày cho lưu lượng và mưa
    │     • cửa sổ trượt CHỈ LÙI VỀ SAU (không bao giờ center=True)
    │     • chỉ số mưa tích lũy API (k = 0,9, n = 14 ngày)
@@ -185,8 +186,8 @@ data/processed/daily_panel.parquet     6 087 dòng × 71 cột
 mưa chỉ crawl từ 2010 (scope đã cắt có chủ ý — xem `PLAN.md`), dù lưu lượng có
 xa hơn.
 
-Vì sao gộp mưa thành **3 tiểu lưu vực** chứ không để 68 cột riêng: 68 cột mưa ×
-14 lag = 952 biến trên 6 087 dòng thì mô hình sẽ học nhiễu. Ba tiểu lưu vực
+Vì sao gộp mưa thành **3 tiểu lưu vực** chứ không để 64 cột riêng: 64 cột mưa ×
+14 lag = 896 biến trên 6 087 dòng thì mô hình sẽ học nhiễu. Ba tiểu lưu vực
 giữ được thông tin "mưa ở thượng nguồn hay hạ nguồn" — vốn là thông tin có ý
 nghĩa thuỷ văn — mà chỉ tốn 3 cột.
 
@@ -224,22 +225,49 @@ trị là null — nên nếu chỉ đếm số dòng thì mọi thứ trông ho
 
 > Bài học: **đếm dòng không phải đếm dữ liệu.**
 
-### 8b. Lưới mưa không đều — chưa sửa
+### 8b. Lưới mưa không đều — ✅ đã sửa 21/09/2026
 
-68 ô mưa hiện có **không phải một lưới đều**:
+Phát hiện khi viết tài liệu này: 68 ô mưa **không phải một lưới đều**, và cả ba
+pha mưa đều bị:
 
-```
-52 ô   thuộc lưới 0,10° (nhưng lưới đủ phải là 64 ô → còn thiếu 12)
-16 ô   sót lại từ lượt crawl lưới 0,15° đã bị bỏ
-```
+| Pha | Đúng lưới | Ô lạc 0,15° | Thiếu |
+|---|---|---|---|
+| `rain_daily` | 52 | 16 | 12 |
+| `fc_rain` | 54 | 16 | 10 |
+| `rain_hourly` | 64 | 16 | 0 |
 
-`aggregate_rain()` lấy **trung bình các ô** trong mỗi dải vĩ độ. Với tập ô
-không đều, vùng nào có nhiều ô hơn sẽ **được cân nặng hơn** trong mưa lưu vực —
-một thiên lệch không gian nhỏ nhưng có thật, và hiện chưa ai tính đến.
+`aggregate_rain()` lấy **trung bình các ô** trong mỗi dải vĩ độ, nên dải nào có
+nhiều ô hơn thì được cân nặng hơn. Tính theo tiểu lưu vực thì lệch rõ:
 
-Cách sửa rẻ: crawl 12 ô 0,10° còn thiếu (cả pha `rain_daily` chỉ có 7 MB nên
-12 ô là chuyện vài phút), rồi bỏ 16 ô lẻ để còn đúng lưới 64 ô đều. **Chưa
-làm.** Phát hiện ngày 21/09/2026 khi viết tài liệu này.
+| Tiểu lưu vực | Đang dùng | Lưới đủ | Lệch |
+|---|---|---|---|
+| thượng 16,10–16,35 | 30 | 24 | +25 % |
+| **trung 16,35–16,55** | **9** | **16** | **−44 %** |
+| hạ 16,55–16,85 | 29 | 24 | +21 % |
+
+Dải **trung** — chính là dải chứa trạm Kim Long (16,47) và ô lưới đã chọn
+(16,45) — thiếu gần một nửa số ô. Đoạn sông gần điểm dự báo nhất lại là đoạn
+có mưa được lấy mẫu kém nhất.
+
+**Đã xử lý:** chuyển 224 file của lưới 0,15° sang `data/raw/_stale/rain_grid_0.15/`
+(**không xoá**, để truy nguyên được), crawl 23 ô còn thiếu, dựng lại panel.
+Cả ba pha giờ đúng **64 ô lưới đều**.
+
+Mức thay đổi trong panel, đo trực tiếp:
+
+| Cột | TB trước | TB sau | Đổi | Tương quan |
+|---|---|---|---|---|
+| `rain_thuong` | 8,297 | 8,355 | +0,7 % | 0,9999 |
+| **`rain_trung`** | 8,970 | 8,409 | **−6,3 %** | 0,9907 |
+| `rain_ha` | 6,788 | 6,641 | −2,2 % | 0,9990 |
+| `rain_basin` | 8,018 | 7,802 | −2,7 % | 0,9986 |
+
+Cột `discharge` **không đổi** — đúng như phải vậy, vì chỉ các cột mưa được dựng
+lại. **Bốn baseline cũng không đổi một chữ số nào**, vì persistence / seasonal
+naive / climatology / ARIMA đều chỉ dùng `discharge`. Thiên lệch này chỉ bắt đầu
+có ảnh hưởng thật khi **mưa vào làm feature** — tức từ LightGBM trở đi.
+
+Nói cách khác: sửa sớm thì rẻ, và nếu để tới sau khi train thì phải train lại.
 
 ---
 
@@ -268,7 +296,7 @@ phải hạn mức API mà là tự chạy trùng nhiều crawler. Đã khôi ph
 
 ```powershell
 python -m src.ingest.crawl_all              # chạy cả 5 pha, tự bỏ qua file đã có
-python -m src.ingest.crawl_all --phases rain_daily fc_rain
+python -m src.ingest.crawl_all --phase rain_daily fc_rain
 ```
 
 Không cần dọn gì trước. Muốn crawl lại một ô thì **xoá file của ô đó** rồi chạy
@@ -313,7 +341,7 @@ bằng mưa dự báo là tự cho mình điểm cao hơn thực tế. Kịch b�
 đo, kịch bản B dùng mưa dự báo — báo cáo cả hai.
 
 **"Dữ liệu này có phải big data không?"**
-Riêng mưa giờ là 960 file, 93 MB, ~8,4 triệu bản ghi; nếu lấy đủ 40 năm × 200
+Riêng mưa giờ là 768 file, 74 MB, ~6,7 triệu bản ghi; nếu lấy đủ 40 năm × 200
 điểm như kế hoạch gốc ước tính thì khoảng 70 triệu bản ghi. Nhưng điểm đáng nói
 không phải khối lượng — mà là **dữ liệu đến từ 4 API khác nhau, khác múi giờ,
 khác tần suất, khác phân giải không gian, và một nguồn đổi chế độ giữa chuỗi**
