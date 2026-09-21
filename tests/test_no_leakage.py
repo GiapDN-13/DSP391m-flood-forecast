@@ -67,9 +67,8 @@ def test_split_khong_chong_lan():
 def test_walk_forward_co_gap():
     """Phải có khoảng trống giữa cuối train và đầu test, ít nhất bằng horizon lớn nhất."""
     pytest.importorskip("src.eval.walk_forward")
-    from src.eval.walk_forward import make_folds
-
     from src.config import HORIZONS
+    from src.eval.walk_forward import make_folds
 
     folds = make_folds(
         pd.date_range("2010-01-01", "2020-12-31", freq="D"), n_folds=3
