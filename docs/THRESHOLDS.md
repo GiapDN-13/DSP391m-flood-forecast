@@ -67,7 +67,7 @@ Q = a · (H − H₀)^b
 
 Ý tưởng: không cần chuỗi (H, Q) đầy đủ, chỉ cần **các cặp đỉnh lũ đã được công bố**.
 
-**Bước 1.** Thu thập ≥ 15 đợt lũ (tối thiểu chấp nhận được: 10 — xem `RISKS.md` R15) có công bố **đỉnh mực nước tại Kim Long / Phú Ốc**, giai đoạn 1984–2022. Ghi vào `data/external/flood_events.csv`:
+**Bước 1.** Thu thập ≥ 15 đợt lũ (tối thiểu chấp nhận được: 10 — xem `RISKS.md` R15) có công bố **đỉnh mực nước tại Kim Long / Phú Ốc**, giai đoạn **1997–2022** (1984–1996 không có dữ liệu lưu lượng — `FINDINGS_EVENTS.md` §3). Ghi vào `data/external/flood_events.csv`:
 
 | cột | ý nghĩa |
 |---|---|
@@ -80,10 +80,15 @@ Q = a · (H − H₀)^b
 | `source_url` | link |
 | `accessed_date` | ngày truy cập |
 | `confidence` | `cao` / `trung binh` / `thap` |
+| `window_days` | nửa bề rộng cửa sổ ghép lưu lượng, tính bằng ngày. Mặc định 2; nới ra khi nguồn chỉ cho **khoảng ngày** chứ không cho ngày đỉnh (ví dụ 19–29/11/2017 → 5) |
+| `regime` | `truoc_moc_gay` (fit được) / `sau_moc_gay` (chỉ kiểm chứng, sau 2022-07-01) / `truoc_1984` (ngoài phạm vi) |
+| `notes` | **trích nguyên văn** câu chứa số liệu trong nguồn, kèm mọi phép quy đổi đã làm |
 
 Nguồn chấp nhận được, xếp theo độ tin cậy: bản tin lưu trữ **Đài KTTV khu vực Trung Trung Bộ / nchmf.gov.vn** > báo cáo Ban Chỉ đạo Phòng chống thiên tai > bài báo khoa học về lũ lưu vực sông Hương > báo điện tử chính thống. **Mọi dòng phải có link và ngày truy cập** — literature review sẽ dùng lại.
 
-**Bước 2.** Với mỗi sự kiện, lấy `peak_Q` = max discharge GloFAS trong cửa sổ **±2 ngày** quanh `peak_date`, tại điểm lưới tương ứng trạm đó. Cửa sổ ±2 ngày để hấp thụ lệch pha giữa mô phỏng và thực đo.
+**Bước 2.** Với mỗi sự kiện, lấy `peak_Q` = max discharge GloFAS trong cửa sổ **±`window_days`** quanh `peak_date`, tại điểm lưới tương ứng trạm đó. Cửa sổ hấp thụ lệch pha giữa mô phỏng và thực đo, **và** việc nguồn chỉ cho khoảng ngày.
+
+> ⚠️ **Đã thực hiện, kết quả không như kỳ vọng.** Quan hệ H–Q ở Kim Long không đơn điệu khi trộn cả thời kỳ (1998: Q = 3 161 → H = 4,47 m nhưng 1999: Q = 1 900 → H = 5,81 m). Phải fit riêng **từ 2009** (sau khi Bình Điền / Hương Điền / Tả Trạch vào vận hành). Xem `FINDINGS_EVENTS.md` §4–5 trước khi dùng bất kỳ con số nào ở đây.
 
 **Bước 3.** Fit đường đơn điệu tăng trên N cặp `(peak_Q, peak_H)`, mỗi trạm một đường riêng:
 
@@ -107,7 +112,7 @@ Q_BĐk = exp( (H_BĐk − β) / α )
 Nếu tra được **số ngày/số đợt vượt từng cấp BĐ mỗi năm** (niên giám KTTV, báo cáo PCTT hằng năm):
 
 1. Tính tần suất vượt thực tế `p_I`, `p_II`, `p_III` (số ngày vượt / tổng số ngày).
-2. Lấy phân vị `(1 − p_k)` của chuỗi GloFAS 1984–2022 → `Q_k`.
+2. Lấy phân vị `(1 − p_k)` của chuỗi GloFAS **1997–2022** → `Q_k`.
 
 **Tiêu chí chấp nhận:** nếu `Q_k` từ R3 lệch **dưới 25 %** so với R2 → ánh xạ đáng tin, ghi cả hai vào báo cáo. Lệch trên 25 % → phải điều tra nguyên nhân (thường là chọn sai ô lưới, xem `docs/RISKS.md` R1) trước khi đi tiếp.
 

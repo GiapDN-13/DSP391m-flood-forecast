@@ -213,7 +213,7 @@ def slides(hg: dict) -> str:
       <thead><tr><th>Dataset</th><th>Role</th><th>Span</th><th>Status</th></tr></thead>
       <tbody>
         <tr><td>River discharge &mdash; GloFAS v4</td><td>Target and lag features</td>
-            <td>1984&ndash;2026, daily</td><td class="ok">Collected</td></tr>
+            <td>1997&ndash;2026, daily</td><td class="ok">Collected</td></tr>
         <tr><td>Rain &amp; meteorology &mdash; ERA5</td><td>Primary predictors</td>
             <td>2010&ndash;2026, daily + hourly</td><td class="ok">Collected</td></tr>
         <tr><td>Archived rainfall forecasts</td><td>Operational input scenario</td>

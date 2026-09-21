@@ -10,17 +10,17 @@
 flowchart TD
     subgraph A["① THU THẬP DỮ LIỆU — ✅ XONG"]
         A1["✅ FR-D5 Chọn ô lưới GloFAS<br/>(16.45, 107.50)"]
-        A2["✅ FR-D1 Lưu lượng 1984–2026<br/>83 ô"]
+        A2["✅ FR-D1 Lưu lượng 1997–2026<br/>83 ô · 1984–96 rỗng"]
         A3["✅ FR-D2 Mưa ERA5 ngày + giờ<br/>lưới 0,10° · 68 điểm"]
         A4["✅ FR-D3 Mưa dự báo lưu trữ<br/>2022–nay"]
         A5["✅ FR-D6 Backup GitHub Release"]
     end
 
-    subgraph B["② NGƯỠNG BÁO ĐỘNG — ⛔ ĐANG CHẶN"]
-        B1["🟡 FR-T1 Mực nước BĐ I/II/III<br/>1,00 / 2,00 / 3,50 m"]
-        B2["⛔ FR-D7 flood_events.csv<br/>≥ 15 đợt lũ có nguồn"]
-        B3["⛔ FR-T2 Ánh xạ H → Q<br/>H = α·ln(Q) + β"]
-        B4["⛔ FR-T3 Nhãn alert_level"]
+    subgraph B["② NGƯỠNG BÁO ĐỘNG — 🟡 ĐÃ THÔNG, KẾT QUẢ TẠM THỜI"]
+        B1["🟡 FR-T1 Mực nước BĐ I/II/III<br/>6 nguồn xác nhận · xưa là 3,00 m"]
+        B2["✅ FR-D7 flood_events.csv<br/>19 đợt · 11 ghép được Q"]
+        B3["🟡 FR-T2 Ánh xạ H → Q<br/>N=7 R²=0,63 · TẠM THỜI"]
+        B4["⛔ FR-T3 Nhãn alert_level<br/>chờ N ≥ 10"]
     end
 
     subgraph C["③ XỬ LÝ — ✅ XONG"]
@@ -84,8 +84,9 @@ flowchart TD
     classDef blocked fill:#7f1d1d,stroke:#ef4444,color:#fff
     classDef todo fill:#1e293b,stroke:#475569,color:#cbd5e1
     class A1,A2,A3,A4,A5,C1,C2,C3,F1,G1 done
-    class B1 wip
-    class B2,B3,B4,E3 blocked
+    class B2 done
+    class B1,B3 wip
+    class B4,E3 blocked
     class D1,D2,E1,E2,E4,F2,F3,F4,G2,G3,H1,H2 todo
 ```
 
@@ -98,21 +99,21 @@ flowchart TD
 | # | Việc | Trạng thái | Bằng chứng |
 |---|---|---|---|
 | FR-D5 | Chọn ô lưới GloFAS | ✅ | `(16.45, 107.50)`, 3 bằng chứng độc lập — `FINDINGS_GRID.md` |
-| FR-D1 | Lưu lượng 1984–2026 | ✅ | 83 ô × 15 584 ngày |
+| FR-D1 | Lưu lượng | ✅ | 83 ô × 15 584 dòng, nhưng **chỉ 10 835 ngày có dữ liệu (1997–2026)**; 1984–1996 rỗng 100 % — `FINDINGS_EVENTS.md` §3 |
 | FR-D2 | Mưa ERA5 ngày + giờ | ✅ | 68 điểm lưới 0,10°; 2010–2026 ngày, 2015–2026 giờ |
 | FR-D3 | Mưa dự báo lưu trữ | ✅ | 70 file, 2022-07 → nay |
 | FR-D4 | Crawler chịu lỗi | ✅ | retry + cache + checkpoint + khoá chống chạy trùng |
 | FR-D6 | Backup ra ngoài máy | ✅ | Release `data-2026-09-17`, 9 asset 95 MB, đã kiểm khôi phục bit-for-bit |
-| FR-D7 | `flood_events.csv` | ⛔ | 0/15 dòng — **nút thắt lớn nhất** |
+| FR-D7 | `flood_events.csv` | ✅ | **19 sự kiện** có nguồn + trích nguyên văn. Nhưng chỉ 11 ghép được lưu lượng, 7 ở tập hiệu chuẩn chính — `FINDINGS_EVENTS.md` |
 
 ### ② Ngưỡng báo động — ⛔ **đang chặn cả nhánh phân loại**
 
 | # | Việc | Trạng thái | Ghi chú |
 |---|---|---|---|
-| FR-T1 | Mực nước BĐ I/II/III | 🟡 | Giá trị đã kiểm chứng chéo bằng 5 bản tin KTTV. Còn: dẫn nguồn gốc QĐ 05/2020/QĐ-TTg |
-| FR-T2 | Ánh xạ H → Q | ⛔ | Chờ `FR-D7`. Thuật toán đã chốt ở `THRESHOLDS.md` §3 R2 |
-| FR-T3 | Nhãn `alert_level` | ⛔ | Cột đã có trong panel nhưng **để trống** |
-| FR-T4 | Kiểm chứng 3 đợt lũ | ⛔ | Chờ FR-T2 |
+| FR-T1 | Mực nước BĐ I/II/III | 🟡 | 6 nguồn độc lập xác nhận 1,00 / 2,00 / 3,50 m. **Phát hiện: BĐ III xưa là 3,00 m.** Còn: dẫn Phụ lục QĐ 05/2020/QĐ-TTg |
+| FR-T2 | Ánh xạ H → Q | 🟡 | Đã chạy: `H = 2,86·ln(Q) − 17,97`, N=7, R²=0,629. `Q_BĐ3` = 1 823 m³/s ±20 %. **Tạm thời** vì N < 10 |
+| FR-T3 | Nhãn `alert_level` | ⛔ | Chờ FR-T2 hết tạm thời. `cfg.ALERT_LEVELS_Q` để trống **có chủ ý** |
+| FR-T4 | Kiểm chứng 3 đợt lũ | 🔴 | Đã thử trên 5 đợt: chệch **−1,94 m** một chiều. Xem R21 |
 
 ### ③ Xử lý dữ liệu — ✅ **hoàn tất**
 
@@ -141,14 +142,16 @@ flowchart TD
 ## 3. Đường găng hiện tại
 
 ```
-⛔ FR-D7 flood_events.csv  ──►  FR-T2 ánh xạ H→Q  ──►  FR-T3 nhãn  ──►  FR-M3 classifier
+✅ FR-D7 (19 đợt)  ──►  🟡 FR-T2 (N=7, tạm thời)  ──►  ⛔ FR-T3 nhãn  ──►  FR-M3 classifier
+                              ▲
+                    cần ≥3 đợt 2010–2022 nữa
                                                                             │
 ✅ daily_panel.parquet  ──►  EDA + baseline + LightGBM hồi quy  ────────────┤
                                                                             ▼
                                                                     Report 3 (40 %)
 ```
 
-**Chỉ còn một nút thắt thật:** `flood_events.csv`. Nó chặn **toàn bộ nhánh phân loại cấp báo động** — tức câu hỏi nghiên cứu số 2, và là phần đặc thù nhất của đề tài.
+**Nút thắt đã đổi.** `flood_events.csv` xong (19 sự kiện), nhưng ánh xạ H→Q chỉ đứng trên **7 cặp** nên còn tạm thời. Nút thắt mới, nặng hơn: **chuỗi GloFAS sau mốc gãy 2022-07-01 có thể lệch biên độ** (R21) — nếu đúng thì ảnh hưởng cả nhánh hồi quy, không riêng nhánh phân loại.
 
 Nhánh **hồi quy lưu lượng thì không bị chặn** — panel đã sẵn sàng, chạy baseline và LightGBM được ngay hôm nay.
 

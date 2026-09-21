@@ -79,7 +79,12 @@ MAX_RETRIES = 5
 
 # ---------- Thời gian ----------
 # Discharge lay du chuoi dai (re, 1 request/diem). Mua ERA5 chi tu 2010 - scope da cat.
-DATE_START = "1984-01-01"
+DATE_START = "1984-01-01"          # khoảng YÊU CẦU khi gọi API
+# Khoảng THỰC TẾ có dữ liệu. Open-Meteo công bố GloFAS v4 từ 1984, nhưng
+# endpoint chỉ trả giá trị từ 1997 cho vùng này: 1984–1996 rỗng 100 % ở cả 83
+# ô lưới (30,5 % chuỗi). Phát hiện 21/09/2026 khi ghép sự kiện lũ — xem
+# docs/FINDINGS_EVENTS.md §3. Dùng hằng số này khi nói về độ dài chuỗi.
+DISCHARGE_DATA_START = "1997-01-01"
 RAIN_DATE_START = "2010-01-01"
 DATE_END = "2026-08-31"
 

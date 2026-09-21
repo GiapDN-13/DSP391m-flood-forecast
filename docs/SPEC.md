@@ -64,13 +64,13 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 
 | ID | Yêu cầu | Ưu tiên | Tiêu chí nghiệm thu | Ai | Tuần |
 |---|---|---|---|---|---|
-| **FR-D1** | Lấy lưu lượng GloFAS theo ngày cho các điểm đã chốt, 1984-01-01 → 2026-08-31 | **M** | File Parquet tồn tại; số ngày khớp khoảng yêu cầu; 0 ngày trùng; `q_mean` của ô chính > 100 m³/s | G | W1–W2 |
+| **FR-D1** | Lấy lưu lượng GloFAS theo ngày cho các điểm đã chốt, 1984-01-01 → 2026-08-31 | **M** | File Parquet tồn tại; **số ngày KHÔNG RỖNG** ≥ 10 000; 0 ngày trùng; `q_mean` của ô chính > 100 m³/s. ⚠️ Nghiệm thu cũ chỉ đếm số dòng nên không thấy 1984–1996 rỗng 100 % | G | W1–W2 |
 | **FR-D2** | Lấy mưa ERA5 theo **giờ** (2015–2026) và theo **ngày** (2010–2026), lưới 0,10° (64 điểm) | **M** | ≥ 95 % điểm × năm có dữ liệu; phần thiếu liệt kê trong log | G | ✅ **xong 15/09** |
 | **FR-D3** | Lấy **mưa dự báo đã phát trong quá khứ** (Historical Forecast API) phủ tập test 07/2022 → 2026, horizon 1–3 ngày | **S** | Có chuỗi mưa dự báo cho ≥ 90 % ngày trong tập test | G | W5 |
 | **FR-D4** | Crawler chịu lỗi: retry luỹ thừa, cache theo request, checkpoint để resume | **M** | Ngắt mạng giữa chừng rồi chạy lại **không mất dữ liệu và không gọi lại request đã xong** | G | W1 |
 | **FR-D5** | Xác định ô lưới GloFAS nằm đúng dòng chảy chính | **M** | Chốt bằng 3 bằng chứng độc lập (hình học OSM · tương quan · diện tích lưu vực suy ra), tái lập được bằng `python -m src.features.river_id`; ghi vào `config.RIVER_POINTS` | G | ✅ **xong 15/09** |
 | **FR-D6** | Sao lưu dữ liệu ra ngoài máy cá nhân | **M** | Release `data-2026-09-17` trên repo: 9 asset, 95 MB. `scripts/restore_data.py` kiểm checksum trước khi giải nén. **Đã kiểm khôi phục thật: khớp bit-for-bit** | G | ✅ **xong 17/09** |
-| **FR-D7** | Bộ sự kiện lũ lịch sử ≥ 15 đợt, có nguồn trích dẫn được | **M** | `flood_events.csv` đủ cột; mọi dòng có `source_url` + `accessed_date`; ≥ 10 dòng `confidence=cao` | H | W2–W3 |
+| **FR-D7** | Bộ sự kiện lũ lịch sử ≥ 15 đợt, có nguồn trích dẫn được | **M** | ✅ **19 sự kiện** tại Kim Long, mọi dòng có `source_url` + `accessed_date` + **trích nguyên văn**. Nguồn chính là bài bình duyệt ĐH Huế (Tập 131, Số 4A, 2022). ⚠️ Chỉ **11** ghép được lưu lượng (GloFAS rỗng trước 1997) và **7** nằm ở tập hiệu chuẩn chính — xem `FINDINGS_EVENTS.md` §1 | H | ✅ **21/09** |
 | **FR-D8** | Ranh giới hành chính cấp xã bản sau 01/07/2025 | **S** | GeoJSON tải được, ghi rõ ngày phiên bản. Không có → chuyển sang tiểu lưu vực (`FR-P1`) | D | W3 |
 
 # 3. Yêu cầu chức năng — Xử lý (FR-E)
@@ -88,10 +88,10 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 
 | ID | Yêu cầu | Ưu tiên | Tiêu chí nghiệm thu | Ai | Tuần |
 |---|---|---|---|---|---|
-| **FR-T1** | Nạp mực nước BĐ I/II/III cho trạm Kim Long | **M** | Giá trị 1,00 / 2,00 / 3,50 m đã kiểm chứng chéo bằng 5 bản tin KTTV (`THRESHOLDS.md` §2). **Còn lại:** dẫn nguồn gốc QĐ 05/2020/QĐ-TTg trong Report 2 | H | 🟡 **gần xong 15/09** |
-| **FR-T2** | Xây ánh xạ mực nước → lưu lượng theo đường R2, kèm khoảng tin cậy bootstrap | **M** | `THRESHOLDS.md` §4 điền đủ; báo cáo N, R², KTC 95 % cho từng cấp | G | W3 |
-| **FR-T3** | Sinh nhãn `alert_level` (0–3) cho toàn chuỗi | **M** | Cột có trong panel; phân bố lớp được báo cáo theo năm | G | W3 |
-| **FR-T4** | Kiểm chứng ngưỡng bằng 3 đợt lũ lịch sử 1999/2020/2023 | **M** | `THRESHOLDS.md` §5 điền; **lệch tối đa 1 cấp** ở cả 3 đợt | G | W3 |
+| **FR-T1** | Nạp mực nước BĐ I/II/III cho trạm Kim Long | **M** | ✅ 1,00 / 2,00 / 3,50 m, kiểm chứng bằng **6 nguồn độc lập** qua số học (`FINDINGS_EVENTS.md` §2a). Phát hiện thêm: BĐ III **trước đây là 3,00 m** — quy đổi số liệu cũ phải dùng ngưỡng đương thời (§2b). **Còn lại:** dẫn trực tiếp Phụ lục QĐ 05/2020/QĐ-TTg (trang luật trả 403, cần tải tay) | H | 🟡 **21/09** |
+| **FR-T2** | Xây ánh xạ mực nước → lưu lượng theo đường R2, kèm khoảng tin cậy bootstrap | **M** | 🟡 **Đã chạy, kết quả TẠM THỜI.** `src/features/thresholds.py`; `H = 2,86·ln(Q) − 17,97`, N = 7, R² = 0,629, RMSE = 0,646 m. `Q_BĐ3` = 1 823 m³/s ±20 % ĐẠT tiêu chí bề rộng, nhưng **N < 10** và `Q_BĐ1/BĐ2` ±55 %/±40 % KHÔNG đạt ⇒ `cfg.ALERT_LEVELS_Q` **vẫn để trống có chủ ý**. Cần thêm ≥3 sự kiện 2010–2022 | G | 🟡 **21/09** |
+| **FR-T3** | Sinh nhãn `alert_level` (0–3) cho toàn chuỗi | **M** | ⛔ Chờ FR-T2 hết trạng thái tạm thời. Gán nhãn bằng ánh xạ có KTC ±55 % sẽ tạo nhãn sai mà không ai biết | G | W3 |
+| **FR-T4** | Kiểm chứng ngưỡng bằng 3 đợt lũ lịch sử 1999/2020/2023 | **M** | 🔴 **Đã thử, THẤT BẠI.** Kiểm trên 5 đợt sau mốc gãy: sai số tuyệt đối TB **1,94 m**, độ chệch **−1,94 m** (một chiều). Nặng nhất 15/11/2023: H thật 4,34 m, suy ra 0,24 m. Phải điều tra biên độ chuỗi trước/sau 2022-07-01 — `FINDINGS_EVENTS.md` §5 | G | 🔴 **21/09** |
 | **FR-T5** | Kiểm chứng chéo bằng ánh xạ tần suất (R3) | **C** | Lệch < 25 % so với R2, hoặc giải thích được nguyên nhân | G | W3 |
 | ~~FR-T6~~ | ~~Đường R1 (rating curve thực đo) từ số liệu trạm~~ | **W** | **ĐÃ LOẠI 15/09/2026** — không gửi được công văn xin số liệu. Ánh xạ H→Q dựa hoàn toàn vào R2, kiểm chứng chéo bằng R3 | — | — |
 

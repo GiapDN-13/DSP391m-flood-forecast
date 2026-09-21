@@ -6,7 +6,7 @@ Phụ trách: **H** (diễn giải) với số liệu do **G** cung cấp · H�
 
 | Nguồn | Nội dung | Độ phân giải | Khoảng dùng | Giấy phép | Ngày truy cập |
 |---|---|---|---|---|---|
-| Open-Meteo Flood API (GloFAS v4) | Lưu lượng sông | ~5 km, ngày | 1984–2026 | CC BY 4.0 | |
+| Open-Meteo Flood API (GloFAS v4) | Lưu lượng sông | ~5 km, ngày | **1997–2026** (yêu cầu 1984, nhưng 1984–1996 rỗng 100 %) | CC BY 4.0 | |
 | Open-Meteo Historical (ERA5) | Mưa, nhiệt, gió, ẩm | ~11 km, giờ | 2010–2026 | CC BY 4.0 | |
 | Open-Meteo Historical Forecast | Mưa dự báo đã phát | giờ | 2022–2026 | CC BY 4.0 | |
 | Ranh giới xã | GeoJSON | — | Bản sau 01/07/2025 | | |

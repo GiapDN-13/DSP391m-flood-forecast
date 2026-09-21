@@ -12,7 +12,7 @@ Toàn bộ dữ liệu thô của dự án crawl xong trong **~35 phút**:
 | Mưa ngày ERA5 2010–2026 | 26 | ~3 phút | 0 |
 | Quét mạng sông (probe 1 năm, mọi ô) | 316 | ~10 phút | 0 |
 | Mưa dự báo lưu trữ 2022–nay | 26 | ~2 phút | 0 |
-| Lưu lượng 1984–2026 (ô có sông) | 40 | ~6 phút | 15 |
+| Lưu lượng 1984–2026 yêu cầu (thực có 1997–2026) | 40 | ~6 phút | 15 |
 | **Mưa giờ ERA5 2015–2026** | **300** | **14 phút** | **0** |
 
 **Tổng ~48 MB Parquet.** Không phải 5–15 GB như ước tính trong kế hoạch gốc.
