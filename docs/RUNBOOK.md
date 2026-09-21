@@ -154,7 +154,9 @@ ls reports/forecast_log/          # mỗi ngày phát báo một file YYYY-MM-DD
 git log --oneline --author=github-actions -5
 ```
 
-Thiếu file của ngày nào ⇒ ngày đó job không chạy hoặc hỏng.
+> ⚠️ **Đừng suy luận ngược như vậy.** Thiếu file **không** đồng nghĩa job hỏng:
+> ngày 20/09/2026 mất bản dự báo trong khi cả 6 lần chạy đều báo xanh. Xem
+> `reports/forecast_log/README.md`. Kiểm tra bằng §8.7 thay vì đếm dấu tick.
 
 ## 8.4 Nhận thông báo khi hỏng
 
@@ -162,16 +164,29 @@ GitHub **tự gửi email cho chủ repo khi workflow theo lịch thất bại**
 
 Cài **GitHub Mobile** thì có thông báo đẩy, tiện hơn email.
 
-## 8.5 ⚠️ Ba cái bẫy của workflow theo lịch
+## 8.5 ⚠️ Bốn cái bẫy của workflow theo lịch
 
 | Bẫy | Hệ quả | Cách tránh |
 |---|---|---|
 | **GitHub tự tắt lịch sau 60 ngày repo không có hoạt động** | Job im lặng ngừng chạy, không báo gì | Dự án kéo 9 tuần ≈ 63 ngày — sát ngưỡng. Vì job tự commit mỗi ngày nên repo luôn "có hoạt động", coi như đã tránh được. Nhưng **nếu có lúc job hỏng liên tiếp nhiều ngày thì đồng hồ 60 ngày bắt đầu chạy** |
-| **Cron chạy trễ giờ cao điểm** | Có ngày chạy muộn 10–30 phút | Bình thường, không phải lỗi. Đừng đặt logic phụ thuộc đúng phút |
-| **Giờ UTC, không phải giờ Việt Nam** | Đặt nhầm giờ | `0 22 * * *` = 22:00 UTC = **05:00 VN sáng hôm sau** |
+| **Cron chạy trễ giờ cao điểm** | **Đo thực tế 15–21/09/2026: trễ ~2 giờ**, không phải 10–30 phút | Đừng đặt logic phụ thuộc đúng phút, và **đừng đặt lịch sát nửa đêm UTC** — trễ 2 giờ là sang ngày khác. Lịch đã chuyển 22:00 → 20:00 UTC |
+| **Giờ UTC, không phải giờ Việt Nam** | Đặt nhầm giờ | `0 20 * * *` = 20:00 UTC; cộng độ trễ ~2h ≈ **05:00 VN** |
+| **Code cũng đọc ngày theo UTC** — bẫy đã thực sự cắn | `date.today()` trên runner trả ngày UTC. Job nổ quanh nửa đêm UTC ⇒ nhãn ngày sai, **ghi đè bản hôm trước**, mất bản 20/09/2026 dù 6 lần chạy đều xanh | Dùng `ict_today()` trong `predict_daily.py`. Không bao giờ `date.today()` trong code chạy trên CI. Đã khoá bằng `tests/test_forecast_log.py` |
 
 ## 8.6 Kiểm mỗi tuần (G, trong buổi họp thứ 4)
 
-- [ ] `reports/forecast_log/` có đủ file cho 7 ngày qua chưa?
+- [ ] `python scripts/check_forecast_log.py` — xanh chưa? (§8.7)
 - [ ] Lần chạy nào `failure` không? Lý do?
 - [ ] Sau khi có mô hình (W5+): file có cột dự báo của nhóm chưa, hay vẫn chỉ GloFAS thô?
+
+## 8.7 Kiểm tra nhật ký có đủ ngày — việc phải làm hằng tuần
+
+Job xanh không chứng minh dữ liệu đúng. Kiểm bằng sản phẩm:
+
+```powershell
+python scripts/check_forecast_log.py
+```
+
+Script liệt kê mọi ngày thiếu giữa ngày đầu và hôm nay, cảnh báo file `_chu-ky-muon-`
+(dấu hiệu job chạy trùng ngày) và kiểm `run_date` trong file có khớp tên file.
+Thoát mã 1 nếu có ngày thiếu — chạy được cả trong CI.
