@@ -1,6 +1,6 @@
 # FLOW TOÀN MÔN — từ dữ liệu thô tới điểm thi
 
-**Cập nhật:** 15/09/2026 (cuối W1) · Ký hiệu: ✅ xong · 🟡 đang dở · ⛔ bị chặn · ⬜ chưa bắt đầu
+**Cập nhật:** 21/09/2026 (hết W1) · Ký hiệu: ✅ xong · 🟡 đang dở · ⛔ bị chặn · ⬜ chưa bắt đầu
 
 ---
 
@@ -49,7 +49,7 @@ flowchart TD
     end
 
     subgraph G["⑦ SẢN PHẨM — 🟡"]
-        G1["✅ FR-P4 Job dự báo hằng ngày<br/>GitHub Actions"]
+        G1["✅ FR-P4 Job dự báo hằng ngày<br/>6/7 ngày · đã sửa lỗi múi giờ"]
         G2["⬜ FR-P1/P2 Dashboard 2 trang"]
         G3["⬜ FR-R3 Report 3 — 40 %"]
     end
@@ -158,8 +158,8 @@ Nhánh **hồi quy lưu lượng thì không bị chặn** — panel đã sẵn 
 
 | Tuần | Kế hoạch | Thực tế |
 |---|---|---|
-| **W1** | Khởi động, bắt đầu crawl | ✅ **Vượt xa:** crawl xong toàn bộ, chọn xong ô lưới, ETL + panel xong, job hằng ngày đã chạy |
-| **W2** | Report 1, crawl chạy nền | Còn: Report 1, literature review, `flood_events.csv` |
+| **W1** | Khởi động, bắt đầu crawl | ✅ **Vượt xa:** crawl xong toàn bộ, chọn xong ô lưới, ETL + panel xong, backup Release, job hằng ngày chạy 6/7 ngày, Report 1 (PDF IEEE + slide + script) xong sớm. Còn nợ: `flood_events.csv` |
+| **W2** | Report 1, crawl chạy nền | Report 1 ✅ xong từ W1 (nộp nội bộ 26/09). Còn: `flood_events.csv`, literature review, FR-T1 dẫn nguồn gốc |
 | **W3** | Dữ liệu xong + ngưỡng BĐ | Dữ liệu ✅ đã xong từ W1. Còn ngưỡng |
 | W4 | EDA + Report 2 | làm được sớm hơn |
 | W5–W6 | Mô hình + đánh giá | làm được sớm hơn |
@@ -190,3 +190,16 @@ Việc **chưa làm được**: mọi thứ liên quan cấp báo động (`FR-M
 | ~~Dữ liệu chỉ nằm trên 1 máy~~ | ✅ | Đã sao lưu lên GitHub Release, khôi phục bằng `scripts/restore_data.py` |
 | Đỉnh lũ bất thường 04/2022 (2 635 m³/s ngoài mùa lũ) | 🟡 | Kiểm khi EDA; nếu là lỗi dữ liệu thì ảnh hưởng phân vị và ngưỡng |
 | Thi vấn đáp chấm cá nhân | 🟠 | `EXPLAINER.md` còn trống — bắt đầu viết từ W2 |
+| ~~Job xanh mà vẫn mất dữ liệu~~ | ✅ | Mất bản dự báo 20/09 dù Actions báo xanh 6 lần. Nguyên nhân: `date.today()` đọc ngày UTC. Đã sửa, đã khoá bằng test + `scripts/check_forecast_log.py` chạy ngay trong job |
+
+---
+
+## 7. Sự cố đã xử lý ở W1 — ghi lại để không lặp
+
+| Sự cố | Cái đắt nhất phải nhớ |
+|---|---|
+| Toạ độ ô lưới trong kế hoạch gốc sai (5,7 vs 308 m³/s) | Số liệu phải kiểm bằng vật lý (suy diện tích lưu vực), không tin toạ độ có sẵn |
+| Cơn 429 tưởng là hạn mức API, đã cắt scope oan | `pkill` từ Git Bash không giết được process Python trên Windows — 3 crawler tự cạnh tranh nhau. Đã khôi phục scope, thêm khoá chống chạy trùng |
+| `persistence` đạt NSE 0,542 ở h=1, vượt ngưỡng nghiệm thu cũ | Đặt ngưỡng nghiệm thu **trước** khi đo baseline là sai thứ tự. Đã nâng lên 0,70 / 0,40 / 0,25 |
+| Không có kho dự báo GloFAS quá khứ (404) | Mất `AC-3` và cả lập luận phòng vệ của R9. Cơ hội thật nằm ở h=2, h=3 |
+| Mất bản dự báo 20/09 dù job xanh 6 lần | **Job xanh không chứng minh dữ liệu đúng.** Kiểm phải nhắm vào sản phẩm. Xem `reports/forecast_log/README.md` |
