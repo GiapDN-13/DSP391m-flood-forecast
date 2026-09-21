@@ -26,7 +26,8 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical 
 | **Chọn ô lưới GloFAS (đã chốt)** | [`docs/FINDINGS_GRID.md`](docs/FINDINGS_GRID.md) — `python -m src.features.river_id` |
 | **Hạn mức API & chi phí crawl** | [`docs/FINDINGS_QUOTA.md`](docs/FINDINGS_QUOTA.md) |
 | Theo dõi crawl (dark mode) | mở `reports/live/index.html` bằng trình duyệt |
-| Dự báo phát hằng ngày | `reports/forecast_log/` — GitHub Actions ghi tự động mỗi 05:00 |
+| Dự báo phát hằng ngày | `reports/forecast_log/` — GitHub Actions ghi tự động mỗi 05:00; đọc `README.md` trong đó trước khi dùng để đánh giá |
+| **Kiểm nhật ký dự báo có đủ ngày** | `python scripts/check_forecast_log.py` — xem `RUNBOOK.md` §8.7 |
 | **Theo dõi job hằng ngày** | [`docs/RUNBOOK.md`](docs/RUNBOOK.md) §8 |
 | Checklist EDA (Report 2) | [`docs/EDA_CHECKLIST.md`](docs/EDA_CHECKLIST.md) |
 | Ôn thi vấn đáp | [`docs/EXAM_QUESTION_BANK.md`](docs/EXAM_QUESTION_BANK.md) |
@@ -72,7 +73,7 @@ dashboard/       Streamlit app
 reports/         report1..4 + figures
 tests/           pytest, quan trọng nhất là test_no_leakage.py
 docs/            kế hoạch, quy trình, tài liệu
-scripts/         bootstrap_github.ps1
+scripts/         bootstrap_github.ps1 · restore_data.py · check_forecast_log.py
 ```
 
 ## 📅 Mốc quan trọng

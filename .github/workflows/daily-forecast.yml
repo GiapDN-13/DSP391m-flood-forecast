@@ -7,7 +7,8 @@ name: daily-forecast
 
 on:
   schedule:
-    - cron: "0 22 * * *"      # 22:00 UTC = 05:00 giờ Việt Nam
+    - cron: "0 20 * * *"      # 20:00 UTC; GitHub thường trễ ~2h → ~05:00 giờ VN.
+      # Đặt sớm để lần chạy không rơi quanh nửa đêm UTC (xem ict_today()).
   workflow_dispatch:           # chạy tay từ tab Actions
 
 concurrency:                   # không để hai lần chạy chồng nhau
@@ -47,6 +48,11 @@ jobs:
       - name: Chạy dự báo
         run: python -m src.models.predict_daily
 
+      - name: Kiểm nhật ký có đủ ngày
+        # Job xanh không chứng minh dữ liệu đúng — 15–21/09/2026 xanh 6 lần mà
+        # vẫn mất bản 20/09. Bước này nhắm vào sản phẩm, không vào trạng thái.
+        run: python scripts/check_forecast_log.py
+
       - name: Commit kết quả vào repo
         run: |
           git config user.name  "github-actions[bot]"
@@ -55,7 +61,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "Không có gì thay đổi."
           else
-            git commit -m "data(forecast): ban du bao ngay $(date -u +%Y-%m-%d)"
+            git commit -m "data(forecast): ban du bao ngay $(TZ=Asia/Bangkok date +%Y-%m-%d)"
             git push
           fi
 

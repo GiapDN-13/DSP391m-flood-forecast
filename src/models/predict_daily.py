@@ -19,7 +19,8 @@ from __future__ import annotations
 
 import sys
 import time
-from datetime import date
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
@@ -89,8 +90,22 @@ def alert_level(q: float) -> str:
     return "duoi_BD1"
 
 
+def ict_today():
+    """Ngày theo giờ Việt Nam.
+
+    Runner của GitHub Actions chạy theo UTC. Dùng `date.today()` ở đó là lấy
+    ngày UTC, và vì job thực tế nổ quanh nửa đêm UTC (lịch 22:00 UTC nhưng
+    GitHub trễ ~2 giờ), nhãn ngày trở thành xổ số: lần chạy 06:58 ICT ngày
+    20/09/2026 tự nhận là 19/09 rồi ghi đè bản dự báo sáng 19/09, còn ngày
+    20/09 thì trắng file. Cả 6 lần chạy vẫn báo xanh.
+
+    Toàn bộ dự án quy ước giờ Việt Nam (FR-E1), nhật ký dự báo phải theo.
+    """
+    return datetime.now(ZoneInfo(cfg.TIMEZONE)).date()
+
+
 def main() -> int:
-    run_date = date.today()
+    run_date = ict_today()
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     rows = []
 
@@ -123,8 +138,15 @@ def main() -> int:
         print("Chưa có mô hình trong models/ — chỉ ghi dự báo GloFAS thô. "
               "Đây là trạng thái bình thường cho tới W5.")
 
-    # Một file cho mỗi ngày phát báo: không bao giờ ghi đè, dễ đối chiếu về sau
+    # Một file cho mỗi ngày phát báo. Giữ bản ĐẦU TIÊN của ngày — đó là bản
+    # phát lúc 05:00 ICT. Lần chạy sau trong cùng ngày (chạy tay, hoặc job trễ)
+    # ghi ra file riêng, không được xoá bản gốc.
     dest = LOG_DIR / f"{run_date:%Y-%m-%d}.csv"
+    if dest.exists():
+        stamp = datetime.now(ZoneInfo("UTC")).strftime("%H%MZ")
+        dest = LOG_DIR / f"{run_date:%Y-%m-%d}_chu-ky-muon-{stamp}.csv"
+        print(f"  ! Đã có bản dự báo cho {run_date} — ghi ra {dest.name} "
+              f"thay vì ghi đè.", flush=True)
     out.to_csv(dest, index=False)
     out.to_csv(SUMMARY, index=False)
     print(f"\n→ {dest}  ({len(out)} dòng)")
