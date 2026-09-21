@@ -23,7 +23,7 @@ setup:
 	.venv/Scripts/nbstripout --install
 
 lint:
-	ruff check src tests
+	ruff check --no-cache src tests scripts
 
 test:
 	pytest -q tests
