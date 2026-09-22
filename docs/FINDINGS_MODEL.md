@@ -114,6 +114,51 @@ phải nó gánh mô hình.
 
 ---
 
+## 3b. Phân loại mức nguy cơ (FR-M3)
+
+Đặt dưới dạng **nhị phân theo từng mức** ("ngày t+h có vượt mức k không") chứ
+không phải đa lớp — đó đúng là câu hỏi vận hành, và 3 lớp hiếm với 7–31 ngày
+dương thì đa lớp không học được gì. Bù mất cân bằng bằng **trọng số lớp**, không
+lấy mẫu lại (lấy mẫu lại trên chuỗi thời gian phá cấu trúc tự tương quan).
+
+| Mức | h | n ngày dương (test) | POD | FAR | CSI | F1 | PR-AUC | Đủ mẫu |
+|---|---|---|---|---|---|---|---|---|
+| nguy_cơ_1 | 1 | 31 | **0,677** | **0,192** | **0,583** | 0,737 | 0,668 | ✅ |
+| nguy_cơ_1 | 2 | 31 | 0,419 | 0,435 | 0,317 | 0,481 | 0,350 | ✅ |
+| nguy_cơ_1 | 3 | 31 | 0,065 | 0,900 | 0,041 | 0,078 | 0,175 | ✅ |
+| nguy_cơ_2 | 1 | 12 | 0,417 | 0,444 | 0,312 | 0,476 | 0,403 | ❌ |
+| nguy_cơ_2 | 2 | 12 | **0,000** | 1,000 | 0,000 | — | 0,071 | ❌ |
+| nguy_cơ_2 | 3 | 12 | 0,083 | 0,857 | 0,056 | 0,105 | 0,057 | ❌ |
+| nguy_cơ_3 | — | — | *chỉ 9 ngày dương trong train — bỏ hẳn, không huấn luyện* | | | | | |
+
+**Đọc thẳng:** chỉ **mức 1 ở h=1** dùng được thật (bắt được 2/3 số ngày vượt
+ngưỡng với 19 % báo động giả). Sang h=2 đã tệ, h=3 thì **hỏng hẳn** — POD 0,065
+với FAR 0,90 nghĩa là gần như không bắt được gì mà báo động giả gần hết.
+
+Không dùng accuracy ở bất kỳ dòng nào: ngày vượt mức 1 chỉ chiếm ~1 %, nên đoán
+"không" cho mọi ngày đã đạt 99 %.
+
+### Đã thử chỉnh ngưỡng quyết định — không ăn thua
+
+Ngưỡng 0,5 là tuỳ tiện với dữ liệu lệch, nên thử chọn ngưỡng tối đa hoá CSI
+**trên tập valid** (huấn luyện chỉ trên train, để không đụng test):
+
+| h | CSI test @ 0,5 | Ngưỡng tối ưu trên valid | CSI test @ ngưỡng đó |
+|---|---|---|---|
+| 1 | 0,450 | 0,60 | **0,400** ↓ |
+| 2 | 0,089 | 0,05 | 0,100 ↑ |
+| 3 | 0,020 | 0,07 | 0,093 ↑ |
+
+Ngưỡng tối ưu trên valid **không chuyển sang được test**, thậm chí làm xấu đi ở
+h=1. Giữ 0,5. Đây cũng là một kết quả đáng báo cáo: giai đoạn valid (2016 →
+2022-06) và test (từ 2022-07) khác nhau đủ để một siêu tham số chỉnh trên valid
+không còn tối ưu trên test.
+
+*(Các con số trong bảng này thấp hơn bảng trên vì huấn luyện chỉ trên train
+2 191 ngày thay vì train+valid 4 564 ngày.)*
+
+---
+
 ## 4. Vì sao h=3 khó
 
 Thời gian truyền lũ từ Thượng Nhật về Kim Long chỉ **5–6 giờ trên 51 km** (bài
