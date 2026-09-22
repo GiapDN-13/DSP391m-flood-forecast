@@ -56,11 +56,24 @@ Chỉ **1/5** khoảng có khác biệt vượt KTC, và chỉ −16 %.
 trước và 1,10 sau, tỉ số **+16 %**. Nếu chuỗi sau mốc gãy bị làm trơn thì tỉ số
 này phải **giảm**, không phải tăng.
 
-⇒ Hai dấu hiệu ngược chiều nhau và đều nhỏ. **Không có thiên lệch hệ thống.**
+⇒ Hai dấu hiệu ngược chiều nhau và đều nhỏ.
 
 **3d. Nới cửa sổ ghép đỉnh cũng không cứu được.** Với cả 5 đợt sau mốc gãy,
 đỉnh GloFAS trong cửa sổ ±1 và ±7 ngày **y hệt nhau** — không phải do cửa sổ
 quá hẹp.
+
+**3e. Đã kiểm riêng phần đuôi phân bố** (phản biện độc lập chỉ ra rằng giả
+thuyết "làm trơn đỉnh" nằm ở đuôi, mà bảng 3b lại bỏ khoảng > 200 mm vì thiếu
+mẫu). Gộp toàn bộ ngày có mưa 3 ngày ≥ 200 mm:
+
+| | n | Q trung vị | Mann–Whitney |
+|---|---|---|---|
+| trước | 45 | 1 275 | |
+| sau | 14 | 1 519 (+19 %) | **p = 0,581** |
+
+Không đủ bằng chứng khác biệt, và lại đi **ngược chiều** giả thuyết làm trơn.
+
+⇒ **Không có thiên lệch hệ thống, kể cả ở đuôi.**
 
 ---
 
@@ -69,12 +82,26 @@ quá hẹp.
 Lấy 12 đợt lũ nằm trong khoảng panel (2010+), ghép mưa 5 ngày, lưu lượng GloFAS
 và mực nước công bố:
 
-| Quan hệ | R² | Ý nghĩa |
-|---|---|---|
-| ln(mưa) → ln(Q) | **0,691** | GloFAS phản ứng với mưa **rất nhất quán** |
-| mưa → H | 0,362 | |
-| Q → H | 0,300 | |
-| **ln(Q) → H** | **0,184** | **dạng đang dùng trong FR-T2** |
+| Quan hệ | R² | Spearman ρ | p | Ý nghĩa |
+|---|---|---|---|---|
+| ln(mưa) → ln(Q) | **0,691** | | | GloFAS phản ứng với mưa **rất nhất quán** |
+| **mưa → H** | **0,362** | **+0,594** | **0,042** | quan hệ **duy nhất** có ý nghĩa thống kê |
+| Q → H | 0,300 | | | |
+| **ln(Q) → H** | **0,184** | +0,364 | 0,245 | **dạng dùng trong FR-T2 — không có ý nghĩa** |
+
+Hai điều phải nói kèm, nếu không sẽ bị bắt lỗi:
+
+1. **n = 12 nên kết quả nhạy với từng điểm.** Leave-one-out cho R² dao động
+   **0,087 – 0,431**; bỏ riêng đợt 2023-11 thì R² lên 0,431. Kết luận "quan hệ
+   yếu" đúng về hướng nhưng **không được trích con số 0,184 như một hằng số**.
+2. **Không phải do mấy dòng dữ liệu kém tin cậy.** Lọc bỏ 3 đợt có
+   `confidence = thap` (số dự báo, chưa phải thực đo), còn 8 đợt thì
+   R² **tụt tiếp xuống 0,101** — quan hệ yếu đi chứ không mạnh lên.
+
+Đáng chú ý nhất: **mưa dự báo mực nước tốt hơn lưu lượng GloFAS dự báo mực
+nước** (0,362 so với 0,300, và chỉ mưa mới có ý nghĩa thống kê). Nếu bước qua
+GloFAS làm *mất* thông tin so với dùng thẳng mưa, thì ngoài chuyện triều còn có
+khả năng GloFAS bỏ sót chính các trận lớn — xem cảnh báo ở mục 5a.
 
 Đọc theo chuỗi nhân quả:
 
@@ -83,7 +110,19 @@ mưa  ──R²=0,69──►  Q (GloFAS)  ──R²=0,18──►  H (mực nư
         chắc                        RẤT YẾU
 ```
 
-**Khâu yếu không phải GloFAS, mà là bước từ lưu lượng sang mực nước.**
+**Khâu yếu nằm ở bước từ lưu lượng sang mực nước.** Nhưng phải cẩn thận khi
+đọc câu này: nó **không** đồng nghĩa với "GloFAS đúng". Hai cách giải thích đều
+còn sống, và dữ liệu hiện có **chưa tách được chúng**:
+
+* **(a) Trạm đo:** mực nước Kim Long chịu triều và nước dềnh, nên không phải
+  hàm của riêng lưu lượng thượng nguồn.
+* **(b) Mô hình:** GloFAS (bị ép bởi trường mưa kiểu ERA5, vốn hạ thấp mưa cực
+  trị) bỏ sót chính các trận lớn. Chi tiết ở mục 5a.
+
+Việc **mưa dự báo H tốt hơn Q dự báo H** nghiêng về (b) nhiều hơn là (a): nếu
+GloFAS chỉ đơn thuần "thiếu biến triều" thì nó vẫn phải giữ được thông tin của
+mưa, chứ không làm mất bớt. Muốn phân định dứt khoát thì phải có **mưa trạm
+thực đo** — hướng D ở mục 6.
 
 Nhìn từng đợt thì thấy ngay:
 
@@ -113,7 +152,14 @@ còn phụ thuộc triều, nước dềnh từ phá Tam Giang, và vận hành 
 **5a. R21 hạ cấp.** Từ P=4 / I=5 xuống **P=1 / I=2**. Vẫn phải tách train/test
 theo mốc 2022-07-01 như `DATA_SPLITS.md` quy định — đó là kỷ luật đúng, và kế
 hoạch gốc cũng đã dặn — nhưng **không còn là mối đe doạ với toàn dự án**.
-Nhánh hồi quy lưu lượng **không bị ảnh hưởng gì**.
+
+> ⚠️ **Giới hạn của kết luận này, phải nêu trong báo cáo.** Phép thử dựa trên
+> giả định **mưa ERA5 là mốc tham chiếu đúng**. Nhưng GloFAS v4 được *ép bởi*
+> chính trường mưa kiểu ERA5, nên "mưa và lưu lượng nhất quán với nhau" có thể
+> nghĩa là **cả hai cùng sai theo cùng một hướng**, không phải cả hai cùng
+> đúng. Kết luận an toàn duy nhất rút ra được là: **chuỗi không đổi chế độ qua
+> mốc 2022-07-01**. Nó **không** chứng minh GloFAS mô phỏng đúng lũ thật.
+> Muốn kiểm điều đó phải đối chiếu với **mưa trạm thực đo** — xem mục 6.
 
 **5b. FR-T2 lạc quan hơn thực tế.** Con số R² = 0,629 báo cáo trước đó là trên
 **N = 7** đợt chọn lọc. Trên đủ 12 đợt trong khoảng panel, cùng dạng ln(Q) → H,
@@ -132,6 +178,7 @@ phải "thiếu dữ liệu" mà là **vật lý của trạm đo**.
 | **A** | Giữ ánh xạ H→Q, nêu rõ hạn chế trong Limitations | Giữ nguyên đề cương, vẫn nói được "cấp báo động BĐ I/II/III" | Đứng trên quan hệ R² = 0,18. Ở vấn đáp rất dễ bị hỏi gãy |
 | **B** | Đổi nhãn sang **phân vị lưu lượng** (phương án R4 trong `THRESHOLDS.md`), **không** gọi là BĐ | Trung thực, nhãn dựng trên chính đại lượng mô hình dự báo, đủ mẫu để huấn luyện | Mất tính "chính danh" của ngưỡng nhà nước; phải viết lại phần đặt vấn đề |
 | **C** | Giữ BĐ nhưng thêm biến triều / mực nước hạ lưu vào mô hình | Đúng vật lý nhất | Cần nguồn dữ liệu triều mới; không chắc lấy được trong 8 tuần còn lại |
+| **D** | Đối chiếu **mưa ERA5 với mưa trạm** đã công bố cho 19 sự kiện | Kiểm được chính giả định nền của mục 5a. Kết quả nào cũng có giá trị: ERA5 hụt ⇒ phát hiện mạnh; không hụt ⇒ luận điểm triều được củng cố | Tốn công đọc–tra thủ công, giống FR-D7 |
 
 Khuyến nghị của tôi: **B**, có nhắc tới A và C trong Limitations. Lý do: phương
 án B là thứ duy nhất trong ba cái mà ta **chắc chắn làm xong được** trong thời

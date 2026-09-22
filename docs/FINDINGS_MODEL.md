@@ -10,11 +10,23 @@ lai (`tests/test_no_leakage.py` khoá điều này).
 
 ## 1. Kết quả: thắng persistence ở cả ba horizon
 
-| h | NSE LightGBM | NSE persistence | Chênh | RMSE | RMSE persistence | `AC-1` |
+| h | NSE LightGBM | KTC 95 % | NSE persistence | KTC 95 % | Chênh | `AC-1` |
 |---|---|---|---|---|---|---|
-| 1 | **0,742** | 0,542 | **+0,200** | 117,4 | 156,4 | ≥ 0,70 ✅ |
-| 2 | **0,422** | 0,008 | **+0,414** | 175,8 | 230,2 | ≥ 0,40 ✅ |
-| 3 | **0,167** | −0,198 | **+0,364** | 211,1 | 253,1 | ≥ 0,25 ❌ |
+| 1 | **0,742** | 0,673 – 0,789 | 0,542 | 0,388 – 0,650 | +0,200 | ≥ 0,70 ✅ |
+| 2 | **0,422** | 0,366 – 0,469 | 0,008 | −0,298 – 0,223 | +0,414 | ≥ 0,40 ✅ |
+| 3 | **0,167** | 0,111 – 0,211 | −0,198 | −0,561 – 0,013 | +0,364 | ≥ 0,25 ❌ |
+
+KTC tính bằng **block bootstrap** (khối 30 ngày) chứ không phải bootstrap i.i.d.
+— chuỗi ngày tự tương quan mạnh nên bootstrap thường sẽ cho khoảng quá hẹp.
+
+**Khoảng tin cậy của hai mô hình không chồng lấn ở cả ba horizon** ⇒ biên thắng
+là thật, không phải nhiễu. Ngược lại, KTC của h=3 **nằm trọn dưới ngưỡng 0,25**
+⇒ `AC-1` trượt ở h=3 là dứt khoát, không phải sát nút.
+
+> **Đã kiểm tính công bằng của phép so.** Mặt nạ tập test của LightGBM (đòi đủ
+> 66 feature không rỗng) và của persistence **trùng nhau hoàn toàn** — 1 522 /
+> 1 521 / 1 520 ngày ở h=1/2/3, chênh 0. Không có chuyện mô hình được chấm trên
+> tập dễ hơn.
 
 Đúng như dự đoán từ bảng baseline: **mức cải thiện lớn nhất nằm ở h=2 và h=3**,
 nơi persistence sụp. Ở h=1 persistence vốn đã mạnh nên biên thắng hẹp hơn.
@@ -78,11 +90,25 @@ hồi quy trung tâm trên phân bố lệch**, không phải do chọn sai hàm
 | 4 | `rain_thuong` | 443 |
 | 5–10 | `discharge_lag9…14`, `q_diff1` | 356–386 |
 
-Hai feature mùa vụ đứng đầu là điều **cần cảnh giác**: mô hình đang dựa nhiều
-vào "đang là tháng mấy". Điều đó hợp lý ở lưu vực có 58,6 % dòng chảy dồn vào
-tháng 9–12 (EDA §2), nhưng cũng có nghĩa là một phần điểm số đến từ khí hậu học
-chứ không từ tín hiệu mưa. Cần kiểm ở Report 3 bằng cách bỏ hẳn hai cột đó và
-đo lại — nếu NSE gần như không đổi thì mô hình đang học mùa vụ, không học lũ.
+Hai feature mùa vụ đứng đầu thoạt nhìn đáng lo: liệu mô hình có đang dựa vào
+"đang là tháng mấy" thay vì tín hiệu mưa?
+
+**Đã kiểm bằng ablation — câu trả lời là không:**
+
+| Bộ feature | NSE h=1 | NSE h=2 | NSE h=3 |
+|---|---|---|---|
+| đủ 66 feature | 0,742 | 0,422 | 0,167 |
+| **bỏ hẳn `doy_sin`, `doy_cos`** | **0,748** | **0,423** | **0,174** |
+
+Bỏ hai cột mùa vụ thì NSE **không giảm, thậm chí nhích lên**. Nghĩa là thông
+tin mùa vụ đã nằm sẵn trong các lag lưu lượng và mưa; xếp hạng `gain` cao chỉ
+phản ánh việc biến liên tục tuần hoàn được dùng ở **nhiều nút chia nhỏ**, không
+phải nó gánh mô hình.
+
+> Giữ nguyên bộ 66 feature làm cấu hình chính. Không đổi sang bộ bỏ `doy_*` dù
+> điểm nhích lên — chênh lệch nằm trong nhiễu và việc chọn theo điểm **test**
+> là rò rỉ tập test. Bảng trên là **bằng chứng phản bác một nghi ngờ**, không
+> phải bước chọn mô hình.
 
 `rain_thuong` đứng thứ 4 khớp với EDA §8: nước sinh ra ở thượng nguồn.
 
