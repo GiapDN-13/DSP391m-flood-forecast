@@ -249,9 +249,38 @@ triều thực tế còn phụ thuộc pha triều **trong ngày**, nước dân
 **vận hành đập Thảo Long** — vốn do con người điều khiển chứ không theo mặt
 trăng. Với n = 12 thì phép thử này gần như không có sức phân giải.
 
-⇒ Muốn kiểm thật phải có **mực nước thực đo tại Thảo Long hoặc Thuận An**.
-Chưa tìm được nguồn mở. Ghi vào Limitations là **giả thuyết chưa kiểm được**,
-không phải giả thuyết đã bác bỏ.
+### Đã tìm được nguồn triều thật — kết quả đổi chiều
+
+**Open-Meteo Marine API** có biến `sea_level_height_msl` theo giờ, lấy tại cửa
+Thuận An (16,57 N · 107,63 E) nơi sông Hương đổ ra phá Tam Giang. Không cần API
+key, cùng giấy phép CC BY 4.0.
+
+🔴 **Nhưng kho lưu trữ chỉ bắt đầu 2023-01-01**, nên:
+
+* chỉ **5/12** đợt lũ có dữ liệu triều;
+* **không dùng làm feature huấn luyện được** — tập train kết thúc 2022-06.
+
+Với n = 5, tương quan phần dư với triều là **r = +0,477 (p = 0,417)** — *đúng
+chiều* giả thuyết, ngược hẳn với proxy pha mặt trăng, nhưng chưa có ý nghĩa.
+
+**Cặp đối chứng tự nhiên đáng chú ý nhất:**
+
+| Đợt | Q (m³/s) | Triều đỉnh (m) | H (m) |
+|---|---|---|---|
+| 2023-11 | 584 | **1,32** | **4,34** |
+| 2024-11 | 600 | **1,19** | **3,10** |
+
+Hai đợt có lưu lượng **chênh 2,7 %** nhưng mực nước **chênh 1,24 m**, và đợt có
+triều cao hơn chính là đợt có mực nước cao hơn.
+
+⚠️ **Đừng kết luận quá:** chênh triều chỉ 0,13 m mà chênh mực nước 1,24 m thì
+tỉ lệ khuếch đại ~10 lần — không hợp lý về vật lý. Triều **góp phần** nhưng
+**không đủ** để giải thích; còn vận hành hồ chứa, phân bố mưa theo không gian,
+và vận hành đập Thảo Long. Đây là **manh mối**, không phải bằng chứng.
+
+**Đã làm:** `src/models/predict_daily.py` ghi thêm cột `sea_level_max` mỗi
+ngày. Không dùng được cho mô hình bây giờ, nhưng mỗi ngày trôi qua là một ngày
+tích luỹ — giống lý do bật job dự báo từ W1.
 
 ---
 

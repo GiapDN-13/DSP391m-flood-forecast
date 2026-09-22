@@ -78,6 +78,25 @@ def fetch_rain_forecast(lat: float, lon: float) -> pd.DataFrame:
                          "temp_forecast": d["temperature_2m_mean"]})
 
 
+def fetch_sea_level(lat: float = 16.57, lon: float = 107.63) -> pd.DataFrame:
+    """Mực nước biển tại cửa Thuận An — biến triều cho nhánh phân loại.
+
+    Vì sao ghi từ bây giờ: kho lưu trữ của Marine API **chỉ có từ 2023-01-01**,
+    nên không dùng làm feature huấn luyện được (train kết thúc 2022-06). Nhưng
+    mực nước tại Kim Long phụ thuộc triều (`FINDINGS_REGIME.md` §6c), nên mỗi
+    ngày ghi lại là một ngày tích luỹ cho phân tích về sau. Không lấy thì mất.
+    """
+    # API chỉ có biến này ở mức GIỜ, không có sẵn bản theo ngày — gộp lấy đỉnh
+    # trong ngày, vì cái gây dềnh nước là đỉnh triều chứ không phải trung bình.
+    d = _get("https://marine-api.open-meteo.com/v1/marine", {
+        "latitude": lat, "longitude": lon, "hourly": "sea_level_height_msl",
+        "forecast_days": 7, "timezone": cfg.TIMEZONE,
+    })["hourly"]
+    s = pd.Series(d["sea_level_height_msl"], index=pd.to_datetime(d["time"]))
+    g = s.groupby(s.index.normalize()).max()
+    return pd.DataFrame({"target_date": g.index, "sea_level_max": g.to_numpy()})
+
+
 def alert_level(q: float) -> str:
     """Quy lưu lượng ra cấp báo động, nếu ngưỡng đã được chốt ở W3."""
     levels = getattr(cfg, "ALERT_LEVELS_Q", {}) or {}
@@ -118,6 +137,12 @@ def main() -> int:
             continue
 
         df = q.merge(rain, on="target_date", how="outer").sort_values("target_date")
+        # Triều là biến phụ: hỏng thì vẫn ghi phần chính, không để mất cả ngày.
+        try:
+            df = df.merge(fetch_sea_level(), on="target_date", how="left")
+        except Exception as e:
+            print(f"  ! {name}: không lấy được mực nước biển — {e}", flush=True)
+            df["sea_level_max"] = pd.NA
         df.insert(0, "run_date", run_date)
         df.insert(1, "point", name)
         df.insert(2, "lat", lat)

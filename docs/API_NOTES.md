@@ -6,6 +6,7 @@ Phụ trách: **D** · Hạn: **W1** · Mục đích: để cả team biết g�
 
 | Endpoint | Host | Dùng để | Ghi chú |
 |---|---|---|---|
+| **Marine API** | `marine-api.open-meteo.com/v1/marine` | `sea_level_height_msl` theo giờ — biến triều tại cửa Thuận An (16,57 · 107,63). ⚠️ **Kho chỉ có từ 2023-01-01** nên không làm feature huấn luyện được | CC BY 4.0 |
 | Flood API | `flood-api.open-meteo.com/v1/flood` | `river_discharge` theo ngày; tài liệu ghi từ 1984 nhưng **thực tế chỉ có dữ liệu từ 1997** (xem `FINDINGS_EVENTS.md` §3) → +7 ngày | GloFAS v4, ~5 km |
 | Historical (ERA5) | `archive-api.open-meteo.com/v1/archive` | Mưa/nhiệt/gió theo giờ | Trễ ~5 ngày |
 | **Historical Forecast** | `historical-forecast-api.open-meteo.com/v1/forecast` | **Mưa dự báo đã phát trong quá khứ (từ 2021)** | ⭐ Cần cho kịch bản B |
