@@ -35,7 +35,9 @@ Dự báo lưu lượng lưu vực sông Bosna (Bosnia & Herzegovina) — nơi t
 ## 5. Hạn chế tác giả tự nêu
 
 - Chuỗi dài nhưng chỉ **một** trạm thuỷ văn
-- ⚠️ phần còn lại CẦN KIỂM khi đọc toàn văn
+- ⚠️ phần còn lại CẦN KIỂM. MDPI chặn công cụ tự động (403) — **tải tay** ở
+  https://www.mdpi.com/2073-4441/18/10/1226 (mở, CC BY)
+- Còn thiếu: chỉ số định lượng, cách chia train/test, công cụ XAI cụ thể, feature quan trọng nhất
 
 ## 6. 👉 Liên hệ với dự án của nhóm
 

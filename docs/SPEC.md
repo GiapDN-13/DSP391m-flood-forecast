@@ -66,7 +66,7 @@ Xây dựng hệ thống dự báo **lưu lượng sông và cấp báo động 
 |---|---|---|---|---|---|
 | **FR-D1** | Lấy lưu lượng GloFAS theo ngày cho các điểm đã chốt, 1984-01-01 → 2026-08-31 | **M** | File Parquet tồn tại; **số ngày KHÔNG RỖNG** ≥ 10 000; 0 ngày trùng; `q_mean` của ô chính > 100 m³/s. ⚠️ Nghiệm thu cũ chỉ đếm số dòng nên không thấy 1984–1996 rỗng 100 % | G | W1–W2 |
 | **FR-D2** | Lấy mưa ERA5 theo **giờ** (2015–2026) và theo **ngày** (2010–2026), lưới 0,10° (64 điểm) | **M** | ≥ 95 % điểm × năm có dữ liệu; phần thiếu liệt kê trong log | G | ✅ **xong 15/09** |
-| **FR-D3** | Lấy **mưa dự báo đã phát trong quá khứ** (Historical Forecast API) phủ tập test 07/2022 → 2026, horizon 1–3 ngày | **S** | Có chuỗi mưa dự báo cho ≥ 90 % ngày trong tập test | G | W5 |
+| **FR-D3** | ~~Lấy mưa dự báo đã phát~~ 🔴 **VÔ HIỆU 22/09** | **S** | Đã crawl 64 ô, nhưng Historical Forecast API trả **đúng cùng số** với ERA5 (chênh lệch tối đa **0,0 mm** trên 1 523 ngày). Dữ liệu trùng lặp, không dùng được cho kịch bản B. Xem `FINDINGS_MODEL.md` §4b | G | 🔴 |
 | **FR-D4** | Crawler chịu lỗi: retry luỹ thừa, cache theo request, checkpoint để resume | **M** | Ngắt mạng giữa chừng rồi chạy lại **không mất dữ liệu và không gọi lại request đã xong** | G | W1 |
 | **FR-D5** | Xác định ô lưới GloFAS nằm đúng dòng chảy chính | **M** | Chốt bằng 3 bằng chứng độc lập (hình học OSM · tương quan · diện tích lưu vực suy ra), tái lập được bằng `python -m src.features.river_id`; ghi vào `config.RIVER_POINTS` | G | ✅ **xong 15/09** |
 | **FR-D6** | Sao lưu dữ liệu ra ngoài máy cá nhân | **M** | Release `data-2026-09-17` trên repo: 9 asset, 95 MB. `scripts/restore_data.py` kiểm checksum trước khi giải nén. **Đã kiểm khôi phục thật: khớp bit-for-bit** | G | ✅ **xong 17/09** |
