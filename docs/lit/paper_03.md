@@ -17,23 +17,28 @@
 
 | Nguồn | Khu vực | Khoảng thời gian | Độ phân giải |
 |---|---|---|---|
-| GloFAS-ERA5 (ngày) | 3 trạm Sahzab, Mirkuh, Markid — lưu vực Ajichai, Iran | ⚠️ CẦN KIỂM | ngày |
+| GloFAS-ERA5 | 3 trạm Sahzab, Mirkuh, Markid — lưu vực Ajichai, Iran | lưu lượng thực đo **1993–2024** | ngày |
+| Mưa + nhiệt trạm địa phương & ERA5 | cùng lưu vực | 1993–2024 | ngày |
 
 ## 3. Phương pháp
 
-- Mô hình: FFNN, ANFIS, SVR, LSTM — cả **thô** lẫn **đã hiệu chỉnh sai lệch**
-- Cách làm: mô hình hoá **đa trạm** để vùng hoá (regionalize), rồi hiệu chỉnh
-- Chia train/test: ⚠️ CẦN KIỂM
+- Mô hình: FFNN, ANFIS, SVR, LSTM, và **ensemble phi tuyến Neural Averaging (NA)**
+- Chạy nhiều kịch bản dùng GloFAS **thô** và GloFAS **đã hiệu chỉnh sai lệch**
+- Chiến lược **đa trạm**: đưa lưu lượng thượng nguồn (Sahzab, Mirkuh) vào để dự báo hạ nguồn (Markid)
+- Chia: calibration / verification
 
 ## 4. Kết quả chính
 
 | Metric | Giá trị | So với baseline |
 |---|---|---|
-| Mức cải thiện sau hiệu chỉnh | ⚠️ CẦN KIỂM số cụ thể | so với GloFAS thô |
+| Ensemble **NA** | vượt mọi mô hình ML đơn lẻ | |
+| RMSE tại Markid, đa trạm vs đơn trạm | **−2,2 %** (calibration) · **−9,4 %** (verification) | |
+| Chỉ số dùng | RMSE và DC (hệ số xác định) | |
 
 ## 5. Hạn chế tác giả tự nêu
 
-- ⚠️ CẦN KIỂM (bài bị chặn truy cập tự động, phải tải qua thư viện trường)
+- Sai lệch của GloFAS gắn với **độ phân giải không gian** — tác giả nêu thẳng trong abstract
+- Chỉ 3 trạm, một lưu vực
 
 ## 6. 👉 Liên hệ với dự án của nhóm
 
@@ -43,4 +48,6 @@
 
 ## 7. Câu trích dẫn nguyên văn
 
-> ⚠️ CẦN LẤY khi có toàn văn
+> "The Global Flood Awareness System (GloFAS) is a promising flood-modelling tool available for most river basins worldwide. However, it contains inherent biases, notably linked to its spatial resolution." (Nourani et al., 2026, abstract)
+
+PDF: `docs/lit/pdf/paper_03_Nourani_2026_GloFAS_bias_correction.pdf`
