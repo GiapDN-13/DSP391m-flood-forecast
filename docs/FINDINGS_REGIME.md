@@ -226,6 +226,35 @@ mở**, không phải lỗi của nhóm — và nêu ra được nó là điểm
 
 ---
 
+## 6c. Đã thử kiểm giả thuyết triều — chưa kết luận được
+
+Không có dữ liệu triều thực đo, nên dùng **pha mặt trăng làm biến thay thế**:
+triều cường xảy ra quanh trăng non và trăng tròn, tính được từ ngày mà không
+cần nguồn ngoài. Lấy phần dư của `H` sau khi đã trừ phần giải thích được bằng
+`ln(Q)`, rồi soi với chỉ số triều cường.
+
+| Phép đo | Kết quả |
+|---|---|
+| Pearson (phần dư, triều cường) | r = **−0,305**, p = 0,335 |
+| Spearman | ρ = −0,343, p = 0,276 |
+| R² của `H ~ ln(Q) + triều` | 0,272 (so với 0,184 nếu chỉ `ln(Q)`) |
+| Hệ số triều | **−1,053 m** |
+
+**Kết quả đi ngược giả thuyết và không có ý nghĩa thống kê.** Triều cường lẽ ra
+phải *nâng* mực nước, nhưng hệ số lại âm. Hai đợt kéo tương quan xuống đều có
+chỉ số triều cường = 1,00 (`2020-09` phần dư −2,17 và `2020-11` −1,37).
+
+**Không kết luận là "triều không ảnh hưởng".** Proxy này quá thô: mực nước
+triều thực tế còn phụ thuộc pha triều **trong ngày**, nước dâng do bão, và
+**vận hành đập Thảo Long** — vốn do con người điều khiển chứ không theo mặt
+trăng. Với n = 12 thì phép thử này gần như không có sức phân giải.
+
+⇒ Muốn kiểm thật phải có **mực nước thực đo tại Thảo Long hoặc Thuận An**.
+Chưa tìm được nguồn mở. Ghi vào Limitations là **giả thuyết chưa kiểm được**,
+không phải giả thuyết đã bác bỏ.
+
+---
+
 ## 7. Ghi chú phương pháp
 
 Phép thử ở mục 3b là mẫu chung cho mọi nghi ngờ kiểu "dữ liệu có đổi không":
