@@ -1,7 +1,7 @@
 # Tóm tắt bài báo — paper_04 · ⭐ Hiệu chỉnh sai lệch GloFAS — bài số 2, có XAI
 
 **Trích dẫn đầy đủ (APA):**
-> ⚠️ **CẦN KIỂM TÊN TÁC GIẢ.** Explainable Deep Ensemble Bias Correction of GloFAS-ERA5 Streamflow Across Snow-Influenced Transboundary Basins of Central Asia. *Water*, *18*(16), 2055. https://doi.org/10.3390/w18162055
+> Honcharenko, T., Dolhopolov, S., Neftissov, A., Kazambayev, I., Aubakirova, A., Kirichenko, L., & Kuchanskyi, O. (2026). Explainable Deep Ensemble Bias Correction of GloFAS-ERA5 Streamflow Across Snow-Influenced Transboundary Basins of Central Asia. *Water*, *18*(16), 2055. https://doi.org/10.3390/w18162055
 
 **Link / DOI:** https://doi.org/10.3390/w18162055
 
@@ -17,22 +17,28 @@ Hiệu chỉnh sai lệch GloFAS-ERA5 bằng **ensemble học sâu có giải th
 
 | Nguồn | Khu vực | Khoảng thời gian | Độ phân giải |
 |---|---|---|---|
-| GloFAS-ERA5 | lưu vực xuyên biên giới Trung Á | ⚠️ CẦN KIỂM | ngày |
+| GloFAS-ERA5 + kho CA-discharge | **74 trạm** hệ thống Syr Darya & Amu Darya, Trung Á | ⚠️ khoảng thời gian cần kiểm | ngày |
 
 ## 3. Phương pháp
 
-- Mô hình: ensemble học sâu + XAI
-- ⚠️ phần còn lại CẦN KIỂM
+- Hiệu chỉnh **log-residual** của GloFAS-ERA5 (không hiệu chỉnh trực tiếp lưu lượng)
+- Nền: LSTM *entity-aware* → **mixture of experts có cổng theo chế độ**
+- Hàm mất mát: **CRPS** dạng đóng cho hỗn hợp; thêm ràng buộc vật lý về tuyết
+- Lớp **conformal** (Mondrian) theo chế độ để cho khoảng tin cậy
+- Đánh giá: temporal holdout · leave-one-basin-out · dự báo ở vùng không có trạm
+- Giải thích: **grouped Shapley** (SHAP theo nhóm biến)
 
 ## 4. Kết quả chính
 
 | Metric | Giá trị | So với baseline |
 |---|---|---|
-| ⚠️ CẦN KIỂM | | |
+| KGE′ trung vị | **0,386 → 0,825** | GloFAS thô → sau hiệu chỉnh |
+| Số trạm đạt kỹ năng dự báo | **74/74** | trước đó không phải trạm nào cũng đạt |
 
 ## 5. Hạn chế tác giả tự nêu
 
-- ⚠️ CẦN KIỂM
+- Tác giả nêu thẳng: GloFAS-ERA5 **mất độ chính xác ở lưu vực đầu nguồn nhỏ**, nuôi bởi tuyết và băng — đúng kiểu giới hạn phân giải mà nhóm gặp
+- Lưu vực chịu ảnh hưởng tuyết, khác hẳn mưa gió mùa
 
 ## 6. 👉 Liên hệ với dự án của nhóm
 
@@ -42,4 +48,8 @@ Hiệu chỉnh sai lệch GloFAS-ERA5 bằng **ensemble học sâu có giải th
 
 ## 7. Câu trích dẫn nguyên văn
 
-> ⚠️ CẦN LẤY
+> "Global streamflow reanalyses such as GloFAS-ERA5 are available everywhere yet lose fidelity in small, snow- and glacier-fed headwaters" (Honcharenko et al., 2026, abstract)
+
+> "Correction rendered all 74 gauges skillful, raising the median modified Kling–Gupta efficiency (KGE′) from 0.386 (raw) to 0.825" (như trên)
+
+PDF: `docs/lit/pdf/paper_04_Honcharenko_2026_explainable_bias_correction.pdf` (mở, CC BY)

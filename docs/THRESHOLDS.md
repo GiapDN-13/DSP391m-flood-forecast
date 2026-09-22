@@ -176,11 +176,25 @@ thuộc phạm vi cả nước"*. Mực nước từng trạm nằm ở **Phụ 
 Nguồn chính thức: `https://congbao.chinhphu.vn/van-ban/quyet-dinh-so-05-2020-qd-ttg-30609.htm`
 và `https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=199001`
 
-🔴 **Còn tắc:** bảng Phụ lục I nằm trong **file PDF/DOC đính kèm**, không có
-trong phần chữ của trang web, và trang thuvienphapluat trả HTTP 403 với công cụ
-tự động. **Cần tải tay** file đính kèm từ congbao.chinhphu.vn rồi chép đúng
-dòng Kim Long vào đây.
+✅ **Đã lấy được Phụ lục I** (bản PDF Công báo, lưu tại
+`docs/refs/QD_05_2020_QD-TTg_CongBao_179-180.pdf`, trang 12–13). Nguyên văn dòng
+số **135**:
 
-Trong lúc chờ, giá trị 1,00 / 2,00 / 3,50 m đã được **kiểm chứng bằng số học từ
-6 nguồn độc lập** (`FINDINGS_EVENTS.md` §2a) nên đủ tin để làm việc tiếp — đây
-là việc hoàn thiện trích dẫn, không phải nút thắt.
+| TT | Tên tỉnh | Tên sông | Trạm thuỷ văn | BĐ I | BĐ II | BĐ III |
+|---|---|---|---|---|---|---|
+| 134 | Thừa Thiên Huế | Bồ | Phú Ốc | 1,5 | 3,0 | 4,5 |
+| **135** | **Thừa Thiên Huế** | **Hương** | **Huế (Kim Long)** | **1,0** | **2,0** | **3,5** |
+| 136 | Thừa Thiên Huế | Tả Trạch | Thượng Nhật | 59,0 | 61,0 | 63,0 |
+
+⇒ Giá trị **1,0 / 2,0 / 3,5 m** trong `cfg.ALERT_LEVELS_M` **khớp chính xác văn
+bản gốc**, và trùng với kết quả suy ra bằng số học từ 6 nguồn độc lập
+(`FINDINGS_EVENTS.md` §2a).
+
+Hai chi tiết đáng ghi:
+
+* Tên trạm chính thức trong văn bản là **"Huế (Kim Long)"**, không phải
+  "Kim Long" đơn thuần — dùng đúng tên này khi trích dẫn trong báo cáo.
+* Văn bản cũng cho ngưỡng **Phú Ốc** (sông Bồ) 1,5 / 3,0 / 4,5 m, dùng được
+  ngay nếu sau này mở rộng sang sông Bồ.
+
+**FR-T1 hoàn tất.**
