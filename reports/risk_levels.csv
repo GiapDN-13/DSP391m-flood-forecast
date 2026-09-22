@@ -1,0 +1,5 @@
+muc,nguong_m3s,n_toan_chuoi,n_train_valid,n_test,pct_test,n_test_luy_ke,du_mau_test
+binh_thuong,0.0,5977,4485,1492,97.96,,
+nguy_co_1,806.0,63,44,19,1.25,31.0,True
+nguy_co_2,1275.4,31,26,5,0.33,12.0,False
+nguy_co_3,1905.3,16,9,7,0.46,7.0,False

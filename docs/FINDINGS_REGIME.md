@@ -192,6 +192,40 @@ phải một thất bại kỹ thuật cần giấu.
 
 ---
 
+## 6b. Kết quả hướng D — ERA5 **có** hụt mưa cực trị
+
+Đối chiếu tổng mưa ERA5 (lấy **ô lưới lớn nhất**, không phải trung bình lưu
+vực, để so được với trạm điểm) với số trạm đã công bố:
+
+| Đợt | ERA5 ô lớn nhất | ERA5 TB lưu vực | Trạm đã công bố |
+|---|---|---|---|
+| 2017-11 (bão số 12) | 827 mm | 530 mm | 600–1 200 mm phổ biến; Bạch Mã 2 751 |
+| 2020-10 (đợt dài) | 1 713 mm | 1 184 mm | Nhâm 2 390 · Phú Đa 2 081 · Quan Tượng Đài 2 096 |
+| **2024-11** | **332 mm** | 171 mm | **miền núi 500–800 phổ biến**; Khe Tre 823 |
+| 2023-11 | 323 mm | 180 mm | chưa tra được |
+
+**Đợt 2024-11 là bằng chứng mạnh nhất:** ERA5 ở ô lớn nhất chỉ 332 mm trong khi
+mức *phổ biến* ở miền núi đã là 500–800 mm — hụt hơn một phần ba, và đây là so
+với mức phổ biến chứ không phải một trạm cực trị đơn lẻ.
+
+**Phải nói kèm hai điều kẻo bị bắt lỗi:**
+
+1. Ô lưới ERA5 ~0,25° là **trung bình trên diện tích**, còn trạm là **điểm**.
+   Ở địa hình núi, trung bình ô thấp hơn đỉnh điểm là chuyện bình thường, nên
+   một phần khoảng cách trên là do so lệch đơn vị chứ không hẳn do sai số.
+2. Bạch Mã (~16,20 N · 107,85 E) **nằm ngoài hộp lưới mưa** (107,10–107,80),
+   nên không được dùng con số 2 751 / 2 997 mm làm mốc so trực tiếp.
+
+**Kết luận:** có bằng chứng ERA5 hụt mưa cực trị ở lưu vực này, độ lớn chưa xác
+định chắc. Điều này **củng cố giả thuyết (b)** ở mục 4: GloFAS bị ép bởi trường
+mưa hụt nên bỏ sót chính các trận lớn — và giải thích được vì sao đợt 2023-11
+có mực nước 4,34 m mà GloFAS chỉ cho 584 m³/s.
+
+⇒ Vào Limitations của Report 2 và Report 3. Đây là **hạn chế của nguồn dữ liệu
+mở**, không phải lỗi của nhóm — và nêu ra được nó là điểm cộng.
+
+---
+
 ## 7. Ghi chú phương pháp
 
 Phép thử ở mục 3b là mẫu chung cho mọi nghi ngờ kiểu "dữ liệu có đổi không":
