@@ -172,6 +172,64 @@ phải phần phụ mà là **phần quyết định ở h=2 và h=3**. Đó là
 
 ---
 
+## 4b. 🔴 Kịch bản B không dựng được — và điều đó làm lộ ra một phát hiện lớn hơn
+
+**Kịch bản B thật đã chết.** `FR-D3` crawl "mưa dự báo đã phát" từ Historical
+Forecast API để làm kịch bản B. Kiểm 22/09/2026: endpoint đó trả về **đúng cùng
+con số** với Archive API (ERA5) — tương quan **1,0000**, chênh lệch tối đa
+**0,0 mm** trên 1 523 ngày, xác nhận lại bằng gọi API trực tiếp. Previous-Runs
+API cũng không có biến `*_previous_dayN` cho vùng này.
+
+⇒ Không có nguồn mở nào cho mưa dự báo phát trước 1–3 ngày ở lưu vực này.
+`data/raw/fc_rain/` (64 ô, 2 MB) **trùng lặp với `rain_daily`**, không mang thêm
+thông tin nào.
+
+Thay bằng **kịch bản B′** (`RESEARCH_DESIGN.md` §2 đã dự phòng): quét độ nhạy —
+làm nhiễu mưa bằng nhiễu nhân lognormal với `sigma` tăng dần.
+
+| sigma | h=1 | h=2 | h=3 |
+|---|---|---|---|
+| 0,0 *(mưa hoàn hảo)* | 0,744 | 0,430 | 0,169 |
+| 0,4 | 0,729 | 0,417 | 0,169 |
+| 0,8 | 0,703 | 0,398 | 0,171 |
+| 1,0 *(sai số rất lớn)* | 0,679 | 0,383 | 0,177 |
+
+Ngay cả với `sigma = 1,0` — sai số nhân cỡ e^±1 — NSE chỉ tụt 0,065 ở h=1 và
+**tăng nhẹ** ở h=3. Mô hình gần như **không nhạy với chất lượng mưa**.
+
+### Vì sao lại thế — ablation cho câu trả lời, và nó bất ngờ
+
+| Bộ feature | n | h=1 | h=2 | h=3 |
+|---|---|---|---|---|
+| Đầy đủ | 67 | **0,744** | 0,430 | 0,169 |
+| Bỏ hết mưa (chỉ lưu lượng + mùa) | 22 | 0,664 | 0,267 | 0,123 |
+| **Chỉ mưa + mùa vụ (bỏ hết lag lưu lượng)** | 49 | 0,698 | **0,474** | **0,172** |
+
+Đọc bảng này kỹ, vì nó đảo ngược một giả định:
+
+1. **Mưa có đóng góp thật**, rõ nhất ở h=2 (+0,163 so với bỏ mưa).
+2. Nhưng ở **h=2 và h=3, bỏ hẳn lag lưu lượng lại CHO KẾT QUẢ TỐT HƠN** mô hình
+   đầy đủ (0,474 so với 0,430 · 0,172 so với 0,169).
+
+Nghĩa là từ h≥2, **lag lưu lượng không còn là thông tin mà là thứ gây nhiễu**:
+mô hình bám vào quán tính của dòng chảy, mà quán tính đó tắt nhanh — đúng với
+thời gian tập trung nước chỉ 5–6 giờ (mục 4). Có lưu lượng trong tay, mô hình
+"lười" đi và học mưa kém hơn.
+
+Điều này cũng giải thích vì sao B′ không nhạy: khi còn lag lưu lượng, mô hình
+dựa vào chúng nên mưa nhiễu hay không cũng ít đổi. Bỏ lưu lượng ra thì mưa mới
+lộ giá trị.
+
+**Hệ quả cho Report 3:** nên dùng **bộ feature khác nhau theo horizon** —
+lưu lượng ở h=1, thiên về mưa ở h=2 và h=3. Với h=2, bộ chỉ-mưa đã đạt
+**0,474** so với ngưỡng `AC-1` là 0,40, dư biên rõ hơn hẳn 0,430.
+
+> ⚠️ Bảng ablation đo trên tập test nên là **bằng chứng cơ chế**, không phải
+> bước chọn mô hình. Muốn chốt bộ feature theo horizon thì phải chọn trên
+> **valid** rồi mới đo lại trên test.
+
+---
+
 ## 5. Việc tiếp
 
 | # | Việc | Vì sao |

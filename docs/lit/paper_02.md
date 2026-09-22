@@ -30,10 +30,14 @@ Huấn luyện mô hình LSTM encoder–decoder toàn cầu để dự báo lũ 
 |---|---|---|
 | Độ tin cậy ở lead time **5 ngày** | ngang hoặc hơn | **nowcast (0 ngày) của GloFAS** |
 | Precision & recall sự kiện chu kỳ lặp 1–10 năm | cao hơn | GloFAS |
+| Đã đưa vào **hệ thống cảnh báo sớm vận hành thật** | **hơn 80 quốc gia** | |
 
 ## 5. Hạn chế tác giả tự nêu
 
-- ⚠️ CẦN KIỂM khi đọc toàn văn (bài mở, đọc được ở PMC)
+- ⚠️ CẦN KIỂM khi đọc toàn văn. PMC chặn công cụ tự động bằng reCAPTCHA — **tải tay** ở
+  https://pmc.ncbi.nlm.nih.gov/articles/PMC10954541/ hoặc
+  https://www.researchgate.net/publication/379117508
+- Còn thiếu: khoảng thời gian dữ liệu, precision/recall/F1 theo từng lead time
 
 ## 6. 👉 Liên hệ với dự án của nhóm
 
