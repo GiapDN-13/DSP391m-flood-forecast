@@ -162,3 +162,25 @@ Ba đợt này phải khớp cấp, hoặc lệch tối đa 1 cấp. Lệch 2 c�
 | 4 | Viết `src/features/thresholds.py` (fit + nghịch đảo + bootstrap) | **G** | **W3** | Có test |
 | 5 | Chạy R2, kiểm chứng chéo R3, điền mục 4 và 5 | **G** | **W3** | Bảng đã điền |
 | 6 | Viết mục "Định nghĩa ngưỡng" cho Report 2 | **H** | **W4** | Draft |
+
+
+---
+
+## 6. Nguồn gốc pháp lý của mức báo động (FR-T1) — trạng thái
+
+**Quyết định 05/2020/QĐ-TTg** ngày **31/01/2020**, Thủ tướng Chính phủ, ký bởi
+Trịnh Đình Dũng, hiệu lực **20/03/2020**, đăng Công báo số 179+180 ngày
+04/02/2020: *"Quy định mực nước tương ứng với các cấp báo động lũ trên các sông
+thuộc phạm vi cả nước"*. Mực nước từng trạm nằm ở **Phụ lục I**.
+
+Nguồn chính thức: `https://congbao.chinhphu.vn/van-ban/quyet-dinh-so-05-2020-qd-ttg-30609.htm`
+và `https://vanban.chinhphu.vn/default.aspx?pageid=27160&docid=199001`
+
+🔴 **Còn tắc:** bảng Phụ lục I nằm trong **file PDF/DOC đính kèm**, không có
+trong phần chữ của trang web, và trang thuvienphapluat trả HTTP 403 với công cụ
+tự động. **Cần tải tay** file đính kèm từ congbao.chinhphu.vn rồi chép đúng
+dòng Kim Long vào đây.
+
+Trong lúc chờ, giá trị 1,00 / 2,00 / 3,50 m đã được **kiểm chứng bằng số học từ
+6 nguồn độc lập** (`FINDINGS_EVENTS.md` §2a) nên đủ tin để làm việc tiếp — đây
+là việc hoàn thiện trích dẫn, không phải nút thắt.
