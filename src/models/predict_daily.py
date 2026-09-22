@@ -148,6 +148,11 @@ def main() -> int:
         df.insert(2, "lat", lat)
         df.insert(3, "lon", lon)
         df["horizon_days"] = (df["target_date"].dt.date - run_date).apply(lambda d: d.days)
+        # API lưu lượng chạy theo ngày GMT còn mưa theo giờ Việt Nam, nên phép
+        # gộp ngoài đôi khi sinh ra một dòng cho NGÀY HÔM QUA với horizon âm và
+        # cột mưa rỗng. Dòng đó vô nghĩa với một bản dự báo — bỏ đi.
+        # (Gặp thật trong bản phát 2026-09-22 của job theo lịch.)
+        df = df[df["horizon_days"] >= 0].copy()
         df["alert_glofas"] = df["glofas_discharge"].apply(alert_level)
         rows.append(df)
         print(f"  {name}: {len(df)} ngày, đỉnh dự báo "
