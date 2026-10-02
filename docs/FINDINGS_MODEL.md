@@ -205,6 +205,9 @@ Ngay cả với `sigma = 1,0` — sai số nhân cỡ e^±1 — NSE chỉ tụt 
 | Bỏ hết mưa (chỉ lưu lượng + mùa) | 22 | 0,664 | 0,267 | 0,123 |
 | **Chỉ mưa + mùa vụ (bỏ hết lag lưu lượng)** | 49 | 0,698 | **0,474** | **0,172** |
 
+> 🔴 **Diễn giải dưới đây đã bị bác bỏ ngày 02/10** khi kiểm trên tập valid —
+> xem *Đính chính* ở cuối mục. Giữ lại để thấy lập luận đã sai ở đâu.
+
 Đọc bảng này kỹ, vì nó đảo ngược một giả định:
 
 1. **Mưa có đóng góp thật**, rõ nhất ở h=2 (+0,163 so với bỏ mưa).
@@ -220,13 +223,45 @@ thời gian tập trung nước chỉ 5–6 giờ (mục 4). Có lưu lượng t
 dựa vào chúng nên mưa nhiễu hay không cũng ít đổi. Bỏ lưu lượng ra thì mưa mới
 lộ giá trị.
 
-**Hệ quả cho Report 3:** nên dùng **bộ feature khác nhau theo horizon** —
-lưu lượng ở h=1, thiên về mưa ở h=2 và h=3. Với h=2, bộ chỉ-mưa đã đạt
-**0,474** so với ngưỡng `AC-1` là 0,40, dư biên rõ hơn hẳn 0,430.
+~~**Hệ quả cho Report 3:** nên dùng bộ feature khác nhau theo horizon.~~
+**Đã kiểm và bác bỏ** — xem đính chính ngay dưới.
 
 > ⚠️ Bảng ablation đo trên tập test nên là **bằng chứng cơ chế**, không phải
 > bước chọn mô hình. Muốn chốt bộ feature theo horizon thì phải chọn trên
 > **valid** rồi mới đo lại trên test.
+
+### 🔴 Đính chính 02/10/2026 — kết luận trên **không lặp lại** trên valid
+
+Đã làm đúng quy trình (`src/models/horizon_features.py`): huấn luyện chỉ trên
+train, chấm 4 bộ feature trên **valid** (2016 → 2022-06), chọn bộ tốt nhất theo
+từng horizon, rồi mới đo test **một lần**.
+
+| h | Valid: đầy đủ | Valid: chỉ mưa | Valid: mưa + Q ngắn | Bộ được chọn | Test: bộ chọn | Test: đầy đủ |
+|---|---|---|---|---|---|---|
+| 1 | 0,691 | 0,629 | **0,692** | mưa + Q ngắn | 0,735 | **0,744** |
+| 2 | 0,278 | 0,271 | **0,289** | mưa + Q ngắn | 0,392 | **0,430** |
+| 3 | **0,109** | 0,105 | 0,106 | đầy đủ | 0,169 | 0,169 |
+
+Ba điều rút ra:
+
+1. **Trên valid, mọi bộ feature cách nhau trong nhiễu** (chênh 0,001–0,07).
+   Không có bộ nào thắng rõ.
+2. Bộ "chỉ mưa" — bộ thắng trên test với 0,474 ở h=2 — **không** thắng trên
+   valid (0,271 so với 0,289). Kết quả 0,474 là **đặc thù của giai đoạn test
+   2022–2026**, không phải tính chất của lưu vực.
+3. Bộ được chọn đúng quy trình lại **kém hơn** bộ đầy đủ trên test ở h=1, h=2.
+
+⇒ **Câu chuyện cơ chế ở trên ("lag lưu lượng gây nhiễu, mô hình lười") KHÔNG
+được dữ liệu ủng hộ.** Giữ **bộ 66 feature đầy đủ** làm mô hình chính cho cả
+ba horizon.
+
+Đây là ví dụ đúng kiểu cho câu hỏi vấn đáp *"vì sao không được chọn mô hình
+trên tập test?"*: nếu chọn trên test, nhóm đã báo cáo NSE 0,474 ở h=2 — một
+con số đẹp hơn thực tế 0,04 mà không ai biết.
+
+Ghi chú phụ: NSE trên valid thấp hơn hẳn trên test (h=2: 0,28 so với 0,43) vì
+giai đoạn valid chứa các mùa lũ lớn 2016, 2017 và 2020 — khó hơn giai đoạn
+test.
 
 ---
 
