@@ -1,7 +1,8 @@
 <title>Chuyện con lũ sông Hương</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Bố cục: một sân khấu 16:9 co giãn theo cửa sổ; mỗi cảnh = hình bên trái + thuyết minh từng bước bên phải. */
+/* Bố cục: sân khấu 16:9 co giãn theo cửa sổ. Người thuyết trình bấm → để đi TỪNG BƯỚC;
+   mỗi bước chỉ làm nổi một thứ trên hình và sáng đúng một dòng thuyết minh. */
 :root{
   color-scheme:dark;
   --water:#07141A; --deep:#0C222B; --edge:#16313C;
@@ -17,444 +18,494 @@ body{font-family:var(--display)}
 .stage{width:1600px;height:900px;position:relative;transform-origin:center center;flex:none}
 .scene{position:absolute;inset:0;visibility:hidden;pointer-events:none}
 .scene.on{visibility:visible;pointer-events:auto}
-.head{position:absolute;left:72px;right:72px;top:46px}
+.head{position:absolute;left:72px;right:72px;top:42px}
 .kick{font:600 14px/1 var(--mono);letter-spacing:.18em;color:var(--flow);text-transform:uppercase}
-h1{font:900 50px/1.06 var(--display);letter-spacing:-.025em;margin:12px 0 0;text-wrap:balance;max-width:1400px}
+h1{font:900 48px/1.06 var(--display);letter-spacing:-.025em;margin:12px 0 0;text-wrap:balance;max-width:1440px}
 h1 .t{font-weight:300;color:var(--flow)}
-.body{position:absolute;left:72px;right:72px;top:178px;bottom:58px;display:grid;
+.body{position:absolute;left:72px;right:72px;top:170px;bottom:70px;display:grid;
   grid-template-columns:minmax(0,1fr) 470px;gap:44px}
 .vis{position:relative;min-width:0}
 .narr{min-width:0;display:flex;flex-direction:column}
-.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:s}
-.steps li{position:relative;padding:10px 14px 10px 50px;border-left:3px solid var(--edge);
-  color:var(--muted);font:300 18px/1.45 var(--display);opacity:.5;
-  transition:opacity .5s ease,border-color .5s ease,color .5s ease,background .5s ease}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;counter-reset:s}
+.steps li{position:relative;padding:10px 14px 10px 48px;border-left:3px solid var(--edge);
+  color:var(--muted);font:300 17.5px/1.45 var(--display);opacity:.42;
+  transition:opacity .4s ease,border-color .4s ease,color .4s ease,background .4s ease}
 .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:16px;top:11px;
-  font:600 15px/1 var(--mono);color:var(--dim)}
-.steps li b{font-weight:600;color:inherit}
-.steps li.on{opacity:1;color:var(--ink)}
-.steps li.cur{border-left-color:var(--flow);background:rgba(47,194,204,.07)}
+  font:600 14px/1 var(--mono);color:var(--dim)}
+.steps li b{font-weight:600}
+.steps li.on{opacity:.75;color:var(--ink)}
+.steps li.cur{opacity:1;border-left-color:var(--flow);background:rgba(47,194,204,.08)}
 .steps li.cur::before{color:var(--flow)}
-.mean{margin-top:16px;padding:14px 18px;background:var(--deep);border:1px solid var(--edge)}
+.mean{margin-top:14px;padding:13px 18px;background:var(--deep);border:1px solid var(--edge)}
 .mean span{font:600 12px/1 var(--mono);letter-spacing:.16em;color:var(--r1);text-transform:uppercase}
-.mean p{margin:8px 0 0;font:300 17px/1.45 var(--display);color:var(--ink)}
+.mean p{margin:8px 0 0;font:300 16.5px/1.45 var(--display);color:var(--ink)}
 .mean b{font-weight:600}
 svg text{font-family:var(--mono)}
-.date{font:900 64px/1 var(--display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.read{font:500 15px/1.3 var(--mono);color:var(--muted);letter-spacing:.04em;margin-top:6px}
-.big{font:900 104px/1 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.date{font:900 58px/1 var(--display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.read{font:500 14px/1.35 var(--mono);color:var(--muted);letter-spacing:.03em;margin-top:6px}
+.big{font:900 110px/1 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .lab{font:500 14px/1.35 var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:6px}
-.nav{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
-  display:flex;gap:10px;align-items:center;z-index:5}
-.nav button{background:var(--deep);color:var(--ink);border:1px solid var(--edge);
-  font:500 14px/1 var(--mono);padding:10px 14px;cursor:pointer}
-.nav button:hover{border-color:var(--flow)}
-.nav button:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
-.dots{display:flex;gap:8px;margin:0 6px}
-.dots i{width:9px;height:9px;border-radius:50%;background:var(--dim);display:block}
-.dots i.on{background:var(--flow)}
-.pipe-notes{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:22px}
+.bar{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  display:flex;gap:10px;align-items:center;z-index:5;background:rgba(7,20,26,.85);padding:6px 8px;border:1px solid var(--edge)}
+.bar button{background:var(--deep);color:var(--ink);border:1px solid var(--edge);
+  font:500 14px/1 var(--mono);padding:9px 14px;cursor:pointer}
+.bar button:hover{border-color:var(--flow)}
+.bar button:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
+.pos{font:500 13px/1 var(--mono);color:var(--muted);min-width:170px;text-align:center}
+.pos b{color:var(--ink);font-weight:600}
+.hint{font:400 12px/1 var(--mono);color:var(--dim)}
+.notes2{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:26px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 <div class="viewport"><div class="stage" id="stage">
 
-<!-- ======================= CẢNH 1: TOÀN CẢNH ======================= -->
+<!-- ===================== CẢNH 1 ===================== -->
 <section class="scene on" id="s0">
   <div class="head">
-    <div class="kick">DSP391m · Nhóm 3 · Lưu vực sông Hương, Huế</div>
+    <div class="kick">DSP391m · Lưu vực sông Hương, Huế</div>
     <h1>Nhóm đang làm gì? <span class="t">Dự báo lũ trước 1–3 ngày, chỉ bằng dữ liệu miễn phí</span></h1>
   </div>
-  <div style="position:absolute;left:72px;right:72px;top:178px;bottom:58px">
+  <div style="position:absolute;left:72px;right:72px;top:170px">
     <svg id="pipe" viewBox="0 0 1456 300" style="width:1456px;height:300px"></svg>
-    <div class="pipe-notes">
+    <div class="notes2" id="notes0">
       <div class="mean"><span>Câu hỏi nghiên cứu</span>
-        <p>Từ mưa và lưu lượng hôm nay, có dự báo được <b>lưu lượng sông 1, 2, 3 ngày tới</b> không — và
-          có cảnh báo được <b>ngày nào vượt mức nguy cơ</b> không?</p></div>
+        <p>Từ mưa và lưu lượng <b>hôm nay</b>, có dự báo được <b>lưu lượng sông 1, 2, 3 ngày tới</b> không —
+          và có cảnh báo trước được <b>những ngày vượt mức nguy cơ</b> không?</p></div>
       <div class="mean"><span>Vì sao đáng làm</span>
-        <p>Miền Trung chịu lũ nặng nhất cả nước, nhưng cảnh báo tới cấp xã còn yếu. Nếu
-          <b>dữ liệu mở, miễn phí</b> đủ tốt thì địa phương nào cũng tự làm được, không cần trạm đo đắt tiền.</p></div>
+        <p>Miền Trung chịu lũ nặng nhất cả nước, nhưng cảnh báo tới cấp xã còn yếu. Nếu <b>dữ liệu mở, miễn phí</b>
+          đủ tốt, địa phương nào cũng tự làm được mà không cần trạm đo đắt tiền.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 2: LƯU VỰC ======================= -->
+<!-- ===================== CẢNH 2 ===================== -->
 <section class="scene" id="s1">
   <div class="head">
-    <div class="kick">Bước 1 · Thu thập · Không gian</div>
+    <div class="kick">Bước 1 · Thu thập · Bản đồ thật (OpenStreetMap)</div>
     <h1>Mưa rơi ở đâu <span class="t">trước khi thành phố ngập?</span></h1>
   </div>
   <div class="body">
-    <div class="vis"><svg id="map0" viewBox="0 0 980 640" style="width:100%;height:100%"></svg></div>
+    <div class="vis"><svg id="map1" viewBox="0 0 942 660" style="width:100%;height:100%"></svg></div>
     <div class="narr">
       <ol class="steps">
-        <li>Lưu vực sông Hương rộng khoảng <b>2 830 km²</b>, nhiều núi, dốc — nước dồn về rất nhanh.</li>
-        <li>Nhóm phủ một <b>lưới 64 ô mưa</b>, mỗi ô khoảng 11 km, chia thành <b>3 vùng</b>: thượng, trung và hạ lưu.</li>
-        <li>Mưa gây lũ chủ yếu rơi ở <b>vùng núi thượng nguồn</b>, cách thành phố 30–50 km, rồi mới chảy xuống.</li>
-        <li>Điểm cần dự báo là <b>ô lưu lượng (16,45° B · 107,50° Đ)</b>, ngay phía trên trạm thuỷ văn <b>Kim Long</b> ở Huế.</li>
+        <li>Đây là vùng <b>Thừa Thiên Huế</b>: biển ở phía đông bắc, <b>phá Tam Giang</b> chạy dọc bờ biển, thành phố <b>Huế</b> nằm sát phá.</li>
+        <li><b>Sông Hương</b> (xanh sáng) sinh ra từ hai nhánh <b>Tả Trạch</b> và <b>Hữu Trạch</b> trên núi, chảy qua Huế rồi đổ ra phá. Sông Bồ (xám) ở phía bắc là một sông khác.</li>
+        <li>Nhóm phủ lên một <b>lưới 64 ô mưa</b>, mỗi ô khoảng 11 × 11 km. Mỗi ô là một chuỗi mưa <b>từng ngày từ 2010 đến 2026</b>.</li>
+        <li>Gộp các ô thành <b>3 vùng</b>: thượng lưu (núi, mưa nhiều nhất), trung lưu, và hạ lưu (đồng bằng gần biển).</li>
+        <li>Điểm cần dự báo: <b>ô lưu lượng ngay trên trạm Kim Long</b> — nơi Nhà nước đo mực nước và phát cảnh báo lũ cho Huế.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p>Nếu chỉ đo mưa tại một điểm trong thành phố, ta bỏ mất đúng nơi sinh ra lũ. Vì vậy phải lấy mưa
-          <b>trên toàn lưu vực</b> rồi gộp theo vùng.</p></div>
+        <p>Lũ ở Huế sinh ra từ mưa trên núi cách thành phố 30–50 km. Đo mưa tại một điểm trong thành phố là bỏ mất
+          đúng nơi sinh ra lũ — nên phải lấy mưa <b>trên toàn lưu vực</b>.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 3: MƯA → SÔNG ======================= -->
+<!-- ===================== CẢNH 3 ===================== -->
 <section class="scene" id="s2">
   <div class="head">
-    <div class="kick">Bước 3 · Phân tích · Dữ liệu thật tháng 10/2020</div>
+    <div class="kick">Bước 3 · Phân tích · Trận lũ tháng 10/2020, dữ liệu thật</div>
     <h1>Mưa rơi hôm nay, <span class="t">sông dâng ngày mai</span></h1>
   </div>
   <div class="body">
-    <div class="vis" style="display:flex;gap:26px;align-items:flex-start">
-      <div style="flex:none;width:330px">
-        <svg id="map1" viewBox="0 0 330 330" style="width:330px;height:330px"></svg>
-        <div class="read" style="margin-top:8px">Mỗi ô sáng theo lượng mưa của ngày đó</div>
+    <div class="vis" style="display:flex;gap:24px;align-items:flex-start">
+      <div style="flex:none;width:370px">
+        <svg id="map2" viewBox="0 0 370 386" style="width:370px;height:386px"></svg>
+        <div class="read">Ô càng sáng = mưa càng nhiều trong ngày</div>
       </div>
       <div style="flex:1;min-width:0">
-        <div class="date" id="d1">03/10</div>
-        <div class="read" id="r1">mưa lưu vực 0 mm · sông 0 m³/s</div>
-        <svg id="ch1" viewBox="0 0 590 420" style="width:100%;height:auto;margin-top:10px"></svg>
+        <div class="date" id="d2">03/10/2020</div>
+        <div class="read" id="r2">mưa lưu vực 0 mm · sông 0 m³/s</div>
+        <svg id="ch2" viewBox="0 0 548 440" style="width:100%;height:auto;margin-top:8px"></svg>
       </div>
     </div>
     <div class="narr">
       <ol class="steps">
-        <li><b>03–06/10:</b> mưa nhỏ, sông ở mức bình thường, khoảng 120 m³/s.</li>
-        <li><b>07–11/10:</b> mưa lớn gần như mỗi ngày, có ngày <b>180 mm</b>. Sông bắt đầu dâng nhanh.</li>
-        <li><b>12/10:</b> sông đạt đỉnh <b>2 060 m³/s</b>, vượt mức nguy cơ 3. Mực nước ở Kim Long lên <b>4,17 m</b>.</li>
-        <li><b>17/10:</b> một nhịp mưa mới — và đúng <b>ngày hôm sau</b>, 18/10, sông lại dâng.</li>
+        <li>Xem lại trận lũ tháng 10/2020, <b>từng ngày một</b>. Trái: mưa trên từng ô. Phải: mưa trung bình (cột) và lưu lượng sông (đường).</li>
+        <li><b>03–06/10:</b> mưa nhỏ, các ô còn tối. Sông chỉ khoảng <b>120 m³/s</b> — mức bình thường.</li>
+        <li><b>07–11/10:</b> mưa lớn dồn dập — ô sáng rực, có ngày tới <b>180 mm</b>. Sông dâng liên tục.</li>
+        <li><b>12/10:</b> sông lên đỉnh <b>2 060 m³/s</b>, vượt mức nguy cơ 3 — đúng <b>một ngày sau</b> nhịp mưa lớn 11/10. Mực nước Kim Long: 4,17 m.</li>
+        <li><b>13–18/10:</b> nước rút, rồi 17/10 mưa lại 126 mm → <b>ngày 18/10 sông dâng lại</b>. Vẫn đúng quy luật: trễ 1 ngày.</li>
+        <li>Hết mưa, sông về bình thường. Quy luật "trễ 1 ngày" đúng trên <b>cả 16 năm dữ liệu</b>, không riêng trận này.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p>Trên 16 năm dữ liệu, mưa và lưu lượng khớp nhau rõ nhất khi lệch <b>đúng 1 ngày</b> (r = 0,79),
-          vì nước từ núi về thành phố chỉ mất 5–6 giờ. Nên dự báo trước 1 ngày làm được; trước 3 ngày thì khó hơn nhiều.</p></div>
+        <p>Mưa và lưu lượng khớp nhau rõ nhất khi lệch <b>đúng 1 ngày</b> (r = 0,79), vì nước từ núi về Huế chỉ mất
+          5–6 giờ. Nên dự báo trước 1 ngày làm được; trước 3 ngày khó hơn nhiều.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 4: TÌM DÒNG SÔNG ======================= -->
+<!-- ===================== CẢNH 4 ===================== -->
 <section class="scene" id="s3">
   <div class="head">
-    <div class="kick">Bước 1 · Thu thập · Chọn đúng điểm</div>
+    <div class="kick">Bước 1 · Thu thập · Chọn đúng điểm trên sông</div>
     <h1>361 chỗ để tìm, <span class="t">chỉ một là sông Hương</span></h1>
   </div>
   <div class="body">
-    <div class="vis" style="display:flex;gap:30px;align-items:flex-start">
-      <svg id="map2" viewBox="0 0 600 600" style="width:600px;height:600px;flex:none"></svg>
-      <div style="flex:1;min-width:0;padding-top:20px">
-        <div class="big" id="cnt2">361</div>
-        <div class="lab" id="lab2">ô lưới được dò</div>
+    <div class="vis" style="display:flex;gap:24px;align-items:flex-start">
+      <svg id="map3" viewBox="0 0 620 650" style="width:620px;height:650px;flex:none"></svg>
+      <div style="flex:1;min-width:0;padding-top:16px">
+        <div class="big" id="cnt3">361</div>
+        <div class="lab" id="lab3">ô lưới được dò</div>
       </div>
     </div>
     <div class="narr">
       <ol class="steps">
-        <li>Mô hình GloFAS vẽ sông trên lưới 5 km, nên <b>chưa biết ô nào trùng sông thật</b>. Nhóm dò <b>361 ô</b>, mỗi ô chỉ tải 1 năm cho rẻ.</li>
-        <li><b>234 ô</b> có nước chảy — ô càng sáng, lưu lượng càng lớn. Số còn lại là sườn núi hoặc biển.</li>
-        <li>Chỉ <b>83 ô</b> có dòng chảy thật mới tải đủ chuỗi 1997–2026 → tiết kiệm phần lớn chi phí tải.</li>
-        <li>Hai quy tắc dễ nghĩ đều <b>sai</b>: ô lớn nhất gộp cả sông Bồ; ô ngay tại trạm lại gần như khô, vì sông trong mô hình lệch khoảng 7 km.</li>
-        <li>Chọn ô có lưu lượng <b>khớp với diện tích lưu vực thật</b>. Toạ độ trong kế hoạch ban đầu chỉ cho <b>5,7 m³/s</b> — sai ô.</li>
+        <li>Mô hình GloFAS vẽ sông trên <b>lưới 5 km</b>. Nhóm chưa biết ô nào là sông Hương thật, nên <b>dò cả 361 ô</b> quanh lưu vực.</li>
+        <li>Mỗi ô tải thử 1 năm. <b>234 ô có nước chảy</b> — ô càng sáng càng nhiều nước. Chúng xếp theo đúng các dòng sông thật trên bản đồ.</li>
+        <li>Chỉ <b>83 ô</b> có dòng chảy đáng kể mới được tải đủ <b>30 năm (1997–2026)</b>. Bỏ qua phần còn lại giúp tiết kiệm phần lớn thời gian tải.</li>
+        <li>Hai cách chọn dễ nghĩ đều <b>sai</b>: ô nhiều nước nhất (đỏ) gộp cả sông Bồ; ô ngay tại trạm (vàng) gần như khô vì sông trong mô hình lệch khoảng 7 km.</li>
+        <li><b>Ô được chọn</b>: lượng nước khớp với diện tích lưu vực thật (~2 830 km²). Toạ độ trong kế hoạch ban đầu chỉ cho <b>5,7 m³/s</b> — sai ô.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p>Nếu dùng toạ độ ban đầu, toàn bộ 30 năm dữ liệu sẽ là của <b>một nhánh suối nhỏ</b>, và mọi mô hình phía sau đều vô nghĩa.</p></div>
+        <p>Nếu dùng toạ độ ban đầu, toàn bộ 30 năm dữ liệu sẽ là của <b>một nhánh suối nhỏ</b> và mọi mô hình phía sau đều vô nghĩa.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 5: GỘP + LÀM SẠCH ======================= -->
+<!-- ===================== CẢNH 5 ===================== -->
 <section class="scene" id="s4">
   <div class="head">
     <div class="kick">Bước 2 · Làm sạch</div>
     <h1>Hơn một nghìn file, <span class="t">thành một bảng duy nhất</span></h1>
   </div>
   <div class="body">
-    <div class="vis"><svg id="ch3" viewBox="0 0 980 640" style="width:100%;height:100%"></svg></div>
+    <div class="vis"><svg id="ch4" viewBox="0 0 942 660" style="width:100%;height:100%"></svg></div>
     <div class="narr">
       <ol class="steps">
-        <li>Dữ liệu thô gồm <b>1 295 file</b> từ 5 loại nguồn: mưa theo giờ, mưa theo ngày, lưu lượng, dò lưới, mưa dự báo.</li>
-        <li>Đổi giờ <b>UTC → giờ Việt Nam</b>, cộng mưa theo giờ thành theo ngày, gộp 64 ô mưa thành 3 vùng.</li>
-        <li>Kiểm từng nguồn thay vì tin tài liệu → tìm ra <b>4 lỗi</b>: 13 năm lưu lượng rỗng · lưới mưa lệch · mưa "dự báo" trùng mưa thực đo · toạ độ sai.</li>
-        <li>Kết quả: <b>một bảng 6 087 ngày × 71 cột</b>, mỗi dòng là một ngày, không thiếu giá trị nào.</li>
+        <li>Dữ liệu thô: <b>1 295 file</b>, chia thành 5 loại. Mỗi ô vuông nhỏ trên hình tượng trưng cho khoảng 8 file.</li>
+        <li>Làm sạch: đổi giờ <b>UTC sang giờ Việt Nam</b>, cộng mưa theo giờ thành theo ngày, gộp 64 ô mưa thành 3 vùng — tất cả đổ vào <b>một bảng</b>.</li>
+        <li>Kiểm từng nguồn thay vì tin tài liệu → tìm ra <b>4 lỗi</b> (bên trái). Lỗi nào cũng lọt qua bước kiểm tra thông thường.</li>
+        <li>Kết quả: <b>6 087 ngày × 71 cột</b>. Mỗi dòng là một ngày từ 2010 đến 2026, không thiếu giá trị nào.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p><b>Đếm số dòng không phải đếm dữ liệu.</b> File lưu lượng có 15 584 dòng, nhưng chỉ 10 835 dòng có số —
-          13 năm đầu hoàn toàn rỗng mà kiểm tra thông thường không phát hiện.</p></div>
+        <p><b>Đếm số dòng không phải đếm dữ liệu.</b> File lưu lượng có 15 584 dòng nhưng chỉ 10 835 dòng có số —
+          13 năm đầu rỗng hoàn toàn mà kiểm tra thông thường không phát hiện.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 6: DỰ BÁO ======================= -->
+<!-- ===================== CẢNH 6 ===================== -->
 <section class="scene" id="s5">
   <div class="head">
     <div class="kick">Bước 4 · Dự báo · Trận lũ mô hình chưa từng thấy</div>
     <h1>Dự báo sông ngày mai, <span class="t">ngay từ hôm nay</span></h1>
   </div>
   <div class="body">
-    <div class="vis"><svg id="ch4" viewBox="0 0 980 600" style="width:100%;height:100%"></svg></div>
+    <div class="vis"><svg id="ch5" viewBox="0 0 942 640" style="width:100%;height:100%"></svg></div>
     <div class="narr">
       <ol class="steps">
-        <li>Mô hình chỉ được học dữ liệu <b>đến 30/06/2022</b>. Tháng 10/2025 nằm trong phần mô hình <b>chưa từng thấy</b>.</li>
+        <li>Đây là lưu lượng <b>thực tế</b> tháng 10–11/2025 (đường trắng): hai đợt lũ lớn liên tiếp.</li>
+        <li>Mô hình chỉ được học dữ liệu <b>đến 30/06/2022</b>. Năm 2025 là phần mô hình <b>chưa từng thấy</b> — đúng như khi dùng thật.</li>
         <li>Mỗi ngày, mô hình nhìn mưa và lưu lượng <b>hôm nay</b> để đoán lưu lượng <b>ngày mai</b> (đường xanh).</li>
-        <li>So với thực tế (đường trắng): mô hình bắt <b>đúng thời điểm</b> các đợt lũ lên và xuống.</li>
-        <li>Nhưng <b>đỉnh cao nhất bị đoán thấp hơn thực tế</b> — đây là điểm yếu nhóm đang xử lý ở Report 3.</li>
+        <li>Đường xanh lên xuống gần như <b>cùng lúc</b> với thực tế: mô hình bắt đúng thời điểm lũ lên và rút.</li>
+        <li>Nhưng ở <b>đỉnh cao nhất</b>, dự báo thấp hơn thực tế (vạch đỏ). Đây là điểm yếu nhóm đang sửa ở Report 3.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p id="m5">Trên toàn bộ giai đoạn kiểm tra, mô hình đạt NSE <b>0,74</b>, so với <b>0,54</b> nếu chỉ đơn giản
-          lặp lại giá trị hôm nay. NSE = 1 là dự báo hoàn hảo.</p></div>
+        <p id="m5">Trên toàn giai đoạn kiểm tra, mô hình đạt NSE <b>0,74</b>, so với <b>0,54</b> nếu chỉ lặp lại
+          giá trị hôm nay. NSE = 1 là dự báo hoàn hảo.</p></div>
     </div>
   </div>
 </section>
 
 </div></div>
 
-<nav class="nav" aria-label="Chuyển cảnh">
-  <button id="prev" type="button" aria-label="Cảnh trước">&larr;</button>
-  <div class="dots" id="dots"></div>
-  <button id="next" type="button" aria-label="Cảnh sau">&rarr;</button>
-  <button id="replay" type="button">Phát lại</button>
-</nav>
+<div class="bar" role="navigation" aria-label="Điều khiển">
+  <button id="prev" type="button" aria-label="Bước trước">&larr;</button>
+  <div class="pos" id="pos">Cảnh 1/6 · Bước 1/5</div>
+  <button id="next" type="button" aria-label="Bước sau">&rarr;</button>
+  <button id="again" type="button">Phát lại bước</button>
+  <span class="hint">phím → hoặc cách để tiếp</span>
+</div>
 
-<script id="data" type="application/json">{"rain":{"cells":[[16.1,107.1,"thuong"],[16.1,107.2,"thuong"],[16.1,107.3,"thuong"],[16.1,107.4,"thuong"],[16.1,107.5,"thuong"],[16.1,107.6,"thuong"],[16.1,107.7,"thuong"],[16.1,107.8,"thuong"],[16.2,107.1,"thuong"],[16.2,107.2,"thuong"],[16.2,107.3,"thuong"],[16.2,107.4,"thuong"],[16.2,107.5,"thuong"],[16.2,107.6,"thuong"],[16.2,107.7,"thuong"],[16.2,107.8,"thuong"],[16.3,107.1,"thuong"],[16.3,107.2,"thuong"],[16.3,107.3,"thuong"],[16.3,107.4,"thuong"],[16.3,107.5,"thuong"],[16.3,107.6,"thuong"],[16.3,107.7,"thuong"],[16.3,107.8,"thuong"],[16.4,107.1,"trung"],[16.4,107.2,"trung"],[16.4,107.3,"trung"],[16.4,107.4,"trung"],[16.4,107.5,"trung"],[16.4,107.6,"trung"],[16.4,107.7,"trung"],[16.4,107.8,"trung"],[16.5,107.1,"trung"],[16.5,107.2,"trung"],[16.5,107.3,"trung"],[16.5,107.4,"trung"],[16.5,107.5,"trung"],[16.5,107.6,"trung"],[16.5,107.7,"trung"],[16.5,107.8,"trung"],[16.6,107.1,"ha"],[16.6,107.2,"ha"],[16.6,107.3,"ha"],[16.6,107.4,"ha"],[16.6,107.5,"ha"],[16.6,107.6,"ha"],[16.6,107.7,"ha"],[16.6,107.8,"ha"],[16.7,107.1,"ha"],[16.7,107.2,"ha"],[16.7,107.3,"ha"],[16.7,107.4,"ha"],[16.7,107.5,"ha"],[16.7,107.6,"ha"],[16.7,107.7,"ha"],[16.7,107.8,"ha"],[16.8,107.1,"ha"],[16.8,107.2,"ha"],[16.8,107.3,"ha"],[16.8,107.4,"ha"],[16.8,107.5,"ha"],[16.8,107.6,"ha"],[16.8,107.7,"ha"],[16.8,107.8,"ha"]],"days":["03/10","04/10","05/10","06/10","07/10","08/10","09/10","10/10","11/10","12/10","13/10","14/10","15/10","16/10","17/10","18/10","19/10","20/10","21/10","22/10","23/10","24/10"],"rain":[[3.2,3.3,2.9,3.4,3.6,4.0,3.6,0.8,0.4,1.2,2.3,2.6,1.7,2.2,3.8,6.9,0.3,1.3,2.3,3.3,2.5,3.0,3.3,0.8,0.7,1.4,1.8,2.8,3.5,3.3,2.1,3.5,0.7,1.4,3.7,7.6,2.0,2.1,5.4,1.2,1.7,3.1,2.5,2.5,3.1,1.9,1.9,3.4,4.2,2.2,2.2,1.6,2.2,2.1,1.7,5.3,4.9,3.5,2.5,1.6,2.2,2.4,5.0,6.4],[6.3,6.2,6.7,9.0,9.7,6.3,9.8,22.9,5.0,6.2,8.4,10.6,10.7,13.0,14.2,4.9,5.4,8.4,9.9,14.3,15.7,16.2,9.5,2.1,13.4,8.5,9.6,14.0,25.0,10.8,9.0,7.1,13.4,8.5,12.7,22.3,13.3,14.5,12.1,5.3,15.4,16.3,11.6,11.0,6.6,13.3,13.3,11.2,15.0,12.4,11.6,14.5,8.6,5.6,9.0,13.0,15.0,12.3,13.0,14.5,8.6,12.9,16.0,15.8],[2.4,2.5,3.9,6.3,4.2,3.6,3.2,7.1,3.0,4.6,5.5,6.5,3.5,3.5,4.7,4.7,2.6,4.9,5.7,5.6,3.7,3.6,3.2,3.9,6.2,3.2,4.1,3.3,3.4,3.4,3.0,4.1,6.2,3.2,4.2,3.8,4.5,4.2,3.1,2.4,2.7,3.4,3.2,3.5,3.1,4.2,4.2,5.0,2.9,3.5,3.4,4.4,4.0,3.4,3.8,3.7,2.7,2.8,4.7,4.4,4.0,2.8,3.4,3.6],[8.3,19.5,29.9,43.2,37.3,33.4,36.1,28.4,11.8,28.1,38.6,34.9,33.4,36.8,42.2,37.7,11.6,30.4,31.3,26.2,26.2,35.1,41.6,26.6,21.2,36.3,32.0,36.4,25.2,27.5,23.8,20.2,21.2,36.3,41.1,24.9,22.6,27.6,23.7,12.8,24.8,24.5,17.4,10.3,15.1,20.5,20.5,31.7,17.3,14.3,12.9,16.4,17.9,29.4,29.8,32.3,15.8,15.8,18.9,16.4,17.9,22.9,30.8,31.7],[70.4,126.1,158.3,135.8,111.7,109.4,106.9,87.8,91.9,158.8,145.2,121.4,97.6,104.2,95.2,67.5,101.7,156.2,137.1,103.2,87.8,101.0,72.5,102.5,181.2,161.7,147.1,150.7,110.1,99.9,62.7,107.9,181.2,161.7,199.4,125.3,60.5,124.0,97.6,62.0,156.2,165.8,66.9,57.8,87.0,118.2,118.2,145.3,102.0,60.6,51.7,111.6,192.0,152.8,141.6,133.0,79.0,72.1,125.1,111.6,192.0,121.3,124.4,118.3],[30.7,49.7,70.0,84.7,62.2,55.7,59.9,54.4,53.1,124.7,117.0,81.3,56.5,55.4,59.0,50.8,61.2,135.0,103.5,72.4,56.6,58.1,57.8,70.3,108.8,156.3,134.5,106.6,77.1,91.7,74.3,76.2,108.8,156.3,153.9,112.6,78.5,107.8,103.7,77.1,193.2,193.4,147.8,129.3,113.4,140.2,140.2,182.7,221.6,175.6,148.6,185.8,235.7,205.1,191.2,173.9,213.5,177.5,187.1,185.8,235.7,125.6,145.7,132.5],[87.9,123.6,136.6,153.8,138.0,117.1,118.2,75.0,120.6,172.1,173.8,159.3,138.6,131.1,138.0,125.5,135.6,183.6,174.3,144.7,127.1,138.4,143.1,185.0,229.3,267.3,214.5,184.0,142.2,159.9,169.3,226.7,229.3,267.3,239.1,176.9,150.2,178.9,181.7,200.3,312.5,295.9,239.3,196.8,208.8,219.0,219.0,230.0,241.8,215.5,190.7,190.7,185.8,177.6,169.6,155.3,195.6,187.0,187.8,190.7,185.8,128.9,127.9,119.7],[57.8,110.7,140.9,130.6,99.6,88.9,83.6,49.1,64.1,137.0,126.3,100.7,72.1,70.4,72.5,67.4,55.8,113.4,73.9,55.9,45.3,52.4,53.1,46.4,105.2,116.2,99.7,70.4,39.1,40.3,31.0,34.4,105.2,116.2,90.8,47.2,28.9,38.0,33.2,25.4,70.1,50.9,32.6,21.5,26.0,29.9,29.9,28.1,52.2,37.9,33.6,30.4,32.8,23.2,23.1,25.3,40.7,37.8,36.1,30.4,32.8,16.1,18.2,18.6],[98.9,152.2,211.2,268.3,263.3,246.1,241.3,178.3,113.6,165.4,193.4,212.2,210.0,203.9,214.6,229.6,103.8,145.1,155.7,158.4,159.9,161.8,170.8,138.3,181.1,203.4,185.8,156.1,135.9,109.0,95.3,98.7,181.1,203.4,158.9,129.9,113.6,102.8,88.7,82.9,117.9,104.3,82.1,72.4,92.1,91.7,91.7,66.7,75.9,69.2,65.7,61.3,61.3,55.7,57.5,61.3,58.9,60.7,63.7,61.3,61.3,52.5,50.7,53.0],[50.9,63.9,67.0,60.3,42.5,26.8,24.1,24.2,36.4,52.6,53.8,42.9,30.3,22.2,22.6,32.3,26.3,48.7,50.4,36.5,22.4,21.0,26.6,33.9,64.4,83.8,66.3,58.3,43.4,35.4,30.0,32.3,64.4,83.8,66.1,49.5,35.0,36.6,41.7,41.4,201.7,164.4,113.6,53.9,33.0,42.8,42.8,65.9,215.1,180.8,141.9,119.0,110.8,77.9,71.4,70.0,253.7,217.1,186.0,119.0,110.8,161.6,85.4,75.9],[92.1,119.7,146.6,167.9,175.6,183.5,196.1,281.0,100.6,138.0,147.8,150.8,143.9,134.2,134.9,148.7,93.6,122.8,102.2,115.0,106.3,100.4,99.7,103.1,101.3,97.5,100.8,86.4,86.8,110.3,119.2,117.5,101.3,97.5,86.4,84.4,93.3,104.7,109.8,115.8,58.0,55.7,58.0,71.6,91.1,97.7,97.7,75.7,56.8,46.5,47.3,51.3,59.5,61.8,58.1,52.2,48.9,41.4,41.9,51.3,59.5,32.3,41.3,37.6],[23.5,24.8,15.7,10.4,10.6,7.7,3.9,5.6,13.5,11.8,9.3,8.4,9.9,5.9,2.8,3.0,13.1,9.8,3.1,6.2,5.9,2.6,1.4,1.1,9.5,4.5,4.4,1.5,0.8,0.6,0.4,0.9,9.5,4.5,1.9,0.8,0.3,0.5,0.9,1.0,2.8,3.5,1.3,0.4,0.3,0.3,0.3,2.4,3.0,1.5,0.5,0.6,0.9,1.8,2.2,3.0,1.7,0.9,0.9,0.6,0.9,1.8,2.8,3.2],[8.3,11.8,12.6,15.9,15.2,13.8,20.3,14.8,9.2,12.7,15.3,17.1,12.2,15.4,21.7,20.7,8.5,13.4,17.4,17.7,15.9,16.8,16.3,16.8,16.1,32.9,22.0,25.6,17.4,19.8,20.8,31.9,16.1,32.9,35.7,28.4,22.4,23.7,28.9,29.3,45.3,45.6,39.8,28.5,26.2,31.8,31.8,44.3,44.9,37.0,32.8,33.3,35.5,40.8,43.9,49.1,38.8,36.1,32.9,33.3,35.5,40.2,43.8,42.7],[59.6,98.9,114.4,103.6,87.3,83.4,77.0,60.4,45.7,78.1,93.1,90.9,75.8,69.1,68.6,69.0,53.6,77.2,79.5,75.1,61.2,61.0,64.6,54.9,97.1,93.4,83.5,73.9,55.9,58.1,50.3,64.7,97.1,93.4,90.7,65.8,46.2,56.8,58.4,51.8,101.0,94.4,61.9,53.2,58.1,67.3,67.3,89.8,91.9,54.1,32.2,85.1,87.7,98.6,91.1,84.6,78.9,53.5,88.3,85.1,87.7,97.8,89.6,83.2],[87.3,127.9,128.9,124.9,96.1,79.6,73.2,48.3,81.6,152.5,139.4,109.8,83.0,82.3,75.6,69.8,82.7,145.7,176.0,103.2,90.0,94.2,81.2,120.4,229.2,226.2,212.4,233.2,176.9,160.1,127.4,121.8,229.2,226.2,257.2,186.4,128.8,147.0,119.8,66.5,146.5,148.3,101.1,67.7,82.0,91.9,91.9,74.1,125.6,77.2,64.2,102.6,104.0,89.9,82.9,77.6,127.1,95.4,126.9,102.6,104.0,92.1,85.4,79.1],[14.2,15.0,43.3,37.4,29.2,30.1,28.3,23.9,35.3,35.7,20.6,22.0,22.5,17.8,12.0,24.1,33.7,20.9,31.2,24.8,26.8,16.3,11.1,9.8,30.2,31.7,24.6,44.3,44.7,20.9,9.6,10.5,30.2,31.7,28.1,34.4,27.0,22.9,18.1,13.8,32.5,30.1,23.2,24.3,27.9,24.5,24.5,26.4,31.0,28.2,26.8,29.7,28.5,26.6,25.5,26.5,38.1,40.2,34.9,29.7,28.5,37.2,29.4,27.7],[20.4,20.5,18.6,25.3,22.4,22.6,22.8,32.0,24.4,27.1,32.1,32.5,28.2,24.3,25.6,34.0,37.8,39.0,49.1,39.5,30.6,25.3,26.7,32.6,53.5,49.5,56.1,49.5,39.0,32.4,32.1,31.6,53.5,49.5,43.2,40.2,34.9,33.2,34.1,32.3,29.3,25.2,26.1,35.5,32.0,33.7,33.7,34.0,25.8,29.1,41.9,46.5,41.8,44.1,43.9,37.6,40.2,60.1,70.1,46.5,41.8,62.2,50.8,40.9],[43.4,52.2,57.7,77.2,64.5,56.5,51.7,49.2,55.5,95.4,91.1,76.9,68.3,63.4,55.6,52.5,43.5,82.1,63.7,59.8,51.0,52.7,52.2,59.2,71.7,84.9,70.3,65.1,58.0,58.2,57.2,63.8,71.7,84.9,78.2,67.3,57.0,66.9,69.3,61.3,91.1,107.7,86.3,59.3,65.1,70.1,70.1,82.6,91.3,99.8,83.0,68.9,92.6,74.9,72.2,75.1,87.9,100.2,95.2,68.9,92.6,60.6,65.1,69.0],[12.6,31.6,55.3,54.2,36.5,28.3,27.8,13.1,15.9,47.8,51.4,39.8,23.0,20.7,24.6,23.1,15.3,47.6,36.9,23.1,15.6,17.3,17.7,15.2,51.2,59.8,53.4,32.5,15.0,14.4,8.9,8.7,51.2,59.8,41.3,17.0,10.0,11.1,9.1,5.9,35.0,30.9,12.7,7.1,8.1,7.8,7.8,3.3,19.6,12.1,8.8,10.8,8.9,2.8,2.6,2.4,11.8,13.0,16.7,10.8,8.9,2.0,1.9,1.5],[2.8,3.3,4.3,9.8,13.4,10.7,10.8,4.8,4.9,4.8,5.5,5.0,3.3,3.8,7.1,12.8,4.1,3.3,1.8,2.3,2.1,3.3,6.0,9.2,6.3,7.8,4.8,3.0,4.2,6.3,5.6,3.3,6.3,7.8,5.2,3.8,6.2,6.6,3.9,2.3,2.7,2.1,2.3,4.5,4.1,3.8,3.8,0.1,0.9,1.5,2.6,4.5,4.2,0.0,0.0,0.2,0.7,1.5,3.3,4.5,4.2,0.0,0.1,0.1],[1.3,2.1,3.8,3.3,4.3,4.7,6.1,3.7,2.7,3.1,2.3,1.7,2.2,2.6,5.5,5.1,1.8,2.3,0.7,0.6,0.6,1.0,2.5,4.4,2.8,1.4,1.3,0.8,1.1,2.8,5.1,6.4,2.8,1.4,1.5,1.8,2.9,4.2,6.2,7.6,1.0,0.7,0.8,2.4,3.6,3.3,3.3,0.1,0.3,0.3,0.5,0.7,0.5,0.0,0.0,0.2,0.0,0.2,0.3,0.7,0.5,0.0,0.4,0.4],[0.9,1.3,2.2,1.3,0.9,1.2,1.4,0.7,1.5,2.3,1.2,0.9,1.1,1.6,1.9,1.5,1.4,1.7,0.4,0.4,0.4,0.6,1.9,0.5,1.7,0.9,1.0,1.0,0.1,0.2,0.6,0.4,1.7,0.9,0.6,0.2,0.3,0.3,0.4,0.3,0.8,0.2,0.1,0.2,0.2,0.5,0.5,0.2,0.0,0.1,0.2,0.9,1.6,0.3,0.2,0.1,0.0,0.5,2.0,0.9,1.6,0.0,0.0,0.0]],"q":[125.0,140.0,115.0,123.0,467.0,990.0,1215.0,1351.0,1562.0,2060.0,1308.0,747.0,302.0,365.0,952.0,1121.0,903.0,756.0,568.0,289.0,122.0,97.0],"rb":[2.7,11.5,3.9,26.2,118.1,117.3,179.7,59.4,130.9,70.6,98.9,4.3,26.1,74.9,125.9,26.7,37.0,69.9,22.4,4.4,2.3,0.8],"pairs":[[8,9],[14,15]],"rmax":312.5},"probe":{"cells":[[16.05,107.05,45.7,1],[16.05,107.1,41.3,1],[16.05,107.15,41.3,1],[16.05,107.2,39.8,1],[16.05,107.25,17.5,1],[16.05,107.3,15.3,1],[16.05,107.35,8.4,1],[16.05,107.4,8.4,1],[16.05,107.45,2.4,1],[16.05,107.5,2.2,1],[16.05,107.55,2.2,1],[16.05,107.6,2.1,1],[16.05,107.65,2.1,1],[16.05,107.7,2.1,1],[16.05,107.75,2.0,1],[16.05,107.8,4.1,1],[16.05,107.85,2.1,1],[16.05,107.9,2.1,1],[16.05,107.95,2.4,1],[16.1,107.05,1.5,1],[16.1,107.1,43.0,1],[16.1,107.15,43.0,1],[16.1,107.2,4.2,1],[16.1,107.25,2.4,1],[16.1,107.3,2.5,1],[16.1,107.35,2.6,1],[16.1,107.4,2.6,1],[16.1,107.45,4.8,1],[16.1,107.5,2.3,1],[16.1,107.55,2.2,1],[16.1,107.6,6.4,1],[16.1,107.65,6.4,1],[16.1,107.7,2.2,1],[16.1,107.75,2.4,1],[16.1,107.8,4.8,1],[16.1,107.85,7.3,1],[16.1,107.9,7.3,1],[16.1,107.95,2.6,1],[16.15,107.05,53.2,1],[16.15,107.1,32.2,1],[16.15,107.15,32.2,1],[16.15,107.2,2.4,1],[16.15,107.25,12.7,1],[16.15,107.3,7.8,1],[16.15,107.35,2.6,0],[16.15,107.4,2.6,0],[16.15,107.45,7.6,0],[16.15,107.5,2.3,0],[16.15,107.55,4.7,0],[16.15,107.6,39.4,0],[16.15,107.65,39.4,0],[16.15,107.7,21.8,0],[16.15,107.75,2.6,0],[16.15,107.8,2.8,0],[16.15,107.85,2.8,0],[16.15,107.9,2.8,0],[16.15,107.95,2.9,0],[16.2,107.05,15.5,0],[16.2,107.1,27.7,0],[16.2,107.15,27.7,0],[16.2,107.2,25.6,0],[16.2,107.25,2.7,0],[16.2,107.3,13.1,0],[16.2,107.35,2.5,0],[16.2,107.4,2.5,0],[16.2,107.45,2.4,0],[16.2,107.5,2.3,0],[16.2,107.55,48.4,1],[16.2,107.6,46.2,0],[16.2,107.65,46.2,0],[16.2,107.7,2.2,0],[16.2,107.75,2.5,0],[16.2,107.8,2.7,0],[16.2,107.85,2.6,0],[16.2,107.9,2.6,0],[16.2,107.95,2.7,0],[16.25,107.05,11.2,0],[16.25,107.1,13.6,0],[16.25,107.15,13.6,0],[16.25,107.2,5.3,0],[16.25,107.25,2.6,0],[16.25,107.3,15.5,0],[16.25,107.35,4.8,0],[16.25,107.4,4.8,0],[16.25,107.45,7.1,0],[16.25,107.5,4.4,0],[16.25,107.55,50.3,1],[16.25,107.6,2.0,0],[16.25,107.65,2.0,0],[16.25,107.7,2.1,0],[16.25,107.75,2.1,0],[16.25,107.8,4.2,0],[16.25,107.85,4.6,0],[16.25,107.9,4.6,0],[16.25,107.95,5.2,0],[16.3,107.05,11.2,0],[16.3,107.1,13.6,0],[16.3,107.15,13.6,0],[16.3,107.2,5.3,0],[16.3,107.25,2.6,0],[16.3,107.3,15.5,0],[16.3,107.35,4.8,0],[16.3,107.4,4.8,0],[16.3,107.45,7.1,0],[16.3,107.5,4.4,0],[16.3,107.55,50.3,1],[16.3,107.6,2.0,0],[16.3,107.65,2.0,0],[16.3,107.7,2.1,0],[16.3,107.75,2.1,0],[16.3,107.8,4.2,0],[16.3,107.85,4.6,0],[16.3,107.9,4.6,0],[16.3,107.95,5.2,0],[16.35,107.05,9.2,0],[16.35,107.1,2.6,0],[16.35,107.15,2.6,0],[16.35,107.2,2.7,0],[16.35,107.25,7.9,0],[16.35,107.3,25.9,0],[16.35,107.35,2.4,0],[16.35,107.4,2.4,0],[16.35,107.45,2.2,0],[16.35,107.5,2.1,0],[16.35,107.55,58.7,1],[16.35,107.6,1.9,0],[16.35,107.65,1.9,0],[16.35,107.7,6.0,0],[16.35,107.75,33.1,0],[16.35,107.8,9.3,0],[16.35,107.85,1.3,0],[16.35,107.9,1.3,0],[16.35,107.95,11.1,0],[16.4,107.05,2.8,0],[16.4,107.1,3.1,0],[16.4,107.15,3.1,0],[16.4,107.2,9.0,0],[16.4,107.25,2.7,0],[16.4,107.3,56.3,1],[16.4,107.35,62.9,1],[16.4,107.4,62.9,1],[16.4,107.45,2.2,0],[16.4,107.5,118.0,0],[16.4,107.55,2.1,0],[16.4,107.6,7.9,0],[16.4,107.65,7.9,0],[16.4,107.7,9.5,0],[16.4,107.75,2.3,0],[16.4,107.8,null,0],[16.4,107.85,null,0],[16.4,107.9,null,0],[16.4,107.95,null,0],[16.45,107.05,3.0,0],[16.45,107.1,3.1,0],[16.45,107.15,3.1,0],[16.45,107.2,3.1,0],[16.45,107.25,2.6,0],[16.45,107.3,2.4,0],[16.45,107.35,65.0,1],[16.45,107.4,65.0,1],[16.45,107.45,2.2,0],[16.45,107.5,126.5,1],[16.45,107.55,2.1,0],[16.45,107.6,1.9,0],[16.45,107.65,1.9,0],[16.45,107.7,44.8,0],[16.45,107.75,null,0],[16.45,107.8,null,0],[16.45,107.85,null,0],[16.45,107.9,null,0],[16.45,107.95,null,0],[16.5,107.05,8.2,0],[16.5,107.1,11.0,0],[16.5,107.15,11.0,0],[16.5,107.2,8.9,0],[16.5,107.25,19.0,0],[16.5,107.3,2.3,0],[16.5,107.35,71.7,1],[16.5,107.4,71.7,1],[16.5,107.45,73.8,1],[16.5,107.5,203.7,1],[16.5,107.55,1.6,0],[16.5,107.6,46.4,1],[16.5,107.65,46.4,1],[16.5,107.7,44.7,0],[16.5,107.75,null,0],[16.5,107.8,null,0],[16.5,107.85,null,0],[16.5,107.9,null,0],[16.5,107.95,null,0],[16.55,107.05,8.2,0],[16.55,107.1,11.0,0],[16.55,107.15,11.0,0],[16.55,107.2,8.9,0],[16.55,107.25,19.0,0],[16.55,107.3,2.3,0],[16.55,107.35,71.7,1],[16.55,107.4,71.7,1],[16.55,107.45,73.8,1],[16.55,107.5,203.7,1],[16.55,107.55,1.6,0],[16.55,107.6,46.4,1],[16.55,107.65,46.4,1],[16.55,107.7,44.7,0],[16.55,107.75,null,0],[16.55,107.8,null,0],[16.55,107.85,null,0],[16.55,107.9,null,0],[16.55,107.95,null,0],[16.6,107.05,4.7,0],[16.6,107.1,13.4,0],[16.6,107.15,13.4,0],[16.6,107.2,15.7,0],[16.6,107.25,21.0,0],[16.6,107.3,23.0,0],[16.6,107.35,2.0,0],[16.6,107.4,2.0,0],[16.6,107.45,4.1,0],[16.6,107.5,86.8,1],[16.6,107.55,337.3,1],[16.6,107.6,null,0],[16.6,107.65,null,0],[16.6,107.7,null,0],[16.6,107.75,null,0],[16.6,107.8,null,0],[16.6,107.85,null,0],[16.6,107.9,null,0],[16.6,107.95,null,0],[16.65,107.05,78.7,1],[16.65,107.1,1.8,0],[16.65,107.15,1.8,0],[16.65,107.2,10.5,0],[16.65,107.25,46.5,1],[16.65,107.3,73.4,1],[16.65,107.35,75.2,1],[16.65,107.4,75.2,1],[16.65,107.45,1.2,0],[16.65,107.5,null,0],[16.65,107.55,null,0],[16.65,107.6,null,0],[16.65,107.65,null,0],[16.65,107.7,null,0],[16.65,107.75,null,0],[16.65,107.8,null,0],[16.65,107.85,null,0],[16.65,107.9,null,0],[16.65,107.95,null,0],[16.7,107.05,1.7,0],[16.7,107.1,82.3,1],[16.7,107.15,82.3,1],[16.7,107.2,12.3,0],[16.7,107.25,69.6,1],[16.7,107.3,1.8,0],[16.7,107.35,null,0],[16.7,107.4,null,0],[16.7,107.45,null,0],[16.7,107.5,null,0],[16.7,107.55,null,0],[16.7,107.6,null,0],[16.7,107.65,null,0],[16.7,107.7,null,0],[16.7,107.75,null,0],[16.7,107.8,null,0],[16.7,107.85,null,0],[16.7,107.9,null,0],[16.7,107.95,null,0],[16.75,107.05,3.4,0],[16.75,107.1,84.1,1],[16.75,107.15,84.1,1],[16.75,107.2,15.9,0],[16.75,107.25,1.6,0],[16.75,107.3,null,0],[16.75,107.35,null,0],[16.75,107.4,null,0],[16.75,107.45,null,0],[16.75,107.5,null,0],[16.75,107.55,null,0],[16.75,107.6,null,0],[16.75,107.65,null,0],[16.75,107.7,null,0],[16.75,107.75,null,0],[16.75,107.8,null,0],[16.75,107.85,null,0],[16.75,107.9,null,0],[16.75,107.95,null,0],[16.8,107.05,3.4,0],[16.8,107.1,84.1,1],[16.8,107.15,84.1,1],[16.8,107.2,15.9,0],[16.8,107.25,1.6,0],[16.8,107.3,null,0],[16.8,107.35,null,0],[16.8,107.4,null,0],[16.8,107.45,null,0],[16.8,107.5,null,0],[16.8,107.55,null,0],[16.8,107.6,null,0],[16.8,107.65,null,0],[16.8,107.7,null,0],[16.8,107.75,null,0],[16.8,107.8,null,0],[16.8,107.85,null,0],[16.8,107.9,null,0],[16.8,107.95,null,0],[16.85,107.05,128.8,1],[16.85,107.1,3.6,0],[16.85,107.15,3.6,0],[16.85,107.2,1.8,0],[16.85,107.25,null,0],[16.85,107.3,null,0],[16.85,107.35,null,0],[16.85,107.4,null,0],[16.85,107.45,null,0],[16.85,107.5,null,0],[16.85,107.55,null,0],[16.85,107.6,null,0],[16.85,107.65,null,0],[16.85,107.7,null,0],[16.85,107.75,null,0],[16.85,107.8,null,0],[16.85,107.85,null,0],[16.85,107.9,null,0],[16.85,107.95,null,0],[16.9,107.05,1.7,0],[16.9,107.1,138.5,1],[16.9,107.15,138.5,1],[16.9,107.2,null,0],[16.9,107.25,null,0],[16.9,107.3,null,0],[16.9,107.35,null,0],[16.9,107.4,null,0],[16.9,107.45,null,0],[16.9,107.5,null,0],[16.9,107.55,null,0],[16.9,107.6,null,0],[16.9,107.65,null,0],[16.9,107.7,null,0],[16.9,107.75,null,0],[16.9,107.8,null,0],[16.9,107.85,null,0],[16.9,107.9,null,0],[16.9,107.95,null,0],[16.95,107.05,1.2,0],[16.95,107.1,null,0],[16.95,107.15,null,0],[16.95,107.2,null,0],[16.95,107.25,null,0],[16.95,107.3,null,0],[16.95,107.35,null,0],[16.95,107.4,null,0],[16.95,107.45,null,0],[16.95,107.5,null,0],[16.95,107.55,null,0],[16.95,107.6,null,0],[16.95,107.65,null,0],[16.95,107.7,null,0],[16.95,107.75,null,0],[16.95,107.8,null,0],[16.95,107.85,null,0],[16.95,107.9,null,0],[16.95,107.95,null,0]],"chosen":[16.45,107.5],"station":[16.47,107.57],"largest":[16.6,107.55]},"files":{"kinds":[{"k":"hourly rain","n":768},{"k":"flow probes","n":316},{"k":"full flow","n":83},{"k":"daily rain","n":64},{"k":"forecast rain","n":64}],"total":1295,"rows":6087,"cols":71},"fc":{"dates":["09/10","10/10","11/10","12/10","13/10","14/10","15/10","16/10","17/10","18/10","19/10","20/10","21/10","22/10","23/10","24/10","25/10","26/10","27/10","28/10","29/10","30/10","31/10","01/11","02/11","03/11","04/11","05/11","06/11","07/11","08/11","09/11","10/11","11/11","12/11","13/11","14/11","15/11","16/11","17/11","18/11","19/11","20/11","21/11","22/11","23/11","24/11","25/11","26/11"],"obs":[50.0,43.0,103.0,59.0,77.0,62.0,194.0,197.0,109.0,112.0,192.0,143.0,175.0,371.0,744.0,1090.0,1258.0,784.0,1224.0,2022.0,2316.0,2903.0,1166.0,461.0,410.0,428.0,1193.0,990.0,212.0,303.0,749.0,302.0,88.0,65.0,53.0,54.0,54.0,47.0,116.0,393.0,846.0,629.0,710.0,481.0,281.0,90.0,129.0,320.0,355.0],"pred":[40.0,85.0,73.0,89.0,63.0,130.0,83.0,209.0,191.0,141.0,226.0,229.0,155.0,341.0,398.0,892.0,831.0,688.0,723.0,1288.0,1469.0,1285.0,1000.0,481.0,295.0,550.0,577.0,574.0,367.0,394.0,267.0,304.0,120.0,66.0,66.0,56.0,54.0,48.0,114.0,299.0,412.0,569.0,501.0,305.0,203.0,143.0,139.0,284.0,368.0],"thr":[806,1275,1905],"nse":0.742,"nse_p":0.542}}</script>
+<script id="data" type="application/json">{"rain":{"cells":[[16.1,107.1,"thuong"],[16.1,107.2,"thuong"],[16.1,107.3,"thuong"],[16.1,107.4,"thuong"],[16.1,107.5,"thuong"],[16.1,107.6,"thuong"],[16.1,107.7,"thuong"],[16.1,107.8,"thuong"],[16.2,107.1,"thuong"],[16.2,107.2,"thuong"],[16.2,107.3,"thuong"],[16.2,107.4,"thuong"],[16.2,107.5,"thuong"],[16.2,107.6,"thuong"],[16.2,107.7,"thuong"],[16.2,107.8,"thuong"],[16.3,107.1,"thuong"],[16.3,107.2,"thuong"],[16.3,107.3,"thuong"],[16.3,107.4,"thuong"],[16.3,107.5,"thuong"],[16.3,107.6,"thuong"],[16.3,107.7,"thuong"],[16.3,107.8,"thuong"],[16.4,107.1,"trung"],[16.4,107.2,"trung"],[16.4,107.3,"trung"],[16.4,107.4,"trung"],[16.4,107.5,"trung"],[16.4,107.6,"trung"],[16.4,107.7,"trung"],[16.4,107.8,"trung"],[16.5,107.1,"trung"],[16.5,107.2,"trung"],[16.5,107.3,"trung"],[16.5,107.4,"trung"],[16.5,107.5,"trung"],[16.5,107.6,"trung"],[16.5,107.7,"trung"],[16.5,107.8,"trung"],[16.6,107.1,"ha"],[16.6,107.2,"ha"],[16.6,107.3,"ha"],[16.6,107.4,"ha"],[16.6,107.5,"ha"],[16.6,107.6,"ha"],[16.6,107.7,"ha"],[16.6,107.8,"ha"],[16.7,107.1,"ha"],[16.7,107.2,"ha"],[16.7,107.3,"ha"],[16.7,107.4,"ha"],[16.7,107.5,"ha"],[16.7,107.6,"ha"],[16.7,107.7,"ha"],[16.7,107.8,"ha"],[16.8,107.1,"ha"],[16.8,107.2,"ha"],[16.8,107.3,"ha"],[16.8,107.4,"ha"],[16.8,107.5,"ha"],[16.8,107.6,"ha"],[16.8,107.7,"ha"],[16.8,107.8,"ha"]],"days":["03/10","04/10","05/10","06/10","07/10","08/10","09/10","10/10","11/10","12/10","13/10","14/10","15/10","16/10","17/10","18/10","19/10","20/10","21/10","22/10","23/10","24/10"],"rain":[[3.2,3.3,2.9,3.4,3.6,4.0,3.6,0.8,0.4,1.2,2.3,2.6,1.7,2.2,3.8,6.9,0.3,1.3,2.3,3.3,2.5,3.0,3.3,0.8,0.7,1.4,1.8,2.8,3.5,3.3,2.1,3.5,0.7,1.4,3.7,7.6,2.0,2.1,5.4,1.2,1.7,3.1,2.5,2.5,3.1,1.9,1.9,3.4,4.2,2.2,2.2,1.6,2.2,2.1,1.7,5.3,4.9,3.5,2.5,1.6,2.2,2.4,5.0,6.4],[6.3,6.2,6.7,9.0,9.7,6.3,9.8,22.9,5.0,6.2,8.4,10.6,10.7,13.0,14.2,4.9,5.4,8.4,9.9,14.3,15.7,16.2,9.5,2.1,13.4,8.5,9.6,14.0,25.0,10.8,9.0,7.1,13.4,8.5,12.7,22.3,13.3,14.5,12.1,5.3,15.4,16.3,11.6,11.0,6.6,13.3,13.3,11.2,15.0,12.4,11.6,14.5,8.6,5.6,9.0,13.0,15.0,12.3,13.0,14.5,8.6,12.9,16.0,15.8],[2.4,2.5,3.9,6.3,4.2,3.6,3.2,7.1,3.0,4.6,5.5,6.5,3.5,3.5,4.7,4.7,2.6,4.9,5.7,5.6,3.7,3.6,3.2,3.9,6.2,3.2,4.1,3.3,3.4,3.4,3.0,4.1,6.2,3.2,4.2,3.8,4.5,4.2,3.1,2.4,2.7,3.4,3.2,3.5,3.1,4.2,4.2,5.0,2.9,3.5,3.4,4.4,4.0,3.4,3.8,3.7,2.7,2.8,4.7,4.4,4.0,2.8,3.4,3.6],[8.3,19.5,29.9,43.2,37.3,33.4,36.1,28.4,11.8,28.1,38.6,34.9,33.4,36.8,42.2,37.7,11.6,30.4,31.3,26.2,26.2,35.1,41.6,26.6,21.2,36.3,32.0,36.4,25.2,27.5,23.8,20.2,21.2,36.3,41.1,24.9,22.6,27.6,23.7,12.8,24.8,24.5,17.4,10.3,15.1,20.5,20.5,31.7,17.3,14.3,12.9,16.4,17.9,29.4,29.8,32.3,15.8,15.8,18.9,16.4,17.9,22.9,30.8,31.7],[70.4,126.1,158.3,135.8,111.7,109.4,106.9,87.8,91.9,158.8,145.2,121.4,97.6,104.2,95.2,67.5,101.7,156.2,137.1,103.2,87.8,101.0,72.5,102.5,181.2,161.7,147.1,150.7,110.1,99.9,62.7,107.9,181.2,161.7,199.4,125.3,60.5,124.0,97.6,62.0,156.2,165.8,66.9,57.8,87.0,118.2,118.2,145.3,102.0,60.6,51.7,111.6,192.0,152.8,141.6,133.0,79.0,72.1,125.1,111.6,192.0,121.3,124.4,118.3],[30.7,49.7,70.0,84.7,62.2,55.7,59.9,54.4,53.1,124.7,117.0,81.3,56.5,55.4,59.0,50.8,61.2,135.0,103.5,72.4,56.6,58.1,57.8,70.3,108.8,156.3,134.5,106.6,77.1,91.7,74.3,76.2,108.8,156.3,153.9,112.6,78.5,107.8,103.7,77.1,193.2,193.4,147.8,129.3,113.4,140.2,140.2,182.7,221.6,175.6,148.6,185.8,235.7,205.1,191.2,173.9,213.5,177.5,187.1,185.8,235.7,125.6,145.7,132.5],[87.9,123.6,136.6,153.8,138.0,117.1,118.2,75.0,120.6,172.1,173.8,159.3,138.6,131.1,138.0,125.5,135.6,183.6,174.3,144.7,127.1,138.4,143.1,185.0,229.3,267.3,214.5,184.0,142.2,159.9,169.3,226.7,229.3,267.3,239.1,176.9,150.2,178.9,181.7,200.3,312.5,295.9,239.3,196.8,208.8,219.0,219.0,230.0,241.8,215.5,190.7,190.7,185.8,177.6,169.6,155.3,195.6,187.0,187.8,190.7,185.8,128.9,127.9,119.7],[57.8,110.7,140.9,130.6,99.6,88.9,83.6,49.1,64.1,137.0,126.3,100.7,72.1,70.4,72.5,67.4,55.8,113.4,73.9,55.9,45.3,52.4,53.1,46.4,105.2,116.2,99.7,70.4,39.1,40.3,31.0,34.4,105.2,116.2,90.8,47.2,28.9,38.0,33.2,25.4,70.1,50.9,32.6,21.5,26.0,29.9,29.9,28.1,52.2,37.9,33.6,30.4,32.8,23.2,23.1,25.3,40.7,37.8,36.1,30.4,32.8,16.1,18.2,18.6],[98.9,152.2,211.2,268.3,263.3,246.1,241.3,178.3,113.6,165.4,193.4,212.2,210.0,203.9,214.6,229.6,103.8,145.1,155.7,158.4,159.9,161.8,170.8,138.3,181.1,203.4,185.8,156.1,135.9,109.0,95.3,98.7,181.1,203.4,158.9,129.9,113.6,102.8,88.7,82.9,117.9,104.3,82.1,72.4,92.1,91.7,91.7,66.7,75.9,69.2,65.7,61.3,61.3,55.7,57.5,61.3,58.9,60.7,63.7,61.3,61.3,52.5,50.7,53.0],[50.9,63.9,67.0,60.3,42.5,26.8,24.1,24.2,36.4,52.6,53.8,42.9,30.3,22.2,22.6,32.3,26.3,48.7,50.4,36.5,22.4,21.0,26.6,33.9,64.4,83.8,66.3,58.3,43.4,35.4,30.0,32.3,64.4,83.8,66.1,49.5,35.0,36.6,41.7,41.4,201.7,164.4,113.6,53.9,33.0,42.8,42.8,65.9,215.1,180.8,141.9,119.0,110.8,77.9,71.4,70.0,253.7,217.1,186.0,119.0,110.8,161.6,85.4,75.9],[92.1,119.7,146.6,167.9,175.6,183.5,196.1,281.0,100.6,138.0,147.8,150.8,143.9,134.2,134.9,148.7,93.6,122.8,102.2,115.0,106.3,100.4,99.7,103.1,101.3,97.5,100.8,86.4,86.8,110.3,119.2,117.5,101.3,97.5,86.4,84.4,93.3,104.7,109.8,115.8,58.0,55.7,58.0,71.6,91.1,97.7,97.7,75.7,56.8,46.5,47.3,51.3,59.5,61.8,58.1,52.2,48.9,41.4,41.9,51.3,59.5,32.3,41.3,37.6],[23.5,24.8,15.7,10.4,10.6,7.7,3.9,5.6,13.5,11.8,9.3,8.4,9.9,5.9,2.8,3.0,13.1,9.8,3.1,6.2,5.9,2.6,1.4,1.1,9.5,4.5,4.4,1.5,0.8,0.6,0.4,0.9,9.5,4.5,1.9,0.8,0.3,0.5,0.9,1.0,2.8,3.5,1.3,0.4,0.3,0.3,0.3,2.4,3.0,1.5,0.5,0.6,0.9,1.8,2.2,3.0,1.7,0.9,0.9,0.6,0.9,1.8,2.8,3.2],[8.3,11.8,12.6,15.9,15.2,13.8,20.3,14.8,9.2,12.7,15.3,17.1,12.2,15.4,21.7,20.7,8.5,13.4,17.4,17.7,15.9,16.8,16.3,16.8,16.1,32.9,22.0,25.6,17.4,19.8,20.8,31.9,16.1,32.9,35.7,28.4,22.4,23.7,28.9,29.3,45.3,45.6,39.8,28.5,26.2,31.8,31.8,44.3,44.9,37.0,32.8,33.3,35.5,40.8,43.9,49.1,38.8,36.1,32.9,33.3,35.5,40.2,43.8,42.7],[59.6,98.9,114.4,103.6,87.3,83.4,77.0,60.4,45.7,78.1,93.1,90.9,75.8,69.1,68.6,69.0,53.6,77.2,79.5,75.1,61.2,61.0,64.6,54.9,97.1,93.4,83.5,73.9,55.9,58.1,50.3,64.7,97.1,93.4,90.7,65.8,46.2,56.8,58.4,51.8,101.0,94.4,61.9,53.2,58.1,67.3,67.3,89.8,91.9,54.1,32.2,85.1,87.7,98.6,91.1,84.6,78.9,53.5,88.3,85.1,87.7,97.8,89.6,83.2],[87.3,127.9,128.9,124.9,96.1,79.6,73.2,48.3,81.6,152.5,139.4,109.8,83.0,82.3,75.6,69.8,82.7,145.7,176.0,103.2,90.0,94.2,81.2,120.4,229.2,226.2,212.4,233.2,176.9,160.1,127.4,121.8,229.2,226.2,257.2,186.4,128.8,147.0,119.8,66.5,146.5,148.3,101.1,67.7,82.0,91.9,91.9,74.1,125.6,77.2,64.2,102.6,104.0,89.9,82.9,77.6,127.1,95.4,126.9,102.6,104.0,92.1,85.4,79.1],[14.2,15.0,43.3,37.4,29.2,30.1,28.3,23.9,35.3,35.7,20.6,22.0,22.5,17.8,12.0,24.1,33.7,20.9,31.2,24.8,26.8,16.3,11.1,9.8,30.2,31.7,24.6,44.3,44.7,20.9,9.6,10.5,30.2,31.7,28.1,34.4,27.0,22.9,18.1,13.8,32.5,30.1,23.2,24.3,27.9,24.5,24.5,26.4,31.0,28.2,26.8,29.7,28.5,26.6,25.5,26.5,38.1,40.2,34.9,29.7,28.5,37.2,29.4,27.7],[20.4,20.5,18.6,25.3,22.4,22.6,22.8,32.0,24.4,27.1,32.1,32.5,28.2,24.3,25.6,34.0,37.8,39.0,49.1,39.5,30.6,25.3,26.7,32.6,53.5,49.5,56.1,49.5,39.0,32.4,32.1,31.6,53.5,49.5,43.2,40.2,34.9,33.2,34.1,32.3,29.3,25.2,26.1,35.5,32.0,33.7,33.7,34.0,25.8,29.1,41.9,46.5,41.8,44.1,43.9,37.6,40.2,60.1,70.1,46.5,41.8,62.2,50.8,40.9],[43.4,52.2,57.7,77.2,64.5,56.5,51.7,49.2,55.5,95.4,91.1,76.9,68.3,63.4,55.6,52.5,43.5,82.1,63.7,59.8,51.0,52.7,52.2,59.2,71.7,84.9,70.3,65.1,58.0,58.2,57.2,63.8,71.7,84.9,78.2,67.3,57.0,66.9,69.3,61.3,91.1,107.7,86.3,59.3,65.1,70.1,70.1,82.6,91.3,99.8,83.0,68.9,92.6,74.9,72.2,75.1,87.9,100.2,95.2,68.9,92.6,60.6,65.1,69.0],[12.6,31.6,55.3,54.2,36.5,28.3,27.8,13.1,15.9,47.8,51.4,39.8,23.0,20.7,24.6,23.1,15.3,47.6,36.9,23.1,15.6,17.3,17.7,15.2,51.2,59.8,53.4,32.5,15.0,14.4,8.9,8.7,51.2,59.8,41.3,17.0,10.0,11.1,9.1,5.9,35.0,30.9,12.7,7.1,8.1,7.8,7.8,3.3,19.6,12.1,8.8,10.8,8.9,2.8,2.6,2.4,11.8,13.0,16.7,10.8,8.9,2.0,1.9,1.5],[2.8,3.3,4.3,9.8,13.4,10.7,10.8,4.8,4.9,4.8,5.5,5.0,3.3,3.8,7.1,12.8,4.1,3.3,1.8,2.3,2.1,3.3,6.0,9.2,6.3,7.8,4.8,3.0,4.2,6.3,5.6,3.3,6.3,7.8,5.2,3.8,6.2,6.6,3.9,2.3,2.7,2.1,2.3,4.5,4.1,3.8,3.8,0.1,0.9,1.5,2.6,4.5,4.2,0.0,0.0,0.2,0.7,1.5,3.3,4.5,4.2,0.0,0.1,0.1],[1.3,2.1,3.8,3.3,4.3,4.7,6.1,3.7,2.7,3.1,2.3,1.7,2.2,2.6,5.5,5.1,1.8,2.3,0.7,0.6,0.6,1.0,2.5,4.4,2.8,1.4,1.3,0.8,1.1,2.8,5.1,6.4,2.8,1.4,1.5,1.8,2.9,4.2,6.2,7.6,1.0,0.7,0.8,2.4,3.6,3.3,3.3,0.1,0.3,0.3,0.5,0.7,0.5,0.0,0.0,0.2,0.0,0.2,0.3,0.7,0.5,0.0,0.4,0.4],[0.9,1.3,2.2,1.3,0.9,1.2,1.4,0.7,1.5,2.3,1.2,0.9,1.1,1.6,1.9,1.5,1.4,1.7,0.4,0.4,0.4,0.6,1.9,0.5,1.7,0.9,1.0,1.0,0.1,0.2,0.6,0.4,1.7,0.9,0.6,0.2,0.3,0.3,0.4,0.3,0.8,0.2,0.1,0.2,0.2,0.5,0.5,0.2,0.0,0.1,0.2,0.9,1.6,0.3,0.2,0.1,0.0,0.5,2.0,0.9,1.6,0.0,0.0,0.0]],"q":[125.0,140.0,115.0,123.0,467.0,990.0,1215.0,1351.0,1562.0,2060.0,1308.0,747.0,302.0,365.0,952.0,1121.0,903.0,756.0,568.0,289.0,122.0,97.0],"rb":[2.7,11.5,3.9,26.2,118.1,117.3,179.7,59.4,130.9,70.6,98.9,4.3,26.1,74.9,125.9,26.7,37.0,69.9,22.4,4.4,2.3,0.8],"pairs":[[8,9],[14,15]],"rmax":312.5},"probe":{"cells":[[16.05,107.05,45.7,1],[16.05,107.1,41.3,1],[16.05,107.15,41.3,1],[16.05,107.2,39.8,1],[16.05,107.25,17.5,1],[16.05,107.3,15.3,1],[16.05,107.35,8.4,1],[16.05,107.4,8.4,1],[16.05,107.45,2.4,1],[16.05,107.5,2.2,1],[16.05,107.55,2.2,1],[16.05,107.6,2.1,1],[16.05,107.65,2.1,1],[16.05,107.7,2.1,1],[16.05,107.75,2.0,1],[16.05,107.8,4.1,1],[16.05,107.85,2.1,1],[16.05,107.9,2.1,1],[16.05,107.95,2.4,1],[16.1,107.05,1.5,1],[16.1,107.1,43.0,1],[16.1,107.15,43.0,1],[16.1,107.2,4.2,1],[16.1,107.25,2.4,1],[16.1,107.3,2.5,1],[16.1,107.35,2.6,1],[16.1,107.4,2.6,1],[16.1,107.45,4.8,1],[16.1,107.5,2.3,1],[16.1,107.55,2.2,1],[16.1,107.6,6.4,1],[16.1,107.65,6.4,1],[16.1,107.7,2.2,1],[16.1,107.75,2.4,1],[16.1,107.8,4.8,1],[16.1,107.85,7.3,1],[16.1,107.9,7.3,1],[16.1,107.95,2.6,1],[16.15,107.05,53.2,1],[16.15,107.1,32.2,1],[16.15,107.15,32.2,1],[16.15,107.2,2.4,1],[16.15,107.25,12.7,1],[16.15,107.3,7.8,1],[16.15,107.35,2.6,0],[16.15,107.4,2.6,0],[16.15,107.45,7.6,0],[16.15,107.5,2.3,0],[16.15,107.55,4.7,0],[16.15,107.6,39.4,0],[16.15,107.65,39.4,0],[16.15,107.7,21.8,0],[16.15,107.75,2.6,0],[16.15,107.8,2.8,0],[16.15,107.85,2.8,0],[16.15,107.9,2.8,0],[16.15,107.95,2.9,0],[16.2,107.05,15.5,0],[16.2,107.1,27.7,0],[16.2,107.15,27.7,0],[16.2,107.2,25.6,0],[16.2,107.25,2.7,0],[16.2,107.3,13.1,0],[16.2,107.35,2.5,0],[16.2,107.4,2.5,0],[16.2,107.45,2.4,0],[16.2,107.5,2.3,0],[16.2,107.55,48.4,1],[16.2,107.6,46.2,0],[16.2,107.65,46.2,0],[16.2,107.7,2.2,0],[16.2,107.75,2.5,0],[16.2,107.8,2.7,0],[16.2,107.85,2.6,0],[16.2,107.9,2.6,0],[16.2,107.95,2.7,0],[16.25,107.05,11.2,0],[16.25,107.1,13.6,0],[16.25,107.15,13.6,0],[16.25,107.2,5.3,0],[16.25,107.25,2.6,0],[16.25,107.3,15.5,0],[16.25,107.35,4.8,0],[16.25,107.4,4.8,0],[16.25,107.45,7.1,0],[16.25,107.5,4.4,0],[16.25,107.55,50.3,1],[16.25,107.6,2.0,0],[16.25,107.65,2.0,0],[16.25,107.7,2.1,0],[16.25,107.75,2.1,0],[16.25,107.8,4.2,0],[16.25,107.85,4.6,0],[16.25,107.9,4.6,0],[16.25,107.95,5.2,0],[16.3,107.05,11.2,0],[16.3,107.1,13.6,0],[16.3,107.15,13.6,0],[16.3,107.2,5.3,0],[16.3,107.25,2.6,0],[16.3,107.3,15.5,0],[16.3,107.35,4.8,0],[16.3,107.4,4.8,0],[16.3,107.45,7.1,0],[16.3,107.5,4.4,0],[16.3,107.55,50.3,1],[16.3,107.6,2.0,0],[16.3,107.65,2.0,0],[16.3,107.7,2.1,0],[16.3,107.75,2.1,0],[16.3,107.8,4.2,0],[16.3,107.85,4.6,0],[16.3,107.9,4.6,0],[16.3,107.95,5.2,0],[16.35,107.05,9.2,0],[16.35,107.1,2.6,0],[16.35,107.15,2.6,0],[16.35,107.2,2.7,0],[16.35,107.25,7.9,0],[16.35,107.3,25.9,0],[16.35,107.35,2.4,0],[16.35,107.4,2.4,0],[16.35,107.45,2.2,0],[16.35,107.5,2.1,0],[16.35,107.55,58.7,1],[16.35,107.6,1.9,0],[16.35,107.65,1.9,0],[16.35,107.7,6.0,0],[16.35,107.75,33.1,0],[16.35,107.8,9.3,0],[16.35,107.85,1.3,0],[16.35,107.9,1.3,0],[16.35,107.95,11.1,0],[16.4,107.05,2.8,0],[16.4,107.1,3.1,0],[16.4,107.15,3.1,0],[16.4,107.2,9.0,0],[16.4,107.25,2.7,0],[16.4,107.3,56.3,1],[16.4,107.35,62.9,1],[16.4,107.4,62.9,1],[16.4,107.45,2.2,0],[16.4,107.5,118.0,0],[16.4,107.55,2.1,0],[16.4,107.6,7.9,0],[16.4,107.65,7.9,0],[16.4,107.7,9.5,0],[16.4,107.75,2.3,0],[16.4,107.8,null,0],[16.4,107.85,null,0],[16.4,107.9,null,0],[16.4,107.95,null,0],[16.45,107.05,3.0,0],[16.45,107.1,3.1,0],[16.45,107.15,3.1,0],[16.45,107.2,3.1,0],[16.45,107.25,2.6,0],[16.45,107.3,2.4,0],[16.45,107.35,65.0,1],[16.45,107.4,65.0,1],[16.45,107.45,2.2,0],[16.45,107.5,126.5,1],[16.45,107.55,2.1,0],[16.45,107.6,1.9,0],[16.45,107.65,1.9,0],[16.45,107.7,44.8,0],[16.45,107.75,null,0],[16.45,107.8,null,0],[16.45,107.85,null,0],[16.45,107.9,null,0],[16.45,107.95,null,0],[16.5,107.05,8.2,0],[16.5,107.1,11.0,0],[16.5,107.15,11.0,0],[16.5,107.2,8.9,0],[16.5,107.25,19.0,0],[16.5,107.3,2.3,0],[16.5,107.35,71.7,1],[16.5,107.4,71.7,1],[16.5,107.45,73.8,1],[16.5,107.5,203.7,1],[16.5,107.55,1.6,0],[16.5,107.6,46.4,1],[16.5,107.65,46.4,1],[16.5,107.7,44.7,0],[16.5,107.75,null,0],[16.5,107.8,null,0],[16.5,107.85,null,0],[16.5,107.9,null,0],[16.5,107.95,null,0],[16.55,107.05,8.2,0],[16.55,107.1,11.0,0],[16.55,107.15,11.0,0],[16.55,107.2,8.9,0],[16.55,107.25,19.0,0],[16.55,107.3,2.3,0],[16.55,107.35,71.7,1],[16.55,107.4,71.7,1],[16.55,107.45,73.8,1],[16.55,107.5,203.7,1],[16.55,107.55,1.6,0],[16.55,107.6,46.4,1],[16.55,107.65,46.4,1],[16.55,107.7,44.7,0],[16.55,107.75,null,0],[16.55,107.8,null,0],[16.55,107.85,null,0],[16.55,107.9,null,0],[16.55,107.95,null,0],[16.6,107.05,4.7,0],[16.6,107.1,13.4,0],[16.6,107.15,13.4,0],[16.6,107.2,15.7,0],[16.6,107.25,21.0,0],[16.6,107.3,23.0,0],[16.6,107.35,2.0,0],[16.6,107.4,2.0,0],[16.6,107.45,4.1,0],[16.6,107.5,86.8,1],[16.6,107.55,337.3,1],[16.6,107.6,null,0],[16.6,107.65,null,0],[16.6,107.7,null,0],[16.6,107.75,null,0],[16.6,107.8,null,0],[16.6,107.85,null,0],[16.6,107.9,null,0],[16.6,107.95,null,0],[16.65,107.05,78.7,1],[16.65,107.1,1.8,0],[16.65,107.15,1.8,0],[16.65,107.2,10.5,0],[16.65,107.25,46.5,1],[16.65,107.3,73.4,1],[16.65,107.35,75.2,1],[16.65,107.4,75.2,1],[16.65,107.45,1.2,0],[16.65,107.5,null,0],[16.65,107.55,null,0],[16.65,107.6,null,0],[16.65,107.65,null,0],[16.65,107.7,null,0],[16.65,107.75,null,0],[16.65,107.8,null,0],[16.65,107.85,null,0],[16.65,107.9,null,0],[16.65,107.95,null,0],[16.7,107.05,1.7,0],[16.7,107.1,82.3,1],[16.7,107.15,82.3,1],[16.7,107.2,12.3,0],[16.7,107.25,69.6,1],[16.7,107.3,1.8,0],[16.7,107.35,null,0],[16.7,107.4,null,0],[16.7,107.45,null,0],[16.7,107.5,null,0],[16.7,107.55,null,0],[16.7,107.6,null,0],[16.7,107.65,null,0],[16.7,107.7,null,0],[16.7,107.75,null,0],[16.7,107.8,null,0],[16.7,107.85,null,0],[16.7,107.9,null,0],[16.7,107.95,null,0],[16.75,107.05,3.4,0],[16.75,107.1,84.1,1],[16.75,107.15,84.1,1],[16.75,107.2,15.9,0],[16.75,107.25,1.6,0],[16.75,107.3,null,0],[16.75,107.35,null,0],[16.75,107.4,null,0],[16.75,107.45,null,0],[16.75,107.5,null,0],[16.75,107.55,null,0],[16.75,107.6,null,0],[16.75,107.65,null,0],[16.75,107.7,null,0],[16.75,107.75,null,0],[16.75,107.8,null,0],[16.75,107.85,null,0],[16.75,107.9,null,0],[16.75,107.95,null,0],[16.8,107.05,3.4,0],[16.8,107.1,84.1,1],[16.8,107.15,84.1,1],[16.8,107.2,15.9,0],[16.8,107.25,1.6,0],[16.8,107.3,null,0],[16.8,107.35,null,0],[16.8,107.4,null,0],[16.8,107.45,null,0],[16.8,107.5,null,0],[16.8,107.55,null,0],[16.8,107.6,null,0],[16.8,107.65,null,0],[16.8,107.7,null,0],[16.8,107.75,null,0],[16.8,107.8,null,0],[16.8,107.85,null,0],[16.8,107.9,null,0],[16.8,107.95,null,0],[16.85,107.05,128.8,1],[16.85,107.1,3.6,0],[16.85,107.15,3.6,0],[16.85,107.2,1.8,0],[16.85,107.25,null,0],[16.85,107.3,null,0],[16.85,107.35,null,0],[16.85,107.4,null,0],[16.85,107.45,null,0],[16.85,107.5,null,0],[16.85,107.55,null,0],[16.85,107.6,null,0],[16.85,107.65,null,0],[16.85,107.7,null,0],[16.85,107.75,null,0],[16.85,107.8,null,0],[16.85,107.85,null,0],[16.85,107.9,null,0],[16.85,107.95,null,0],[16.9,107.05,1.7,0],[16.9,107.1,138.5,1],[16.9,107.15,138.5,1],[16.9,107.2,null,0],[16.9,107.25,null,0],[16.9,107.3,null,0],[16.9,107.35,null,0],[16.9,107.4,null,0],[16.9,107.45,null,0],[16.9,107.5,null,0],[16.9,107.55,null,0],[16.9,107.6,null,0],[16.9,107.65,null,0],[16.9,107.7,null,0],[16.9,107.75,null,0],[16.9,107.8,null,0],[16.9,107.85,null,0],[16.9,107.9,null,0],[16.9,107.95,null,0],[16.95,107.05,1.2,0],[16.95,107.1,null,0],[16.95,107.15,null,0],[16.95,107.2,null,0],[16.95,107.25,null,0],[16.95,107.3,null,0],[16.95,107.35,null,0],[16.95,107.4,null,0],[16.95,107.45,null,0],[16.95,107.5,null,0],[16.95,107.55,null,0],[16.95,107.6,null,0],[16.95,107.65,null,0],[16.95,107.7,null,0],[16.95,107.75,null,0],[16.95,107.8,null,0],[16.95,107.85,null,0],[16.95,107.9,null,0],[16.95,107.95,null,0]],"chosen":[16.45,107.5],"station":[16.47,107.57],"largest":[16.6,107.55]},"files":{"kinds":[{"k":"hourly rain","n":768},{"k":"flow probes","n":316},{"k":"full flow","n":83},{"k":"daily rain","n":64},{"k":"forecast rain","n":64}],"total":1295,"rows":6087,"cols":71},"fc":{"dates":["09/10","10/10","11/10","12/10","13/10","14/10","15/10","16/10","17/10","18/10","19/10","20/10","21/10","22/10","23/10","24/10","25/10","26/10","27/10","28/10","29/10","30/10","31/10","01/11","02/11","03/11","04/11","05/11","06/11","07/11","08/11","09/11","10/11","11/11","12/11","13/11","14/11","15/11","16/11","17/11","18/11","19/11","20/11","21/11","22/11","23/11","24/11","25/11","26/11"],"obs":[50.0,43.0,103.0,59.0,77.0,62.0,194.0,197.0,109.0,112.0,192.0,143.0,175.0,371.0,744.0,1090.0,1258.0,784.0,1224.0,2022.0,2316.0,2903.0,1166.0,461.0,410.0,428.0,1193.0,990.0,212.0,303.0,749.0,302.0,88.0,65.0,53.0,54.0,54.0,47.0,116.0,393.0,846.0,629.0,710.0,481.0,281.0,90.0,129.0,320.0,355.0],"pred":[40.0,85.0,73.0,89.0,63.0,130.0,83.0,209.0,191.0,141.0,226.0,229.0,155.0,341.0,398.0,892.0,831.0,688.0,723.0,1288.0,1469.0,1285.0,1000.0,481.0,295.0,550.0,577.0,574.0,367.0,394.0,267.0,304.0,120.0,66.0,66.0,56.0,54.0,48.0,114.0,299.0,412.0,569.0,501.0,305.0,203.0,143.0,139.0,284.0,368.0],"thr":[806,1275,1905],"nse":0.742,"nse_p":0.542},"geo":{"bbox":[16.05,16.95,107.05,107.95],"rivers":[{"n":"S\u00f4ng Nh\u01b0 \u00dd","c":"minor","p":[[107.5953,16.4735],[107.6019,16.4703],[107.6071,16.4738]]},{"n":"S\u00f4ng L\u1ee3i N\u00f4ng","c":"minor","p":[[107.6066,16.4564],[107.6174,16.45],[107.6663,16.443]]},{"n":"S\u00f4ng \u0110\u1ea1i Giang","c":"minor","p":[[107.6663,16.443],[107.6751,16.4429],[107.6876,16.431],[107.6996,16.4353],[107.7092,16.4326],[107.7122,16.4291],[107.7143,16.4198],[107.7302,16.4112],[107.7378,16.3951],[107.7458,16.3919],[107.7519,16.3856],[107.7571,16.3744],[107.7576,16.3675],[107.7681,16.3649],[107.781,16.3549]]},{"n":"S\u00f4ng Hi\u1ebfu","c":"minor","p":[[107.0319,16.8219],[107.0414,16.82],[107.0418,16.8175],[107.0371,16.8148],[107.0369,16.8129],[107.0461,16.8061],[107.0486,16.8062],[107.0536,16.8079],[107.0631,16.8165],[107.0717,16.8179],[107.0878,16.8302],[107.1006,16.8259],[107.1084,16.8352],[107.1188,16.8356],[107.126,16.8421]]},{"n":"S\u00f4ng V\u0129nh Ph\u01b0\u1edbc","c":"minor","p":[[107.104,16.7774],[107.106,16.777],[107.1083,16.7725],[107.1211,16.7783],[107.1269,16.7905],[107.1337,16.7984],[107.148,16.8034],[107.147,16.8067]]},{"n":"S\u00f4ng T\u1ea3 Tr\u1ea1ch","c":"branch","p":[[107.6675,16.2174],[107.6653,16.2214],[107.6705,16.2297],[107.6616,16.2336],[107.6628,16.2406],[107.6708,16.2403],[107.672,16.2424],[107.6674,16.2485],[107.6672,16.2531],[107.6618,16.2545],[107.6589,16.2531],[107.6573,16.2472],[107.6538,16.2437],[107.6542,16.2396],[107.6516,16.2348],[107.6475,16.2346],[107.6453,16.2392],[107.6429,16.2489],[107.6458,16.258],[107.6427,16.262],[107.6445,16.2711],[107.649,16.2733],[107.6495,16.2756],[107.6438,16.2765],[107.638,16.2801],[107.6381,16.288],[107.6287,16.3031],[107.6298,16.3096],[107.638,16.3127],[107.6373,16.3146]]},{"n":"S\u00f4ng T\u1ea3 Tr\u1ea1ch","c":"branch","p":[[107.7133,16.1712],[107.7114,16.1738],[107.6894,16.1754],[107.6829,16.1779],[107.6821,16.1845],[107.6764,16.1904],[107.6836,16.1933],[107.6801,16.2022],[107.6807,16.2053],[107.676,16.2141],[107.6802,16.2202],[107.6771,16.2216],[107.6725,16.2167],[107.6675,16.2174]]},{"n":"S\u00f4ng T\u1ea3 Tr\u1ea1ch","c":"branch","p":[[107.7541,16.1332],[107.7507,16.1343],[107.7498,16.1451],[107.7472,16.1465],[107.7432,16.1433],[107.7319,16.1475],[107.7222,16.1566],[107.7247,16.161],[107.7238,16.1669],[107.7147,16.1654],[107.7133,16.1712]]},{"n":"S\u00f4ng H\u01b0\u01a1ng","c":"main","p":[[107.5767,16.4611],[107.586,16.4662],[107.592,16.4728],[107.5927,16.4914],[107.5912,16.4972],[107.5888,16.4984],[107.5811,16.4945],[107.5778,16.4954],[107.5761,16.4999],[107.5744,16.5274]]},{"n":"S\u00f4ng Nh\u01b0 \u00dd","c":"minor","p":[[107.6071,16.4738],[107.6038,16.4769],[107.6033,16.4818],[107.6086,16.4851],[107.6103,16.4889],[107.6234,16.4915],[107.6496,16.4815],[107.6524,16.4787],[107.6521,16.4759],[107.6436,16.4739],[107.6417,16.4708],[107.6424,16.4677],[107.6515,16.462],[107.6533,16.4526],[107.6608,16.4511],[107.6663,16.443]]},{"n":"S\u00f4ng \u0110\u00e0o C\u1eeda H\u1eadu","c":"minor","p":[[107.5594,16.4741],[107.5559,16.4789],[107.5783,16.495]]},{"n":"S\u00f4ng B\u1ea1ch Y\u1ebfn","c":"minor","p":[[107.5271,16.4507],[107.5315,16.4563],[107.5357,16.4561],[107.5436,16.4634],[107.5462,16.4594],[107.5502,16.46],[107.5504,16.464],[107.557,16.4674],[107.5569,16.4728],[107.5594,16.4741]]},{"n":"S\u00f4ng K\u1ebb V\u1ea1n","c":"minor","p":[[107.5705,16.4594],[107.5594,16.4741]]},{"n":"R\u00e0o B\u00ecnh \u0110i\u1ec1n","c":"minor","p":[[107.4739,16.4093],[107.4742,16.4074],[107.4792,16.4062],[107.4774,16.4006],[107.4828,16.3981],[107.4888,16.3762],[107.4947,16.3702],[107.4955,16.3536],[107.4982,16.3545],[107.4983,16.3509],[107.5064,16.3518],[107.5077,16.3492],[107.5108,16.3502]]},{"n":"S\u00f4ng H\u1eefu Tr\u1ea1ch","c":"branch","p":[[107.52,16.1724],[107.5196,16.1745],[107.5223,16.1758],[107.5194,16.1789],[107.5195,16.1829]]},{"n":"S\u00f4ng \u00d4 L\u00e2u","c":"minor","p":[[107.1664,16.4911],[107.1654,16.4938],[107.1609,16.495],[107.165,16.5013]]},{"n":"S\u00f4ng \u0110a Kr\u00f4ng","c":"minor","p":[[107.1309,16.425],[107.1263,16.4193],[107.1209,16.4222],[107.1164,16.4178],[107.1156,16.4204],[107.1122,16.4192],[107.1102,16.4212],[107.1051,16.4216],[107.1044,16.4135],[107.0977,16.4131],[107.1003,16.4123],[107.1003,16.4098],[107.0923,16.409],[107.0898,16.4106],[107.0906,16.4082],[107.0882,16.4078],[107.0877,16.4057],[107.0801,16.4034],[107.0771,16.3992],[107.0747,16.3998],[107.0764,16.3969],[107.0669,16.3931],[107.0633,16.3954],[107.0626,16.3902],[107.0586,16.3849],[107.0543,16.3816],[107.0493,16.3825],[107.0456,16.3806],[107.0395,16.3697],[107.0359,16.3715],[107.0302,16.3703]]},{"n":"S\u00f4ng H\u01b0\u01a1ng","c":"main","p":[[107.5766,16.5078],[107.5788,16.5132],[107.575,16.5205]]},{"n":"S\u00f4ng \u0110\u00f4ng Ba","c":"minor","p":[[107.5911,16.4714],[107.5787,16.4874],[107.5813,16.4897],[107.5778,16.4946]]},{"n":"\u0ec0\u0e8a\u0ec2\u0ea3\u0e99","c":"minor","p":[[107.1573,16.0657],[107.1509,16.0513],[107.1425,16.0537],[107.1434,16.0457],[107.1418,16.0436],[107.1303,16.0459],[107.1182,16.041],[107.1196,16.0359],[107.1173,16.0332],[107.1117,16.0306],[107.1025,16.03]]},{"n":"\u0ec0\u0e8a\u0ec2\u0ea3\u0e99","c":"minor","p":[[107.0451,16.03],[107.0474,16.0322],[107.041,16.0443],[107.0382,16.0464],[107.0354,16.0449]]},{"n":"\u0ec0\u0e8a\u0ec2\u0ea3\u0e99","c":"minor","p":[[107.2402,16.0302],[107.2381,16.0303]]},{"n":"\u0ec0\u0e8a\u0ec2\u0ea3\u0e99","c":"minor","p":[[107.2297,16.0301],[107.228,16.0323],[107.2246,16.0326],[107.2209,16.0302],[107.2145,16.0325],[107.2116,16.0301]]},{"n":"\u0ec0\u0e8a\u0ec2\u0ea3\u0e99","c":"minor","p":[[107.2067,16.0301],[107.2044,16.0328],[107.2031,16.0418],[107.1801,16.0458],[107.1773,16.0517],[107.1573,16.0657]]},{"n":"S\u00f4ng A S\u00e1p","c":"minor","p":[[107.1629,16.1976],[107.1486,16.1935]]},{"n":"S\u00f4ng A S\u00e1p","c":"minor","p":[[107.2425,16.2262],[107.236,16.219],[107.2346,16.2207],[107.2292,16.2201],[107.2272,16.2167],[107.2207,16.2153],[107.2174,16.2097],[107.2132,16.2144],[107.2058,16.2131],[107.2044,16.2094],[107.201,16.2137],[107.1855,16.2131],[107.1829,16.2114],[107.182,16.205],[107.1677,16.2025],[107.1657,16.1979],[107.1637,16.1976]]},{"n":"\u0ec0\u0e8a\u0eaa\u0eb2\u0e9a","c":"minor","p":[[107.1486,16.1935],[107.1435,16.1911],[107.1346,16.1927],[107.1271,16.1905],[107.1234,16.1853],[107.1176,16.1878],[107.1067,16.1826],[107.1004,16.1737],[107.1008,16.1664],[107.0963,16.1651],[107.0939,16.1603],[107.09,16.1583],[107.088,16.152],[107.0838,16.1517],[107.0799,16.1482],[107.0798,16.142],[107.0834,16.1373],[107.0857,16.1248],[107.082,16.1154],[107.0717,16.1144],[107.0639,16.1163],[107.0598,16.1195],[107.058,16.1233],[107.0596,16.1378],[107.0566,16.1404],[107.0466,16.1342],[107.0424,16.1294],[107.0416,16.1245]]},{"n":"S\u00f4ng A S\u00e1p","c":"minor","p":[[107.1637,16.1976],[107.1629,16.1976]]},{"n":"S\u00f4ng B\u00f9 Lu","c":"minor","p":[[107.934,16.2371],[107.932,16.2382],[107.9324,16.24],[107.9396,16.2446],[107.9383,16.2481],[107.9406,16.2482],[107.9429,16.2545],[107.9412,16.2563],[107.9474,16.2583],[107.9453,16.2739],[107.943,16.2748],[107.9416,16.2794],[107.9543,16.2934],[107.9667,16.3003]]},{"n":"S\u00f4ng B\u1ed3","c":"bo","p":[[107.4249,16.4604],[107.4299,16.4641],[107.432,16.4687],[107.4405,16.4718],[107.4393,16.4786],[107.434,16.4808],[107.436,16.5039],[107.4441,16.5193],[107.4433,16.5332],[107.4521,16.5415],[107.4611,16.5461],[107.4685,16.5395],[107.4769,16.5273],[107.4875,16.5246],[107.4958,16.5253],[107.5052,16.535],[107.5106,16.5363]]},{"n":"S\u00f4ng B\u1ed3","c":"bo","p":[[107.3524,16.3835],[107.359,16.3862],[107.3567,16.3919],[107.3572,16.3999],[107.3668,16.4025],[107.3683,16.4081],[107.3765,16.4091],[107.3859,16.421],[107.4014,16.4237],[107.4039,16.4324],[107.4086,16.4366],[107.4126,16.4341],[107.4151,16.4353],[107.4156,16.4463],[107.4241,16.4594]]},{"n":"S\u00f4ng B\u1ed3","c":"bo","p":[[107.5106,16.5363],[107.5143,16.5316],[107.5097,16.5227],[107.5118,16.5171],[107.52,16.5164],[107.5206,16.5183],[107.5178,16.5192],[107.5179,16.5212],[107.5199,16.5265],[107.5229,16.5281],[107.5283,16.5253],[107.5289,16.5147],[107.5317,16.5123],[107.5375,16.5217],[107.5313,16.5233],[107.5309,16.5268],[107.5395,16.5327],[107.5495,16.5325],[107.5561,16.5253],[107.5607,16.5305],[107.5659,16.5283],[107.5713,16.5294],[107.5744,16.5274]]},{"n":"s\u00f4ng \u0111\u00e0o Di\u00ean H\u1ed3ng","c":"minor","p":[[107.5261,16.5636],[107.5218,16.5829],[107.524,16.6056]]},{"n":"S\u00f4ng K\u00f4n","c":"minor","p":[[107.7882,16.0682],[107.7873,16.0675]]},{"n":"S\u00f4ng K\u00f4n","c":"minor","p":[[107.7873,16.0675],[107.7867,16.0611],[107.7891,16.059],[107.7862,16.0546],[107.7872,16.0523],[107.7834,16.0496],[107.7816,16.0302]]},{"n":"S\u00f4ng K\u00f4n","c":"minor","p":[[107.7947,16.0688],[107.7871,16.0696]]},{"n":"S\u00f4ng K\u00f4n","c":"minor","p":[[107.7871,16.0696],[107.7882,16.0682]]},{"n":"S\u00f4ng V\u0129nh \u0110\u1ecbnh","c":"minor","p":[[107.2043,16.7689],[107.2121,16.7931],[107.2112,16.807],[107.2084,16.8122],[107.2098,16.8153],[107.2061,16.8173],[107.1984,16.8298],[107.1935,16.8277],[107.188,16.8298],[107.1825,16.8288],[107.1757,16.8332],[107.1744,16.8354],[107.1768,16.8395],[107.169,16.8389],[107.1639,16.8353],[107.1615,16.8359],[107.1516,16.8535],[107.1526,16.8636],[107.1494,16.8681]]},{"n":"S\u00f4ng V\u0129nh \u0110\u1ecbnh","c":"minor","p":[[107.3373,16.7049],[107.2987,16.7337],[107.2922,16.7345],[107.2908,16.7329]]},{"n":"S\u00f4ng Th\u00e1c Ma","c":"minor","p":[[107.1376,16.5205],[107.1465,16.5192],[107.1457,16.5213],[107.1506,16.5247],[107.1632,16.5294],[107.1572,16.5341],[107.1594,16.5389],[107.1645,16.543],[107.1714,16.5391],[107.174,16.5441],[107.1764,16.5405],[107.1785,16.5436],[107.1824,16.5436],[107.1809,16.5468],[107.1836,16.5467],[107.183,16.55],[107.1896,16.55],[107.1866,16.554],[107.1898,16.5545],[107.1893,16.5608],[107.1919,16.5641],[107.1964,16.5595],[107.1988,16.5629],[107.2069,16.5605],[107.2125,16.5687],[107.2096,16.5732],[107.2148,16.572],[107.2156,16.5742],[107.2198,16.5735],[107.2208,16.5764],[107.2236,16.5733],[107.2267,16.5741],[107.2261,16.5771],[107.2343,16.5789],[107.234,16.5805],[107.2292,16.5818],[107.2298,16.5851],[107.223,16.5897],[107.2259,16.592],[107.2251,16.5949],[107.2297,16.5948],[107.2321,16.5923],[107.2354,16.5944],[107.2404,16.5925]]},{"n":"S\u00f4ng V\u0129nh Ph\u01b0\u1edbc","c":"minor","p":[[107.0303,16.7515],[107.0322,16.7456],[107.034,16.7479],[107.0357,16.7454],[107.0409,16.7437],[107.0446,16.7454],[107.0459,16.7436],[107.053,16.7469],[107.0547,16.7518],[107.0623,16.7525],[107.0627,16.7583],[107.0651,16.7596],[107.0632,16.762],[107.0664,16.7648],[107.0689,16.7637],[107.0698,16.7657],[107.0731,16.7633],[107.0734,16.7697],[107.0711,16.7711],[107.0744,16.7736],[107.0802,16.7738],[107.082,16.7778],[107.0864,16.7798],[107.0897,16.779],[107.092,16.7814],[107.0934,16.7782],[107.0968,16.7782],[107.0974,16.7731],[107.0993,16.7736],[107.0994,16.7765],[107.104,16.7774]]},{"n":"S\u00f4ng Nh\u00f9ng","c":"minor","p":[[107.2423,16.6958],[107.2399,16.697],[107.2379,16.6952],[107.2372,16.6974],[107.2349,16.6964],[107.2294,16.7007],[107.2319,16.704],[107.2295,16.7081],[107.2315,16.7099],[107.2287,16.7152],[107.2296,16.7164],[107.2224,16.7197],[107.2213,16.7241],[107.2213,16.7291],[107.2255,16.7301],[107.2241,16.7342],[107.2286,16.7394],[107.2259,16.7413],[107.2249,16.746],[107.2221,16.7482],[107.2154,16.7481],[107.2146,16.7523],[107.211,16.7551]]},{"n":"S\u00f4ng Nh\u00f9ng","c":"minor","p":[[107.211,16.7551],[107.21,16.7587],[107.2215,16.7603],[107.2219,16.7644],[107.2262,16.7632]]},{"n":"S\u00f4ng Th\u1ea1ch H\u00e3n","c":"minor","p":[[107.126,16.8421],[107.1255,16.8499],[107.1321,16.8613],[107.1483,16.867],[107.1551,16.8801],[107.196,16.9085]]},{"n":"S\u00f4ng V\u0129nh \u0110\u1ecbnh","c":"minor","p":[[107.2908,16.7329],[107.2503,16.7633],[107.2448,16.7637],[107.2417,16.7612],[107.2392,16.7631],[107.23,16.7616],[107.2264,16.7629],[107.2239,16.767],[107.2198,16.7647],[107.2161,16.7691],[107.2139,16.7691],[107.2099,16.7642],[107.2061,16.7654],[107.2043,16.7689]]},{"n":"S\u00f4ng Th\u1ea1ch H\u00e3n","c":"minor","p":[[107.0544,16.6349],[107.0604,16.6361],[107.0634,16.6427],[107.0705,16.6438],[107.0707,16.6458],[107.0672,16.6482],[107.0694,16.6521],[107.0786,16.6523],[107.0826,16.6562],[107.0888,16.6548],[107.0927,16.6643],[107.1014,16.6595],[107.1049,16.6659],[107.1127,16.6639],[107.1189,16.6746],[107.1174,16.687],[107.135,16.6998]]},{"n":"S\u00f4ng Nh\u00f9ng","c":"minor","p":[[107.191,16.6421],[107.1933,16.6455],[107.1963,16.6446],[107.1941,16.6483],[107.1957,16.6527],[107.1931,16.653],[107.1953,16.6553],[107.194,16.6571],[107.2012,16.6593],[107.2017,16.6626],[107.2043,16.6619],[107.2048,16.6641],[107.203,16.6656],[107.2096,16.672],[107.2153,16.6672],[107.2191,16.6676],[107.2261,16.6752],[107.2265,16.6789],[107.2317,16.6819],[107.2322,16.6856],[107.2378,16.6886],[107.2375,16.6918],[107.2423,16.6958]]},{"n":"S\u00f4ng Nh\u00f9ng","c":"minor","p":[[107.1131,16.5767],[107.1154,16.5772],[107.1146,16.58],[107.1199,16.5818],[107.1237,16.5862],[107.1261,16.585],[107.1306,16.5878],[107.1343,16.5914],[107.1331,16.5935],[107.1346,16.5952]]},{"n":"S\u00f4ng Nh\u00f9ng","c":"minor","p":[[107.083,16.5598],[107.0869,16.5593],[107.089,16.5628],[107.0917,16.562],[107.1013,16.5655],[107.0998,16.5685],[107.1018,16.57],[107.1012,16.5725],[107.1065,16.5718],[107.1088,16.5756],[107.1097,16.5745],[107.1131,16.5767]]},{"n":"S\u00f4ng Nh\u00f9ng","c":"minor","p":[[107.1682,16.6174],[107.1661,16.6177],[107.1633,16.6237],[107.1644,16.6282],[107.1672,16.628],[107.1687,16.6328],[107.1719,16.6327],[107.1722,16.6346],[107.1803,16.6384],[107.1808,16.6413],[107.1825,16.6406],[107.1855,16.6439],[107.1898,16.6438],[107.191,16.6421]]},{"n":"S\u00f4ng Nh\u00f9ng","c":"minor","p":[[107.1346,16.5952],[107.1418,16.5983],[107.1456,16.5977],[107.1519,16.6026],[107.1522,16.6063],[107.1596,16.6059],[107.1603,16.609],[107.1682,16.6174]]},{"n":"S\u00f4ng Th\u00e1c Ma","c":"minor","p":[[107.2404,16.5925],[107.2388,16.5978],[107.2358,16.6],[107.2419,16.6003],[107.2424,16.5985],[107.2474,16.5973],[107.2479,16.5933],[107.2545,16.5983],[107.2566,16.607],[107.2599,16.6067],[107.262,16.6092],[107.2673,16.6086],[107.2704,16.6121],[107.2769,16.6109],[107.2757,16.6186],[107.2854,16.619],[107.289,16.6226],[107.2879,16.6257],[107.2934,16.624],[107.3036,16.6333],[107.3071,16.641]]},{"n":"S\u00f4ng \u00c1i T\u1eed","c":"minor","p":[[107.1473,16.767],[107.1526,16.7743],[107.1483,16.7799],[107.1502,16.7831],[107.1518,16.7828],[107.1531,16.788],[107.1458,16.7893],[107.148,16.7905],[107.1459,16.7927],[107.1473,16.7984],[107.145,16.7998],[107.1429,16.7975],[107.1424,16.8018]]},{"n":"S\u00f4ng \u00c1i T\u1eed","c":"minor","p":[[107.0726,16.7014],[107.076,16.704],[107.0822,16.7026],[107.0852,16.7067],[107.0844,16.7106],[107.0914,16.7133],[107.0904,16.7152],[107.0925,16.7154],[107.0922,16.7182],[107.0996,16.7215],[107.1033,16.7256],[107.1025,16.7285],[107.1051,16.7281],[107.1106,16.7316],[107.1132,16.7314],[107.1137,16.7296],[107.1158,16.7323],[107.1206,16.7336],[107.1189,16.7355],[107.1309,16.7354],[107.1302,16.739],[107.1338,16.741],[107.1314,16.7454],[107.1383,16.7465],[107.1389,16.7502],[107.1428,16.7508],[107.1417,16.7528],[107.1434,16.7549],[107.1464,16.7547],[107.1468,16.759],[107.1499,16.7601],[107.1477,16.762],[107.149,16.7655],[107.1473,16.767]]},{"n":"S\u00f4ng \u00d4 Giang","c":"minor","p":[[107.3155,16.6494],[107.3142,16.6548],[107.3083,16.6543],[107.3051,16.6565],[107.3046,16.6633],[107.3002,16.6671],[107.2994,16.6717],[107.302,16.6791],[107.2955,16.6833],[107.2926,16.6893],[107.296,16.6975]]},{"n":"S\u00f4ng \u00d4 L\u00e2u","c":"minor","p":[[107.1903,16.5213],[107.1919,16.523],[107.1937,16.521],[107.1985,16.5228],[107.2143,16.5225]]},{"n":"S\u00f4ng \u00d4 L\u00e2u","c":"minor","p":[[107.2143,16.5225],[107.2151,16.5243],[107.2186,16.5247],[107.2242,16.5227],[107.2261,16.5194],[107.2317,16.5217],[107.2345,16.5197],[107.2425,16.52],[107.2473,16.5228],[107.2531,16.5183],[107.2576,16.5197],[107.2598,16.5173],[107.266,16.5161],[107.2784,16.5205],[107.2959,16.5194],[107.2955,16.5242],[107.3031,16.5268],[107.3031,16.5301],[107.3062,16.5305],[107.3088,16.5408],[107.3069,16.5447],[107.3117,16.5467],[107.3121,16.5504],[107.3161,16.5517],[107.3137,16.5577],[107.3166,16.5653],[107.32,16.5642],[107.3255,16.5681],[107.3306,16.5629],[107.3332,16.5648],[107.3326,16.5685],[107.3399,16.5668],[107.3439,16.5742],[107.3546,16.5801],[107.3581,16.5796]]},{"n":"S\u00f4ng \u00d4 L\u00e2u","c":"minor","p":[[107.3581,16.5796],[107.3585,16.5943],[107.3551,16.5961],[107.3537,16.5936],[107.3497,16.5988],[107.3421,16.5995],[107.3363,16.6082],[107.3291,16.6074],[107.3198,16.6209],[107.3103,16.6253],[107.3157,16.6401],[107.3132,16.6417],[107.3135,16.637],[107.3109,16.6355],[107.3076,16.6375],[107.3071,16.641]]},{"n":"S\u00f4ng \u00d4 L\u00e2u","c":"minor","p":[[107.165,16.5013],[107.1629,16.503],[107.1642,16.5066],[107.1627,16.5083],[107.1652,16.5114],[107.162,16.5097],[107.1596,16.5109],[107.1631,16.5157],[107.1667,16.5145],[107.1685,16.5165],[107.1707,16.516],[107.1716,16.5197],[107.1903,16.5213]]},{"n":"S\u00f4ng \u00d4 L\u00e2u","c":"minor","p":[[107.3533,16.6987],[107.3578,16.699],[107.3642,16.6937],[107.3765,16.6926],[107.385,16.6876],[107.3906,16.6798],[107.394,16.6824],[107.4059,16.677],[107.4172,16.6745],[107.4237,16.6688],[107.4284,16.6578],[107.4328,16.6532],[107.4435,16.648],[107.4552,16.6455],[107.5284,16.6091],[107.5808,16.5845],[107.5907,16.5815],[107.606,16.5655],[107.6196,16.563],[107.6256,16.5657]]},{"n":"S\u00f4ng H\u1eefu Tr\u1ea1ch","c":"branch","p":[[107.5181,16.0668],[107.5166,16.0697],[107.5174,16.0756],[107.5135,16.0786],[107.5136,16.0968]]},{"n":"S\u00f4ng B\u1ed3","c":"bo","p":[[107.4241,16.4594],[107.4249,16.4604]]},{"n":"R\u00e0o N\u00e1i","c":"minor","p":[[107.3764,16.2058],[107.3784,16.2075],[107.3804,16.2063],[107.3794,16.2141],[107.3821,16.2153],[107.3715,16.2305],[107.3759,16.2464],[107.3705,16.2515],[107.3731,16.2561],[107.3698,16.2571],[107.3693,16.2593],[107.3745,16.2638],[107.3748,16.2662],[107.3725,16.2679],[107.3716,16.2722],[107.3691,16.2692],[107.3672,16.27],[107.3681,16.2749],[107.3604,16.2888],[107.3625,16.2909],[107.3601,16.3005],[107.3614,16.3015]]},{"n":"R\u00e0o Tr\u0103ng","c":"minor","p":[[107.2536,16.4123],[107.2619,16.4053],[107.2668,16.406],[107.269,16.4088],[107.2733,16.4041],[107.2777,16.4033],[107.2802,16.405],[107.2849,16.4016],[107.2976,16.3979],[107.2988,16.3949],[107.3025,16.3954],[107.3236,16.3861],[107.3332,16.3886],[107.3394,16.3878],[107.3404,16.3819],[107.3524,16.3835]]},{"n":"S\u00f4ng H\u1eefu Tr\u1ea1ch","c":"branch","p":[[107.4987,16.2692],[107.5027,16.2722],[107.5026,16.274],[107.5014,16.2765],[107.496,16.2775],[107.494,16.2816],[107.5009,16.2933],[107.4991,16.2995],[107.5005,16.3038],[107.4978,16.3073],[107.5005,16.3088],[107.5089,16.3067],[107.5097,16.3123],[107.5024,16.3171]]},{"n":"S\u00f4ng H\u1eefu Tr\u1ea1ch","c":"branch","p":[[107.5024,16.3171],[107.5004,16.3186]]},{"n":"S\u00f4ng H\u1eefu Tr\u1ea1ch","c":"branch","p":[[107.5004,16.3186],[107.5026,16.3237],[107.4994,16.3292],[107.5002,16.3334],[107.5051,16.3364],[107.5035,16.339],[107.5048,16.3442],[107.5123,16.3524],[107.5176,16.3561],[107.5292,16.3574],[107.538,16.3624],[107.5466,16.363],[107.5584,16.3603],[107.5656,16.3624],[107.569,16.3668],[107.5664,16.3751],[107.5689,16.3824],[107.5764,16.3895]]},{"n":"S\u00f4ng H\u1eefu Tr\u1ea1ch","c":"branch","p":[[107.5195,16.1829],[107.5228,16.183],[107.5253,16.1893],[107.5221,16.1915],[107.5226,16.1938],[107.5186,16.1956],[107.5286,16.1977],[107.5282,16.2094],[107.5296,16.2108],[107.5261,16.2169],[107.5271,16.2205],[107.5227,16.2245],[107.5195,16.2342],[107.5159,16.2386],[107.5163,16.2434],[107.5119,16.2485],[107.5053,16.2449],[107.5034,16.2467],[107.5082,16.2525],[107.5077,16.2548],[107.5021,16.257],[107.5017,16.265],[107.4968,16.2645],[107.4987,16.2692]]},{"n":"S\u00f4ng Ba Ran","c":"minor","p":[[107.8549,16.1404],[107.8435,16.1414],[107.8397,16.1397],[107.837,16.1431],[107.8261,16.1408],[107.822,16.1422],[107.8163,16.1405],[107.8131,16.1339],[107.8023,16.1328],[107.7981,16.1367],[107.7944,16.1342],[107.789,16.1389],[107.7827,16.1356],[107.7806,16.1388],[107.7753,16.1347],[107.7721,16.1349],[107.7685,16.1302],[107.7616,16.1288],[107.7579,16.1299],[107.7571,16.1332],[107.7541,16.1332]]},{"n":"S\u00f4ng H\u1eefu Tr\u1ea1ch","c":"branch","p":[[107.5136,16.0968],[107.5168,16.1021],[107.513,16.1038],[107.5094,16.1157],[107.5124,16.117],[107.5114,16.1255],[107.5142,16.126],[107.5128,16.128],[107.5146,16.1323],[107.5108,16.1327],[107.5116,16.1373],[107.509,16.1404],[107.5139,16.1403],[107.5108,16.143],[107.5137,16.1465],[107.5185,16.1483],[107.5163,16.15],[107.517,16.1516],[107.5214,16.1536],[107.521,16.1593],[107.5179,16.1597],[107.5194,16.1642],[107.5173,16.1645],[107.5181,16.1672],[107.5163,16.1702],[107.52,16.1724]]},{"n":"S\u00f4ng B\u1ed3","c":"bo","p":[[107.3614,16.3015],[107.3629,16.3036],[107.3596,16.3102],[107.365,16.3153],[107.3654,16.3203],[107.3573,16.3411],[107.3564,16.3682],[107.3519,16.3686],[107.3449,16.3755],[107.3524,16.3835]]},{"n":"S\u00f4ng Tru\u1ed3i","c":"minor","p":[[107.786,16.2515],[107.7811,16.2658]]},{"n":"S\u00f4ng Tru\u1ed3i","c":"minor","p":[[107.7811,16.2658],[107.7734,16.2715],[107.7735,16.278],[107.7675,16.2801],[107.7679,16.2859],[107.7633,16.2892],[107.7634,16.2954],[107.771,16.313],[107.7706,16.3202],[107.7818,16.3253],[107.7872,16.3353],[107.7858,16.3388],[107.789,16.3423],[107.7899,16.3493],[107.7875,16.3571]]},{"n":"S\u00f4ng B\u1eafc","c":"minor","p":[[107.9222,16.1236],[107.9249,16.1264],[107.9312,16.1247],[107.9367,16.1297],[107.9518,16.1288],[107.9534,16.1342],[107.9556,16.1344],[107.9564,16.1325],[107.9606,16.1331],[107.9678,16.1378],[107.9698,16.137]]},{"n":"S\u00f4ng B\u1eafc","c":"minor","p":[[107.9212,16.1592],[107.9317,16.1564],[107.9342,16.1539],[107.9353,16.1473],[107.9389,16.1465],[107.9379,16.1428],[107.9302,16.1376],[107.9261,16.1383],[107.9235,16.1332],[107.9192,16.1327]]},{"n":"S\u00f4ng Nam","c":"minor","p":[[107.9109,16.0901],[107.9204,16.0918],[107.9228,16.0955],[107.929,16.0954],[107.9289,16.0985],[107.9332,16.0975],[107.9393,16.1009]]},{"n":"S\u00f4ng Nam","c":"minor","p":[[107.9393,16.1009],[107.9419,16.1],[107.9432,16.1015],[107.939,16.1062],[107.9411,16.1079],[107.9453,16.1075],[107.9491,16.1131],[107.9551,16.1153],[107.9648,16.1117],[107.9675,16.1156],[107.9697,16.1152]]},{"n":"Khe Ph\u00e1t L\u00e1c","c":"minor","p":[[107.6066,16.4564],[107.6078,16.4609],[107.6061,16.4628],[107.6058,16.4721]]},{"n":"S\u00f4ng C\u1ea7u Hai","c":"minor","p":[[107.8754,16.2453],[107.8781,16.2495],[107.8823,16.2506],[107.8808,16.2546],[107.8846,16.2553],[107.884,16.2572],[107.8876,16.261],[107.8883,16.2649],[107.8798,16.2749],[107.8812,16.2794]]},{"n":"S\u00f4ng \u00d4 L\u00e2u","c":"minor","p":[[107.3071,16.641],[107.3173,16.6518],[107.322,16.6537],[107.3225,16.6564],[107.3183,16.6622],[107.3233,16.6654],[107.3297,16.6657],[107.3316,16.6683],[107.3304,16.672],[107.3337,16.6756],[107.3367,16.6839],[107.3533,16.6987]]},{"n":"S\u00f4ng An C\u1ef1u","c":"minor","p":[[107.5767,16.4611],[107.5764,16.4586],[107.5845,16.4545],[107.5888,16.4563],[107.6066,16.4564]]},{"n":"S\u00f4ng Nam","c":"minor","p":[[107.8457,16.0801],[107.8516,16.0758],[107.854,16.0777],[107.8573,16.0764],[107.861,16.0775],[107.8603,16.0756],[107.8653,16.0739],[107.8669,16.0759],[107.8709,16.0701],[107.8703,16.0682],[107.8726,16.0673],[107.8756,16.0694],[107.879,16.0693],[107.8796,16.0668],[107.8834,16.0676],[107.8852,16.0606],[107.8871,16.0606],[107.8857,16.0596],[107.8891,16.0589],[107.8871,16.0574],[107.8867,16.0528],[107.8915,16.0515],[107.8922,16.0493],[107.8964,16.0498],[107.899,16.0461],[107.9006,16.0477],[107.8997,16.0494],[107.9029,16.0513],[107.901,16.0528],[107.9031,16.056]]},{"n":"S\u00f4ng B\u1eafc","c":"minor","p":[[107.9192,16.1327],[107.9222,16.1236]]},{"n":"S\u00f4ng Nam","c":"minor","p":[[107.9031,16.056],[107.9026,16.0579],[107.9056,16.0608],[107.9043,16.062],[107.9058,16.0668],[107.9116,16.0727],[107.9093,16.0766],[107.9109,16.0901]]},{"n":"L\u1ea1ch Ng\u1ef1 C\u00e2u","c":"minor","p":[[107.5781,16.4705],[107.578,16.4711]]},{"n":"L\u1ea1ch Ng\u1ef1 C\u00e2u","c":"minor","p":[[107.578,16.4711],[107.578,16.4711]]},{"n":"S\u00f4ng T\u1ea3 Tr\u1ea1ch","c":"branch","p":[[107.6308,16.3158],[107.6316,16.3181],[107.6292,16.3206],[107.6261,16.3159],[107.6224,16.316],[107.6188,16.325],[107.614,16.3288],[107.613,16.333],[107.6193,16.3347],[107.6201,16.3416],[107.6152,16.3525],[107.6078,16.3542],[107.6054,16.3711],[107.5966,16.3787],[107.59,16.3769],[107.5802,16.3836],[107.5764,16.3895]]},{"n":"S\u00f4ng T\u1ea3 Tr\u1ea1ch","c":"branch","p":[[107.6336,16.3156],[107.6308,16.3158]]},{"n":"S\u00f4ng H\u01b0\u01a1ng","c":"main","p":[[107.5744,16.5274],[107.5864,16.5378],[107.5919,16.547],[107.5969,16.5502],[107.6136,16.547],[107.6239,16.5465],[107.628,16.5486],[107.6303,16.5518],[107.6305,16.5565],[107.6231,16.5705]]},{"n":"S\u00f4ng Nh\u01b0 \u00dd","c":"minor","p":[[107.5951,16.4735],[107.5953,16.4735]]},{"n":"S\u00f4ng Nh\u01b0 \u00dd","c":"minor","p":[[107.5938,16.4738],[107.5951,16.4735]]},{"n":"S\u00f4ng A S\u00e1p","c":"minor","p":[[107.3337,16.1279],[107.3334,16.1378],[107.3295,16.1426],[107.3275,16.149],[107.3198,16.157],[107.3179,16.1646],[107.3133,16.1646],[107.3131,16.1713],[107.3098,16.1715],[107.3083,16.1775],[107.3028,16.1827],[107.2998,16.182],[107.2977,16.1842]]},{"n":"R\u00e0o N\u00e1i","c":"minor","p":[[107.4174,16.1056],[107.4151,16.1101],[107.4107,16.1104],[107.4102,16.1128],[107.4053,16.1111],[107.3973,16.1179]]},{"n":"S\u00f4ng Th\u1ea1ch H\u00e3n","c":"minor","p":[[107.135,16.6998],[107.1386,16.7015],[107.1454,16.7004],[107.1512,16.705],[107.1645,16.7096],[107.1699,16.7261],[107.1807,16.7341],[107.1814,16.7461],[107.1862,16.7683],[107.183,16.7749],[107.178,16.7762],[107.1711,16.7739],[107.158,16.7863],[107.1571,16.7893],[107.1606,16.7929],[107.1633,16.7999],[107.162,16.8068],[107.1585,16.8087],[107.1494,16.8063],[107.1448,16.8081],[107.1395,16.8207],[107.129,16.8301],[107.126,16.8421]]},{"n":"S\u00f4ng Th\u1ea1ch H\u00e3n","c":"minor","p":[[107.0307,16.6418],[107.0544,16.6349]]},{"n":"S\u00f4ng A S\u00e1p","c":"minor","p":[[107.3613,16.0953],[107.3533,16.1072]]},{"n":"S\u00f4ng A S\u00e1p","c":"minor","p":[[107.2977,16.1842],[107.2872,16.2009],[107.2838,16.202],[107.2849,16.2082],[107.2796,16.2108],[107.2794,16.2139],[107.2756,16.2175],[107.2628,16.2118],[107.26,16.2136],[107.2593,16.2196],[107.2561,16.221],[107.2506,16.2288],[107.2465,16.2303],[107.2462,16.2263],[107.2425,16.2262]]},{"n":"S\u00f4ng Alin","c":"minor","p":[[107.1953,16.3968],[107.1989,16.3981],[107.2075,16.413]]},{"n":"R\u00e0o Tr\u0103ng","c":"minor","p":[[107.2075,16.413],[107.2159,16.4107],[107.2347,16.4096],[107.2365,16.4069],[107.2404,16.4114],[107.2449,16.4085],[107.246,16.4118],[107.2511,16.4092],[107.2536,16.4123]]},{"n":"R\u00e0o Tr\u0103ng","c":"minor","p":[[107.2421,16.411],[107.2427,16.4105]]},{"n":"R\u00e0o Tr\u0103ng","c":"minor","p":[[107.2445,16.4089],[107.2454,16.4092]]},{"n":"Khe N\u1ee9c","c":"minor","p":[[107.4015,16.3955],[107.3972,16.4009],[107.3888,16.405]]},{"n":"Khe Tr\u00e1i","c":"minor","p":[[107.4356,16.3828],[107.4286,16.3862],[107.4297,16.3886],[107.4253,16.3933],[107.4258,16.3968],[107.4182,16.4009],[107.4189,16.4098],[107.4014,16.4237]]},{"n":"Khe N\u1ee9c","c":"minor","p":[[107.3888,16.405],[107.3872,16.4075],[107.3886,16.4081],[107.3868,16.4126],[107.3888,16.4148],[107.3869,16.4213]]},{"n":"S\u00f4ng H\u1eefu Tr\u1ea1ch","c":"branch","p":[[107.5229,16.041],[107.5207,16.0515],[107.5177,16.051],[107.5191,16.0554],[107.5165,16.0587],[107.5181,16.0668]]},{"n":"R\u00e0o N\u00e1i","c":"minor","p":[[107.3973,16.1179],[107.3985,16.119],[107.3929,16.1287],[107.3963,16.1334],[107.3979,16.149],[107.3932,16.1571],[107.3892,16.1603],[107.393,16.1646],[107.3864,16.17],[107.3888,16.1742],[107.3863,16.1753],[107.3853,16.1808],[107.3833,16.181],[107.3832,16.1827],[107.3857,16.1834],[107.3766,16.1917],[107.3799,16.1931],[107.3786,16.1944],[107.3794,16.2005],[107.3769,16.2018],[107.3764,16.2058]]},{"n":"S\u00f4ng A S\u00e1p","c":"minor","p":[[107.3533,16.1072],[107.3493,16.1091],[107.349,16.1136],[107.3431,16.1166]]},{"n":"S\u00f4ng A S\u00e1p","c":"minor","p":[[107.3431,16.1166],[107.3448,16.1188],[107.3431,16.1227],[107.336,16.1239],[107.3337,16.1279]]},{"n":"S\u00f4ng H\u01b0\u01a1ng","c":"main","p":[[107.5764,16.3895],[107.5756,16.399],[107.5672,16.4087],[107.5636,16.4168],[107.5638,16.4262],[107.5577,16.4297],[107.5351,16.4352],[107.5306,16.438],[107.5267,16.4439],[107.5285,16.4475],[107.5401,16.4515],[107.5473,16.4508],[107.5767,16.4611]]},{"n":"K\u00eanh B\u00e0u Thang","c":"minor","p":[[107.5344,16.5569],[107.5335,16.5544],[107.5373,16.5489],[107.5395,16.5494],[107.5418,16.5467],[107.547,16.5476],[107.5489,16.5456]]}],"coast":[[[107.3891,16.7426],[107.3436,16.7736],[107.3089,16.8024]],[[107.9687,16.3238],[107.9547,16.3394],[107.9549,16.3445]],[[107.268,16.8378],[107.2111,16.8894],[107.2,16.9054],[107.2024,16.9099],[107.2,16.9063],[107.1955,16.9087]],[[107.4479,16.6962],[107.4261,16.7133]],[[107.8476,16.4114],[107.7937,16.4595],[107.7097,16.5246]],[[107.6176,16.5713],[107.6198,16.5761],[107.587,16.5927],[107.571,16.6037]],[[107.5521,16.6164],[107.5206,16.6395]],[[107.9549,16.3445],[107.9528,16.3431],[107.9459,16.3475],[107.9434,16.3439]],[[107.9191,16.3558],[107.9054,16.3682],[107.9006,16.3663],[107.8935,16.3713],[107.8476,16.4114]],[[107.505,16.652],[107.4766,16.6739]],[[107.7097,16.5246],[107.6605,16.5562]],[[107.2702,16.8362],[107.268,16.8378]],[[107.3089,16.8024],[107.2702,16.8362]],[[107.4766,16.6739],[107.4645,16.6835]],[[107.5058,16.6507],[107.505,16.652]],[[107.5206,16.6395],[107.5058,16.6507]],[[107.571,16.6037],[107.5521,16.6164]],[[107.409,16.7275],[107.3891,16.7426]],[[107.4207,16.7181],[107.409,16.7275]],[[107.4645,16.6835],[107.4479,16.6962]],[[107.4261,16.7133],[107.4207,16.7181]],[[107.9434,16.3439],[107.9388,16.3444],[107.922,16.3552]],[[107.922,16.3552],[107.9191,16.3558]],[[107.6605,16.5562],[107.6305,16.5734],[107.6248,16.5706]],[[107.6248,16.5706],[107.6176,16.5713]]],"lagoon":[[[107.9242,16.3531],[107.9242,16.3531]]],"city":[16.463,107.59]}}</script>
 <script>
 (function(){
-var D = JSON.parse(document.getElementById('data').textContent);
-var NS = 'http://www.w3.org/2000/svg';
-var REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-function el(tag,a,parent){ var e=document.createElementNS(NS,tag); for(var k in a) e.setAttribute(k,a[k]); if(parent) parent.appendChild(e); return e; }
-function txt(parent,x,y,s,a){ var t=el('text',Object.assign({x:x,y:y,fill:'#8BA8B1','font-size':13},a||{}),parent); t.textContent=s; return t; }
-function clear(s){ while(s.firstChild) s.removeChild(s.firstChild); }
-function fi(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' '); }
-function fd(x,k){ return x.toFixed(k).replace('.',','); }
-var timers=[], raf=null;
-function later(fn,ms){ timers.push(setTimeout(fn, REDUCED?0:ms)); }
-function stopAll(){ timers.forEach(clearTimeout); timers=[]; if(raf){cancelAnimationFrame(raf);raf=null;} }
-function steps(id,k){ var li=document.querySelectorAll('#'+id+' .steps li');
-  for(var i=0;i<li.length;i++){ li[i].classList.toggle('on',i<=k); li[i].classList.toggle('cur',i===k); } }
+var D=JSON.parse(document.getElementById('data').textContent);
+var NS='http://www.w3.org/2000/svg';
+var REDUCED=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function tx(p,x,y,s,a){var t=el('text',Object.assign({x:x,y:y,fill:'#8BA8B1','font-size':13},a||{}),p);t.textContent=s;return t;}
+function txd(p,x,y,s,a){var t=tx(p,x,y,s,a);t.setAttribute('font-family','Be Vietnam Pro, sans-serif');return t;}
+function clear(s){while(s.firstChild)s.removeChild(s.firstChild);}
+function fi(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
+function fd(x,k){return x.toFixed(k).replace('.',',');}
+var timers=[];
+function after(ms,fn){timers.push(setTimeout(fn,ms));}
+function stopAll(){timers.forEach(clearTimeout);timers=[];}
+function ms(anim,v){return (anim&&!REDUCED)?v:0;}
+function fade(e,op,anim,dur){e.style.transition=ms(anim,dur)?'opacity '+dur+'ms ease':'none';e.style.opacity=op;}
+function drawLine(p,anim,dur){var L=p.getTotalLength();p.style.strokeDasharray=L;
+  if(!ms(anim,dur)){p.style.transition='none';p.style.strokeDashoffset=0;return;}
+  p.style.transition='none';p.style.strokeDashoffset=L;p.getBoundingClientRect();
+  p.style.transition='stroke-dashoffset '+dur+'ms ease-in-out';p.style.strokeDashoffset=0;}
+function countTo(node,from,to,anim,dur){ if(!ms(anim,dur)){node.textContent=fi(to);return;}
+  var n=18;for(var i=1;i<=n;i++)(function(i){after(dur*i/n,function(){node.textContent=fi(from+(to-from)*i/n);});})(i);}
 
 var stage=document.getElementById('stage');
-function fit(){ var s=Math.min(innerWidth/1600,(innerHeight-56)/900); stage.style.transform='scale('+s+')'; }
-addEventListener('resize',fit); fit();
+function fit(){var s=Math.min(innerWidth/1600,(innerHeight-60)/900);stage.style.transform='scale('+s+')';}
+addEventListener('resize',fit);fit();
 
-function mix(a,b,t){ var p=function(h){return [1,3,5].map(function(i){return parseInt(h.substr(i,2),16);});};
-  var x=p(a),y=p(b); return 'rgb('+x.map(function(v,i){return Math.round(v+(y[i]-v)*t);}).join(',')+')'; }
-function rainCol(v){ return mix('#0C222B','#9CC3EE',Math.min(1,Math.sqrt(Math.max(0,v)/D.rain.rmax))); }
-function flowCol(v){ return mix('#123540','#7FE9EF',Math.min(1,Math.log10(1+v)/Math.log10(1+340))); }
-var RB={latMin:16.05,latMax:16.85,lonMin:107.05,lonMax:107.85};
-function proj(lat,lon,x0,y0,size){ return [x0+(lon-RB.lonMin)/(RB.lonMax-RB.lonMin)*size, y0+(RB.latMax-lat)/(RB.latMax-RB.latMin)*size]; }
-var THR_NAMES=['nguy cơ 1','nguy cơ 2','nguy cơ 3'], THR_COLS=['#E8BE55','#E0833C','#E8665C'];
+function mix(a,b,t){var p=function(h){return[1,3,5].map(function(i){return parseInt(h.substr(i,2),16);});};
+  var x=p(a),y=p(b);return'rgb('+x.map(function(v,i){return Math.round(v+(y[i]-v)*t);}).join(',')+')';}
+function rainCol(v){return mix('#0E2A34','#B7D6F5',Math.min(1,Math.sqrt(Math.max(0,v)/D.rain.rmax)));}
+function flowCol(v){return mix('#164552','#8FF0F5',Math.min(1,Math.log10(1+v)/Math.log10(1+340)));}
+var THR_N=['mức nguy cơ 1','mức nguy cơ 2','mức nguy cơ 3'],THR_C=['#E8BE55','#E0833C','#E8665C'];
 
-/* ================= Cảnh 1: toàn cảnh quy trình ================= */
-function scene0(){
-  var s=document.getElementById('pipe'); clear(s);
-  var stg=[
-    ['1','Thu thập','Tải lưu lượng sông (GloFAS) và','mưa (ERA5) cho cả lưu vực','1 295 file · 98 MB'],
+/* ---------- bản đồ thật ---------- */
+var BB=D.geo.bbox,KX=Math.cos(16.5*Math.PI/180);
+function mkP(x0,y0,H){var s=H/(BB[1]-BB[0]);var P=function(lat,lon){return[x0+(lon-BB[2])*s*KX,y0+(BB[1]-lat)*s];};P.s=s;return P;}
+function path(pts,P){return pts.map(function(p,i){var q=P(p[1],p[0]);return(i?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1);}).join('');}
+var RIVER_STYLE={main:['#56DCE4',3.4],branch:['#3FB6C0',2.4],bo:['#5F7D87',2],minor:['#24404A',1.1]};
+function baseMap(svg,P){
+  var L={};
+  L.sea=el('g',{},svg);
+  D.geo.lagoon.forEach(function(p){el('path',{d:path(p,P)+'Z',fill:'#103744',stroke:'#1F5A68','stroke-width':1},L.sea);});
+  D.geo.coast.forEach(function(p){el('path',{d:path(p,P),fill:'none',stroke:'#4A7786','stroke-width':1.6,'stroke-linejoin':'round'},L.sea);});
+  ['minor','bo','branch','main'].forEach(function(c){L[c]=el('g',{},svg);});
+  D.geo.rivers.forEach(function(r){var st=RIVER_STYLE[r.c]||RIVER_STYLE.minor;
+    el('path',{d:path(r.p,P),fill:'none',stroke:st[0],'stroke-width':st[1],'stroke-linecap':'round','stroke-linejoin':'round'},L[r.c]||L.minor);});
+  return L;
+}
+function riverLabel(name,P){var best=null;D.geo.rivers.forEach(function(r){if(r.n===name&&(!best||r.p.length>best.length))best=r.p;});
+  if(!best)return null;var m=best[Math.floor(best.length/2)];return P(m[1],m[0]);}
+function rainCells(svg,P,fillFn){var w=0.1*P.s*KX*0.86,h=0.1*P.s*0.86,out=[];
+  D.rain.cells.forEach(function(c,i){var p=P(c[0],c[1]);out.push(el('rect',{x:p[0]-w/2,y:p[1]-h/2,width:w,height:h,rx:2,
+    fill:fillFn?fillFn(c,i):'#0E2A34',stroke:'#2A4E5A','stroke-width':.8},svg));});return out;}
+
+/* ===================== Cảnh 1: quy trình ===================== */
+var sc0={n:5,setup:function(){
+  var s=document.getElementById('pipe');clear(s);
+  var stg=[['1','Thu thập','Tải lưu lượng sông (GloFAS) và','mưa (ERA5) cho cả lưu vực','1 295 file · 98 MB'],
     ['2','Làm sạch','Kiểm từng nguồn, sửa 4 lỗi,','gộp lại theo từng ngày','6 087 ngày × 71 cột'],
     ['3','Phân tích','Tìm quy luật giữa mưa','và lưu lượng sông','mưa hôm nay → sông ngày mai'],
     ['4','Dự báo','Mô hình LightGBM dự báo','lưu lượng và mức nguy cơ','trước 1, 2, 3 ngày']];
-  var W=310, G=72, x0=0, y=40, H=210, boxes=[], arrows=[];
-  stg.forEach(function(t,i){ var x=x0+i*(W+G);
-    var g=el('g',{style:'opacity:.35;transition:opacity .6s ease, transform .6s ease;transform:translateY(10px)'},s);
+  var W=310,G=72,y=30,H=220,boxes=[],arrows=[];
+  stg.forEach(function(t,i){var x=i*(W+G);var g=el('g',{},s);
     el('rect',{x:x,y:y,width:W,height:H,fill:'#0C222B',stroke:'#16313C','stroke-width':1.5},g);
     el('rect',{x:x,y:y,width:W,height:4,fill:'#2FC2CC'},g);
-    txt(g,x+22,y+46,t[0],{fill:'#2FC2CC','font-size':16,'font-weight':600});
-    var h=txt(g,x+52,y+48,t[1],{fill:'#EAF4F5','font-size':26,'font-weight':600}); h.setAttribute('font-family','Be Vietnam Pro, sans-serif');
-    [t[2],t[3]].forEach(function(l,k){ var q=txt(g,x+22,y+96+k*26,l,{fill:'#8BA8B1','font-size':17}); q.setAttribute('font-family','Be Vietnam Pro, sans-serif'); });
-    txt(g,x+22,y+H-24,t[4],{fill:'#EAF4F5','font-size':15});
-    boxes.push(g);
-    if(i<3){ var ax=x+W+8, bx=x+W+G-8, ay=y+H/2;
+    tx(g,x+22,y+48,t[0],{fill:'#2FC2CC','font-size':18,'font-weight':600});
+    txd(g,x+54,y+50,t[1],{fill:'#EAF4F5','font-size':28,'font-weight':700});
+    txd(g,x+22,y+102,t[2],{fill:'#8BA8B1','font-size':17});txd(g,x+22,y+128,t[3],{fill:'#8BA8B1','font-size':17});
+    tx(g,x+22,y+H-26,t[4],{fill:'#EAF4F5','font-size':15});
+    g.style.opacity=.18;boxes.push(g);
+    if(i<3){var ax=x+W+8,bx=x+W+G-10,ay=y+H/2;
       var a=el('path',{d:'M'+ax+','+ay+' L'+bx+','+ay,stroke:'#2FC2CC','stroke-width':2.5,fill:'none'},s);
-      var L=bx-ax; a.style.strokeDasharray=L; a.style.strokeDashoffset=REDUCED?0:L; a.style.transition='stroke-dashoffset .5s ease';
-      el('path',{d:'M'+(bx-8)+','+(ay-6)+' L'+bx+','+ay+' L'+(bx-8)+','+(ay+6),stroke:'#2FC2CC','stroke-width':2.5,fill:'none'},s);
-      arrows.push(a); }
-  });
-  boxes.forEach(function(g,i){ later(function(){ g.style.opacity='1'; g.style.transform='translateY(0)';
-    if(arrows[i]) later(function(){ arrows[i].style.strokeDashoffset=0; }, 350); }, 200+i*750); });
-}
+      var head=el('path',{d:'M'+(bx-9)+','+(ay-7)+' L'+(bx+1)+','+ay+' L'+(bx-9)+','+(ay+7),stroke:'#2FC2CC','stroke-width':2.5,fill:'none'},s);
+      a.style.opacity=0;head.style.opacity=0;arrows.push([a,head]);}});
+  var notes=document.getElementById('notes0');notes.style.opacity=.15;
+  return {boxes:boxes,arrows:arrows,notes:notes};},
+ step:function(c,k,anim){
+  if(k<4){fade(c.boxes[k],1,anim,600);
+    if(k>0){var a=c.arrows[k-1];a[0].style.opacity=1;a[1].style.opacity=1;drawLine(a[0],anim,500);}}
+  else fade(c.notes,1,anim,600);}};
 
-/* ================= Cảnh 2: lưu vực ================= */
-function scene1(){
-  var s=document.getElementById('map0'); clear(s); steps('s1',0);
-  var size=560, x0=260, y0=30, cs=size/8*0.82;
-  var bandCol={thuong:'#1E4F5C',trung:'#2B6C7A',ha:'#1A3F4A'}, cells=[];
-  D.rain.cells.forEach(function(c){ var p=proj(c[0],c[1],x0,y0,size);
-    var r=el('rect',{x:p[0]-cs/2,y:p[1]-cs/2,width:cs,height:cs,rx:3,fill:bandCol[c[2]]||'#16313C',
-      style:'transform-origin:'+p[0]+'px '+p[1]+'px;transform:scale(.55);opacity:.35;transition:transform .5s ease, opacity .5s ease'},s);
-    cells.push([r,c]); });
-  later(function(){ steps('s1',1); cells.forEach(function(rc){ var c=rc[1];
-    setTimeout(function(){ rc[0].style.transform='scale(1)'; rc[0].style.opacity='1'; },
-      REDUCED?0:(7-Math.round((c[0]-16.1)*10))*80+Math.round((c[1]-107.1)*10)*22); }); }, 500);
-  var names={thuong:'Thượng lưu',trung:'Trung lưu',ha:'Hạ lưu'};
-  var lbls=[['thuong',16.22],['trung',16.45],['ha',16.70]].map(function(b){ var p=proj(b[1],107.85,x0,y0,size);
-    var t=txt(s,p[0]+18,p[1]+6,names[b[0]],{fill:'#EAF4F5','font-size':19,style:'opacity:.25;transition:opacity .6s'});
-    t.setAttribute('font-family','Be Vietnam Pro, sans-serif'); return t; });
-  var mt=proj(16.22,107.10,x0,y0,size);
-  var mtn=txt(s,x0-20,mt[1]+6,'núi, mưa nhiều →',{fill:'#9CC3EE','font-size':15,'text-anchor':'end',style:'opacity:.2;transition:opacity .6s'});
-  later(function(){ steps('s1',2); lbls.forEach(function(t){ t.style.opacity='1'; }); mtn.style.opacity='1'; }, 1700);
-  var st=proj(D.probe.station[0],D.probe.station[1],x0,y0,size), ch=proj(D.probe.chosen[0],D.probe.chosen[1],x0,y0,size);
-  var g=el('g',{style:'opacity:.2;transition:opacity .6s'},s);
-  el('circle',{cx:ch[0],cy:ch[1],r:15,fill:'none',stroke:'#7FE9EF','stroke-width':3},g);
-  el('circle',{cx:st[0],cy:st[1],r:7,fill:'#E8BE55'},g);
-  el('line',{x1:x0-14,y1:ch[1],x2:ch[0]-17,y2:ch[1],stroke:'#7FE9EF','stroke-width':1},g);
-  txt(g,x0-20,ch[1]+5,'ô cần dự báo',{fill:'#7FE9EF','font-size':15,'text-anchor':'end'});
-  el('line',{x1:x0-14,y1:st[1]+30,x2:st[0]-8,y2:st[1]+4,stroke:'#E8BE55','stroke-width':1},g);
-  txt(g,x0-20,st[1]+35,'trạm Kim Long (Huế)',{fill:'#E8BE55','font-size':15,'text-anchor':'end'});
-  later(function(){ steps('s1',3); g.style.opacity='1'; }, 2900);
-  txt(s,x0,y0+size+34,'lưới 0,1° · mỗi ô ≈ 11 km',{'font-size':14});
-}
+/* ===================== Cảnh 2: lưu vực ===================== */
+var sc1={n:5,setup:function(){
+  var s=document.getElementById('map1');clear(s);var H=640,P=mkP((942-H*0.9*KX/0.9)/2,8,H);
+  var L=baseMap(s,P);
+  ['main','branch','bo'].forEach(function(k){L[k].style.opacity=.15;});
+  L.lab=el('g',{},s);
+  txd(L.lab,P(16.9,107.82)[0],P(16.9,107.82)[1],'Biển Đông',{fill:'#6E98A6','font-size':20,'font-style':'italic'});
+  var lg=P(16.66,107.47);txd(L.lab,lg[0],lg[1],'phá Tam Giang',{fill:'#6E98A6','font-size':15,'font-style':'italic'});
+  // Thành phố, trạm và ô dự báo cách nhau chưa tới 5 km: nhãn đặt ra xa, nối bằng đường dẫn.
+  function lead(g,from,to,label,col,anchor){el('line',{x1:from[0],y1:from[1],x2:to[0],y2:to[1],stroke:col,'stroke-width':1},g);
+    txd(g,to[0]+(anchor==='end'?-6:6),to[1]+5,label,{fill:col,'font-size':16,'font-weight':700,'text-anchor':anchor||'start'});}
+  var cy=P(D.geo.city[0],D.geo.city[1]);el('circle',{cx:cy[0],cy:cy[1],r:6,fill:'#EAF4F5'},L.lab);
+  lead(L.lab,[cy[0]+5,cy[1]-4],P(16.535,107.71),'TP. Huế','#EAF4F5');
+  L.rn=el('g',{},s);L.rn.style.opacity=0;
+  [['Sông Tả Trạch','Tả Trạch','#3FB6C0'],['Sông Hữu Trạch','Hữu Trạch','#3FB6C0']]
+    .forEach(function(r){var q=riverLabel(r[0],P);if(q)txd(L.rn,q[0]+10,q[1]-8,r[1],{fill:r[2],'font-size':15,'font-weight':700});});
+  var qh=P(16.585,107.665);txd(L.rn,qh[0]+8,qh[1],'sông Hương →  ra phá',{fill:'#56DCE4','font-size':15,'font-weight':700});
+  var qb=P(16.62,107.36);txd(L.rn,qb[0],qb[1],'sông Bồ',{fill:'#7E9AA3','font-size':15,'font-weight':700,'text-anchor':'end'});
+  L.cells=rainCells(s,P);L.grid=L.cells;L.cells.forEach(function(e){e.style.opacity=0;e.setAttribute('fill-opacity',.55);});
+  // sông và nhãn phải nằm TRÊN lưới ô mưa, không bị che
+  [L.bo,L.branch,L.main,L.lab,L.rn].forEach(function(g){s.appendChild(g);});
+  L.bands=el('g',{},s);L.bands.style.opacity=0;
+  var names={thuong:'Thượng lưu',trung:'Trung lưu',ha:'Hạ lưu'},pos={thuong:16.22,trung:16.45,ha:16.70};
+  Object.keys(names).forEach(function(k){var q=P(pos[k],107.81);txd(L.bands,q[0]+8,q[1]+6,names[k],{fill:'#EAF4F5','font-size':17,'font-weight':700});});
+  L.pt=el('g',{},s);L.pt.style.opacity=0;
+  var st=P(D.probe.station[0],D.probe.station[1]),ch=P(D.probe.chosen[0],D.probe.chosen[1]);
+  var ring=el('circle',{cx:ch[0],cy:ch[1],r:16,fill:'none',stroke:'#8FF0F5','stroke-width':3},L.pt);
+  if(!REDUCED)el('animate',{attributeName:'r',values:'12;22;12',dur:'1.8s',repeatCount:'indefinite'},ring);
+  el('circle',{cx:st[0],cy:st[1],r:6,fill:'#E8BE55',stroke:'#07141A','stroke-width':2},L.pt);
+  lead(L.pt,[ch[0]-16,ch[1]],P(16.45,107.36),'ô cần dự báo','#8FF0F5','end');
+  lead(L.pt,[st[0]+4,st[1]+5],P(16.375,107.70),'trạm Kim Long','#E8BE55');
+  return L;},
+ step:function(L,k,anim){
+  if(k===0){fade(L.sea,1,anim,600);fade(L.lab,1,anim,600);}
+  if(k===1){['main','branch'].forEach(function(c){fade(L[c],1,anim,700);});fade(L.bo,.75,anim,700);fade(L.rn,1,anim,900);
+    if(anim)Array.prototype.forEach.call(L.main.childNodes,function(p){drawLine(p,anim,1800);});}
+  if(k===2){L.cells.forEach(function(e,i){e.style.transition=ms(anim,1)?'opacity .5s ease '+(i*12)+'ms':'none';e.style.opacity=1;});}
+  if(k===3){var col={thuong:'#2E6E80',trung:'#3C8C9C',ha:'#24525F'};
+    L.cells.forEach(function(e,i){e.style.transition=ms(anim,1)?'fill .6s ease':'none';e.setAttribute('fill',col[D.rain.cells[i][2]]||'#24404A');});
+    fade(L.bands,1,anim,700);}
+  if(k===4){fade(L.pt,1,anim,700);L.cells.forEach(function(e){e.setAttribute('fill-opacity',.3);});}
+ }};
 
-/* ================= Cảnh 3: mưa → sông ================= */
-function scene2(){
-  var m=document.getElementById('map1'); clear(m); steps('s2',0);
-  var cs=310/8*0.82, cells=[];
-  D.rain.cells.forEach(function(c){ var p=proj(c[0],c[1],10,10,310);
-    cells.push(el('rect',{x:p[0]-cs/2,y:p[1]-cs/2,width:cs,height:cs,rx:2,fill:'#0C222B',stroke:'#16313C'},m)); });
-  var c=document.getElementById('ch1'); clear(c);
-  var W=590,H=420,pl=52,pr=118,pt=22,ph=110,qt=pt+ph+44,qh=H-qt-30, n=D.rain.q.length, bw=(W-pl-pr)/n;
-  var qmax=Math.max.apply(null,D.rain.q.concat([D.fc.thr[2]]))*1.1, rmax=Math.max.apply(null,D.rain.rb)*1.12;
-  function X(i){return pl+bw*(i+.5);} function YQ(v){return qt+qh-(v/qmax)*qh;}
-  txt(c,pl,pt-6,'mưa trung bình lưu vực, mm/ngày',{'font-size':12});
-  txt(c,pl,qt-8,'lưu lượng sông, m³/s',{'font-size':12});
-  el('line',{x1:pl,y1:pt+ph,x2:W-pr,y2:pt+ph,stroke:'#16313C'},c);
-  el('line',{x1:pl,y1:qt+qh,x2:W-pr,y2:qt+qh,stroke:'#16313C'},c);
-  D.fc.thr.forEach(function(v,i){ var y=YQ(v);
-    el('line',{x1:pl,y1:y,x2:W-pr,y2:y,stroke:THR_COLS[i],'stroke-width':1,'stroke-dasharray':'5 4'},c);
-    txt(c,W-pr+8,y+4,THR_NAMES[i],{fill:'#EAF4F5','font-size':12}); });
-  var bars=D.rain.rb.map(function(v,i){ var h=v/rmax*ph;
-    return el('rect',{x:X(i)-bw*.38,y:pt+ph-h,width:bw*.76,height:h,rx:2,fill:'#7FA7D9',opacity:.16},c); });
+/* ===================== Cảnh 3: mưa → sông ===================== */
+var sc2={n:6,setup:function(){
+  var m=document.getElementById('map2');clear(m);var H=360,P=mkP((370-H*KX)/2,10,H);
+  var L=baseMap(m,P);L.minor.style.opacity=.6;
+  var cells=rainCells(m,P);cells.forEach(function(e){e.setAttribute('fill-opacity',.85);});
+  [L.branch,L.main].forEach(function(g){m.appendChild(g);});
+  var cy=P(D.geo.city[0],D.geo.city[1]);el('circle',{cx:cy[0],cy:cy[1],r:4,fill:'#EAF4F5'},m);
+  txd(m,cy[0]+8,cy[1]+14,'Huế',{fill:'#EAF4F5','font-size':13,'font-weight':700});
+  var c=document.getElementById('ch2');clear(c);
+  var W=548,Hc=440,pl=50,pr=118,pt=24,ph=110,qt=pt+ph+46,qh=Hc-qt-30,n=D.rain.q.length,bw=(W-pl-pr)/n;
+  var qmax=Math.max.apply(null,D.rain.q.concat([D.fc.thr[2]]))*1.12,rmax=Math.max.apply(null,D.rain.rb)*1.12;
+  function X(i){return pl+bw*(i+.5);}function YQ(v){return qt+qh-(v/qmax)*qh;}
+  tx(c,pl,pt-8,'mưa trung bình lưu vực (mm/ngày)',{'font-size':12});tx(c,pl,qt-10,'lưu lượng sông (m³/s)',{'font-size':12});
+  el('line',{x1:pl,y1:pt+ph,x2:W-pr,y2:pt+ph,stroke:'#16313C'},c);el('line',{x1:pl,y1:qt+qh,x2:W-pr,y2:qt+qh,stroke:'#16313C'},c);
+  D.fc.thr.forEach(function(v,i){var y=YQ(v);el('line',{x1:pl,y1:y,x2:W-pr,y2:y,stroke:THR_C[i],'stroke-width':1,'stroke-dasharray':'5 4'},c);
+    tx(c,W-pr+8,y+4,THR_N[i],{fill:'#EAF4F5','font-size':11});});
+  var bars=D.rain.rb.map(function(v,i){var h=v/rmax*ph;return el('rect',{x:X(i)-bw*.38,y:pt+ph-h,width:bw*.76,height:h,rx:2,fill:'#7FA7D9',opacity:.12},c);});
+  [0,Math.floor(n/2),n-1].forEach(function(i){tx(c,X(i),qt+qh+20,D.rain.days[i],{'text-anchor':'middle','font-size':12});});
   var line=el('path',{d:'',fill:'none',stroke:'#2FC2CC','stroke-width':3,'stroke-linejoin':'round'},c);
   var dot=el('circle',{cx:X(0),cy:YQ(D.rain.q[0]),r:6,fill:'#2FC2CC',stroke:'#07141A','stroke-width':2},c);
-  [0,Math.floor(n/2),n-1].forEach(function(i){ txt(c,X(i),qt+qh+20,D.rain.days[i],{'text-anchor':'middle','font-size':12}); });
-  var marks=el('g',{},c), dEl=document.getElementById('d1'), rl=document.getElementById('r1');
-  var at={}; ['07/10','12/10','17/10'].forEach(function(d,k){ var i=D.rain.days.indexOf(d); if(i>=0) at[i]=k+1; });
-  function frame(i){
-    D.rain.rain[i].forEach(function(v,k){ cells[k].setAttribute('fill',rainCol(v)); });
-    bars.forEach(function(b,k){ b.setAttribute('opacity',k<=i?1:.16); });
-    var d=''; for(var k=0;k<=i;k++) d+=(k?'L':'M')+X(k).toFixed(1)+','+YQ(D.rain.q[k]).toFixed(1);
-    line.setAttribute('d',d); dot.setAttribute('cx',X(i)); dot.setAttribute('cy',YQ(D.rain.q[i]));
-    dEl.textContent=D.rain.days[i]+'/2020';
-    rl.textContent='mưa lưu vực '+fi(D.rain.rb[i])+' mm  ·  sông '+fi(D.rain.q[i])+' m³/s';
-    if(at[i]!==undefined) steps('s2',at[i]);
-    D.rain.pairs.forEach(function(p){ if(p[1]===i){ var y=YQ(D.rain.q[i])-20;
-      el('line',{x1:X(p[0]),y1:y,x2:X(i)-6,y2:y,stroke:'#EAF4F5','stroke-width':2},marks);
-      el('path',{d:'M'+(X(i)-6)+','+(y-5)+' L'+X(i)+','+y+' L'+(X(i)-6)+','+(y+5)+'Z',fill:'#EAF4F5'},marks);
-      txt(marks,(X(p[0])+X(i))/2,y-8,'1 ngày',{fill:'#EAF4F5','font-size':13,'text-anchor':'middle'}); } });
-  }
-  if(REDUCED){ for(var q=0;q<n;q++) frame(q); return; }
-  var cur=0; frame(0); var t0=null, STEP=560;
-  function tick(ts){ if(t0===null) t0=ts; var k=Math.min(n-1,Math.floor((ts-t0)/STEP));
-    while(cur<k){ cur++; frame(cur); } raf=(cur<n-1)?requestAnimationFrame(tick):null; }
-  later(function(){ raf=requestAnimationFrame(tick); }, 700);
-}
+  var marks=el('g',{},c);
+  var ix=function(d){return Math.max(0,D.rain.days.indexOf(d));};
+  return {cells:cells,bars:bars,line:line,dot:dot,marks:marks,X:X,YQ:YQ,n:n,drawn:{},
+    seg:[[0,0],[0,ix('06/10')],[ix('07/10'),ix('11/10')],[ix('12/10'),ix('12/10')],[ix('13/10'),ix('18/10')],[ix('19/10'),n-1]]};},
+ frame:function(c,i){
+  D.rain.rain[i].forEach(function(v,k){c.cells[k].setAttribute('fill',rainCol(v));});
+  c.bars.forEach(function(b,k){b.setAttribute('opacity',k<=i?1:.12);});
+  var d='';for(var k=0;k<=i;k++)d+=(k?'L':'M')+c.X(k).toFixed(1)+','+c.YQ(D.rain.q[k]).toFixed(1);
+  c.line.setAttribute('d',d);c.dot.setAttribute('cx',c.X(i));c.dot.setAttribute('cy',c.YQ(D.rain.q[i]));
+  document.getElementById('d2').textContent=D.rain.days[i]+'/2020';
+  document.getElementById('r2').textContent='mưa lưu vực '+fi(D.rain.rb[i])+' mm  ·  sông '+fi(D.rain.q[i])+' m³/s';
+  D.rain.pairs.forEach(function(p){if(p[1]<=i&&!c.drawn[p[1]]){c.drawn[p[1]]=1;var y=c.YQ(D.rain.q[p[1]])-22,x0=c.X(p[0]),x1=c.X(p[1]);
+    el('line',{x1:x0,y1:y,x2:x1-6,y2:y,stroke:'#EAF4F5','stroke-width':2},c.marks);
+    el('path',{d:'M'+(x1-7)+','+(y-5)+' L'+x1+','+y+' L'+(x1-7)+','+(y+5)+'Z',fill:'#EAF4F5'},c.marks);
+    tx(c.marks,(x0+x1)/2,y-9,'1 ngày',{fill:'#EAF4F5','font-size':13,'text-anchor':'middle','font-weight':600});}});},
+ step:function(c,k,anim){var a=c.seg[k][0],b=c.seg[k][1],self=this;
+  if(!ms(anim,1)||a===b){this.frame(c,b);return;}
+  for(var i=a;i<=b;i++)(function(i,j){after(j*900,function(){self.frame(c,i);});})(i,i-a);}};
 
-/* ================= Cảnh 4: 361 → 1 ================= */
-function scene3(){
-  var s=document.getElementById('map2'); clear(s); steps('s3',0);
-  var B={latMin:16.05,latMax:16.95,lonMin:107.05,lonMax:107.95}, size=580, x0=10,y0=10, cs=size/19*.78;
-  function P(lat,lon){ return [x0+(lon-B.lonMin)/(B.lonMax-B.lonMin)*(size-cs)+cs/2, y0+(B.latMax-lat)/(B.latMax-B.latMin)*(size-cs)+cs/2]; }
-  var nodes=D.probe.cells.map(function(c){ var p=P(c[0],c[1]);
-    return {c:c,r:el('rect',{x:p[0]-cs/2,y:p[1]-cs/2,width:cs,height:cs,rx:2,fill:'#2A4650',
-      style:'transition:fill .7s ease, opacity .7s ease'},s)}; });
-  var cnt=document.getElementById('cnt2'), lab=document.getElementById('lab2');
-  cnt.textContent='361'; lab.textContent='ô lưới được dò';
-  function count(a,b,ms){ var t0=performance.now(); (function f(t){ var k=Math.min(1,(t-t0)/ms);
-    cnt.textContent=Math.round(a+(b-a)*k); if(k<1) requestAnimationFrame(f); })(t0);
-    // rAF có thể bị trình duyệt bóp (tab nền) — luôn chốt giá trị cuối bằng timer
-    timers.push(setTimeout(function(){ cnt.textContent=b; }, REDUCED?0:ms+60)); }
-  later(function(){ steps('s3',1); nodes.forEach(function(n){ if(n.c[2]==null) n.r.style.opacity='.12'; else n.r.setAttribute('fill',flowCol(n.c[2])); });
-    count(361,234,700); lab.textContent='ô có nước chảy'; }, 1800);
-  later(function(){ steps('s3',2); nodes.forEach(function(n){ if(n.c[2]!=null && !n.c[3]) n.r.style.opacity='.3'; });
-    count(234,83,700); lab.textContent='ô tải đủ chuỗi 1997–2026'; }, 4200);
-  var big=P(D.probe.largest[0],D.probe.largest[1]), st=P(D.probe.station[0],D.probe.station[1]), ch=P(D.probe.chosen[0],D.probe.chosen[1]);
-  later(function(){ steps('s3',3);
-    el('circle',{cx:big[0],cy:big[1],r:16,fill:'none',stroke:'#E8665C','stroke-width':2.5},s);
-    txt(s,big[0]+22,big[1]-12,'lớn nhất: gộp 2 sông',{fill:'#E8665C','font-size':13});
-    el('circle',{cx:st[0],cy:st[1],r:6,fill:'#E8BE55'},s);
-    txt(s,st[0]+12,st[1]+22,'tại trạm: gần như khô',{fill:'#E8BE55','font-size':13}); }, 6600);
-  later(function(){ steps('s3',4);
-    nodes.forEach(function(n){ var same=Math.abs(n.c[0]-D.probe.chosen[0])<1e-6&&Math.abs(n.c[1]-D.probe.chosen[1])<1e-6;
-      if(!same) n.r.style.opacity=Math.min(parseFloat(n.r.style.opacity||1),.18); });
-    var ring=el('circle',{cx:ch[0],cy:ch[1],r:28,fill:'none',stroke:'#7FE9EF','stroke-width':3},s);
-    if(!REDUCED) el('animate',{attributeName:'r',values:'18;34;18',dur:'1.8s',repeatCount:'indefinite'},ring);
-    txt(s,ch[0]-38,ch[1]+5,'ô được chọn',{fill:'#7FE9EF','font-size':14,'text-anchor':'end'});
-    count(83,1,600); lab.textContent='ô được chọn làm điểm dự báo'; }, 9200);
-}
+/* ===================== Cảnh 4: 361 → 1 ===================== */
+var sc3={n:5,setup:function(){
+  var s=document.getElementById('map3');clear(s);var H=630,P=mkP((620-H*KX)/2,8,H);
+  var L=baseMap(s,P);['main','branch','bo','minor'].forEach(function(k){L[k].style.opacity=.55;});
+  var w=0.05*P.s*KX*0.8,h=0.05*P.s*0.8;
+  var nodes=D.probe.cells.map(function(c){var p=P(c[0],c[1]);
+    return{c:c,r:el('rect',{x:p[0]-w/2,y:p[1]-h/2,width:w,height:h,rx:1.5,fill:'#3A5A64','fill-opacity':.75},s)};});
+  var marks=el('g',{},s);marks.style.opacity=0;
+  var big=P(D.probe.largest[0],D.probe.largest[1]),st=P(D.probe.station[0],D.probe.station[1]);
+  el('circle',{cx:big[0],cy:big[1],r:15,fill:'none',stroke:'#E8665C','stroke-width':3},marks);
+  txd(marks,big[0]+20,big[1]-10,'nhiều nước nhất — gộp 2 sông',{fill:'#E8665C','font-size':14,'font-weight':700});
+  el('circle',{cx:st[0],cy:st[1],r:7,fill:'#E8BE55',stroke:'#07141A','stroke-width':2},marks);
+  txd(marks,st[0]+14,st[1]+24,'tại trạm — gần như khô',{fill:'#E8BE55','font-size':14,'font-weight':700});
+  var pick=el('g',{},s);pick.style.opacity=0;var ch=P(D.probe.chosen[0],D.probe.chosen[1]);
+  var ring=el('circle',{cx:ch[0],cy:ch[1],r:22,fill:'none',stroke:'#8FF0F5','stroke-width':3.5},pick);
+  if(!REDUCED)el('animate',{attributeName:'r',values:'16;30;16',dur:'1.8s',repeatCount:'indefinite'},ring);
+  txd(pick,ch[0]-32,ch[1]+6,'ô được chọn',{fill:'#8FF0F5','font-size':16,'font-weight':700,'text-anchor':'end'});
+  return {nodes:nodes,marks:marks,pick:pick,cnt:document.getElementById('cnt3'),lab:document.getElementById('lab3')};},
+ step:function(c,k,anim){var T=ms(anim,1)?'fill .8s ease, opacity .8s ease':'none';
+  if(k===0){c.cnt.textContent='361';c.lab.textContent='ô lưới được dò';}
+  if(k===1){c.nodes.forEach(function(n){n.r.style.transition=T;if(n.c[2]==null)n.r.style.opacity=.06;else{n.r.setAttribute('fill',flowCol(n.c[2]));n.r.setAttribute('fill-opacity',.95);}});
+    countTo(c.cnt,361,234,anim,900);c.lab.textContent='ô có nước chảy';}
+  if(k===2){c.nodes.forEach(function(n){n.r.style.transition=T;if(n.c[2]!=null&&!n.c[3])n.r.style.opacity=.2;});
+    countTo(c.cnt,234,83,anim,900);c.lab.textContent='ô tải đủ chuỗi 1997–2026';}
+  if(k===3){fade(c.marks,1,anim,700);c.lab.textContent='hai cách chọn sai';}
+  if(k===4){c.nodes.forEach(function(n){var same=Math.abs(n.c[0]-D.probe.chosen[0])<1e-6&&Math.abs(n.c[1]-D.probe.chosen[1])<1e-6;
+      n.r.style.transition=T;if(!same)n.r.style.opacity=Math.min(parseFloat(n.r.style.opacity||1),.14);});
+    fade(c.marks,.5,anim,700);fade(c.pick,1,anim,700);countTo(c.cnt,83,1,anim,700);c.lab.textContent='ô được chọn làm điểm dự báo';}
+ }};
 
-/* ================= Cảnh 5: file → bảng ================= */
-function scene4(){
-  var s=document.getElementById('ch3'); clear(s); steps('s4',0);
-  var kinds=D.files.kinds, per=8, cols=['#7FA7D9','#3E7E8A','#2FC2CC','#9CC3EE','#55707A'];
+/* ===================== Cảnh 5: file → bảng ===================== */
+var sc4={n:4,setup:function(){
+  var s=document.getElementById('ch4');clear(s);
   var VN={'hourly rain':'mưa theo giờ','flow probes':'dò lưới lưu lượng','full flow':'lưu lượng đầy đủ','daily rain':'mưa theo ngày','forecast rain':'mưa dự báo'};
-  var y=24, items=[];
-  kinds.forEach(function(k,ki){
-    var t=txt(s,0,y+12,(VN[k.k]||k.k)+' · '+fi(k.n)+' file',{fill:'#EAF4F5','font-size':14}); t.setAttribute('font-family','Be Vietnam Pro, sans-serif');
+  var cols=['#7FA7D9','#3E7E8A','#2FC2CC','#9CC3EE','#55707A'],per=8,y=24,items=[],labels=el('g',{},s);
+  D.files.kinds.forEach(function(k,ki){txd(labels,0,y+12,(VN[k.k]||k.k)+' · '+fi(k.n)+' file',{fill:'#EAF4F5','font-size':15});
     var m=Math.max(1,Math.round(k.n/per));
-    for(var i=0;i<m;i++){ var x=210+(i%28)*11, yy=y+Math.floor(i/28)*11;
-      items.push({r:el('rect',{x:x,y:yy,width:8,height:8,rx:1,fill:cols[ki],style:'transition:transform 1.1s cubic-bezier(.6,.05,.3,1)'},s),x:x,y:yy}); }
-    y+=Math.max(30,Math.ceil(m/28)*11+20);
-  });
-  txt(s,210,y+6,'mỗi ô vuông ≈ '+per+' file',{'font-size':13});
-  var TX=640,TY=40,TW=300,TH=330;
-  var tbl=el('g',{style:'opacity:.25;transition:opacity .8s'},s);
+    for(var i=0;i<m;i++){var x=210+(i%26)*11,yy=y+Math.floor(i/26)*11;
+      items.push({r:el('rect',{x:x,y:yy,width:8,height:8,rx:1,fill:cols[ki]},s),x:x,y:yy});}
+    y+=Math.max(32,Math.ceil(m/26)*11+22);});
+  tx(labels,210,y+6,'mỗi ô vuông ≈ '+per+' file',{'font-size':13});
+  var TX=600,TY=50,TW=320,TH=340,tbl=el('g',{},s);tbl.style.opacity=.2;
   el('rect',{x:TX,y:TY,width:TW,height:TH,fill:'#0C222B',stroke:'#2FC2CC','stroke-width':2},tbl);
-  for(var r=1;r<9;r++) el('line',{x1:TX,y1:TY+r*TH/9,x2:TX+TW,y2:TY+r*TH/9,stroke:'#16313C'},tbl);
-  for(var q=1;q<6;q++) el('line',{x1:TX+q*TW/6,y1:TY,x2:TX+q*TW/6,y2:TY+TH,stroke:'#16313C'},tbl);
-  txt(s,TX+TW/2,TY-14,'daily_panel.parquet',{fill:'#2FC2CC','font-size':14,'text-anchor':'middle'});
-  var big=txt(s,TX+TW/2,TY+TH+62,'',{fill:'#EAF4F5','font-size':38,'text-anchor':'middle','font-weight':600});
-  txt(s,TX+TW/2,TY+TH+94,'ngày × cột · mỗi dòng một ngày',{'text-anchor':'middle','font-size':14});
-  later(function(){ steps('s4',1); items.forEach(function(it,i){ var dx=TX+18+Math.random()*(TW-36)-it.x, dy=TY+18+Math.random()*(TH-36)-it.y;
-    setTimeout(function(){ it.r.style.transform='translate('+dx+'px,'+dy+'px)'; }, REDUCED?0:i*5); }); tbl.style.opacity='1'; }, 900);
-  later(function(){ steps('s4',2); }, 2600);
-  later(function(){ steps('s4',3); var t0=performance.now(), ms=900; (function f(t){ var k=Math.min(1,(t-t0)/ms);
-    big.textContent=fi(D.files.rows*k)+' × '+D.files.cols; if(k<1) requestAnimationFrame(f); })(t0); }, 4200);
-  if(REDUCED) big.textContent=fi(D.files.rows)+' × '+D.files.cols;
-}
+  for(var r=1;r<9;r++)el('line',{x1:TX,y1:TY+r*TH/9,x2:TX+TW,y2:TY+r*TH/9,stroke:'#16313C'},tbl);
+  for(var q=1;q<6;q++)el('line',{x1:TX+q*TW/6,y1:TY,x2:TX+q*TW/6,y2:TY+TH,stroke:'#16313C'},tbl);
+  tx(s,TX+TW/2,TY-16,'daily_panel.parquet',{fill:'#2FC2CC','font-size':14,'text-anchor':'middle'});
+  var big=tx(s,TX+TW/2,TY+TH+66,'',{fill:'#EAF4F5','font-size':40,'text-anchor':'middle','font-weight':600});
+  var cap=txd(s,TX+TW/2,TY+TH+100,'ngày × cột · mỗi dòng là một ngày',{'text-anchor':'middle','font-size':15});cap.style.opacity=0;
+  var defs=el('g',{},s);defs.style.opacity=0;
+  [['13 năm rỗng','1984–1996 chỉ có dòng, không có số'],['Lưới mưa lệch','vùng giữa chỉ có 9/16 ô'],
+   ['"Dự báo" = thực đo','chênh lệch đúng 0,0 mm'],['Toạ độ sai ô','kế hoạch gốc: 5,7 m³/s']].forEach(function(d,i){
+    var yy=40+i*120;el('rect',{x:0,y:yy,width:520,height:96,fill:'#1A1416',stroke:'#E8665C','stroke-width':1.5},defs);
+    txd(defs,22,yy+40,d[0],{fill:'#E8665C','font-size':22,'font-weight':700});txd(defs,22,yy+72,d[1],{fill:'#EAF4F5','font-size':17});});
+  items.forEach(function(it){it.dx=TX+20+Math.random()*(TW-40)-it.x;it.dy=TY+20+Math.random()*(TH-40)-it.y;});
+  return {items:items,labels:labels,tbl:tbl,big:big,cap:cap,defs:defs};},
+ step:function(c,k,anim){
+  if(k===1){c.items.forEach(function(it,i){it.r.style.transition=ms(anim,1)?'transform 1.4s cubic-bezier(.6,.05,.3,1) '+(i*4)+'ms':'none';
+      it.r.style.transform='translate('+it.dx+'px,'+it.dy+'px)';});fade(c.tbl,1,anim,800);fade(c.labels,0,anim,600);}
+  if(k===2){fade(c.defs,1,anim,800);}
+  if(k===3){countTo(c.big,0,D.files.rows,anim,1200);if(!ms(anim,1))c.big.textContent=fi(D.files.rows)+' × '+D.files.cols;
+    else after(1250,function(){c.big.textContent=fi(D.files.rows)+' × '+D.files.cols;});fade(c.cap,1,anim,600);}
+ }};
 
-/* ================= Cảnh 6: dự báo ngoài mẫu ================= */
-function scene5(){
-  var s=document.getElementById('ch4'); clear(s); steps('s5',0);
-  var W=980,H=600,pl=62,pr=118,pt=56,pb=46,n=D.fc.obs.length;
+/* ===================== Cảnh 6: dự báo ngoài mẫu ===================== */
+var sc5={n:5,setup:function(){
+  var s=document.getElementById('ch5');clear(s);
+  var W=942,H=640,pl=64,pr=128,pt=70,pb=50,n=D.fc.obs.length;
   var vmax=Math.max.apply(null,D.fc.obs.concat(D.fc.pred,[D.fc.thr[2]]))*1.1;
-  function X(i){return pl+(W-pl-pr)*i/(n-1);} function Y(v){return pt+(H-pt-pb)*(1-v/vmax);}
-  [0,1000,2000,3000].forEach(function(v){ if(v<vmax){ el('line',{x1:pl,y1:Y(v),x2:W-pr,y2:Y(v),stroke:'#16313C'},s);
-    txt(s,pl-10,Y(v)+4,fi(v),{'text-anchor':'end','font-size':12}); }});
-  txt(s,pl,pt-30,'lưu lượng, m³/s',{'font-size':12});
-  D.fc.thr.forEach(function(v,i){ el('line',{x1:pl,y1:Y(v),x2:W-pr,y2:Y(v),stroke:THR_COLS[i],'stroke-dasharray':'5 4'},s);
-    txt(s,W-pr+10,Y(v)+4,THR_NAMES[i],{fill:'#EAF4F5','font-size':13}); });
-  [0,Math.floor(n/3),Math.floor(2*n/3),n-1].forEach(function(i){ txt(s,X(i),H-pb+22,D.fc.dates[i],{'text-anchor':'middle','font-size':12}); });
-  function path(a){ return a.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(''); }
-  var obs=el('path',{d:path(D.fc.obs),fill:'none',stroke:'#EAF4F5','stroke-width':2.5,opacity:.9},s);
-  var prd=el('path',{d:path(D.fc.pred),fill:'none',stroke:'#2FC2CC','stroke-width':3},s);
-  [obs,prd].forEach(function(o){ var L=o.getTotalLength(); o.style.strokeDasharray=L; o.style.strokeDashoffset=REDUCED?0:L;
-    o.style.transition='stroke-dashoffset 3s ease-in-out'; });
+  function X(i){return pl+(W-pl-pr)*i/(n-1);}function Y(v){return pt+(H-pt-pb)*(1-v/vmax);}
+  [0,1000,2000,3000].forEach(function(v){if(v<vmax){el('line',{x1:pl,y1:Y(v),x2:W-pr,y2:Y(v),stroke:'#16313C'},s);tx(s,pl-10,Y(v)+4,fi(v),{'text-anchor':'end','font-size':12});}});
+  tx(s,pl,pt-40,'lưu lượng sông (m³/s)',{'font-size':12});
+  D.fc.thr.forEach(function(v,i){el('line',{x1:pl,y1:Y(v),x2:W-pr,y2:Y(v),stroke:THR_C[i],'stroke-dasharray':'5 4'},s);tx(s,W-pr+10,Y(v)+4,THR_N[i],{fill:'#EAF4F5','font-size':12});});
+  [0,Math.floor(n/3),Math.floor(2*n/3),n-1].forEach(function(i){tx(s,X(i),H-pb+22,D.fc.dates[i],{'text-anchor':'middle','font-size':12});});
+  function pth(a){return a.map(function(v,i){return(i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);}).join('');}
+  var obs=el('path',{d:pth(D.fc.obs),fill:'none',stroke:'#EAF4F5','stroke-width':2.6},s);
+  var prd=el('path',{d:pth(D.fc.pred),fill:'none',stroke:'#2FC2CC','stroke-width':3.2},s);
+  obs.style.opacity=0;prd.style.opacity=0;
   var lg=el('g',{},s);
-  el('line',{x1:pl+260,y1:pt-34,x2:pl+290,y2:pt-34,stroke:'#EAF4F5','stroke-width':2.5},lg); txt(lg,pl+298,pt-30,'thực tế',{fill:'#EAF4F5','font-size':14});
-  el('line',{x1:pl+390,y1:pt-34,x2:pl+420,y2:pt-34,stroke:'#2FC2CC','stroke-width':3},lg); txt(lg,pl+428,pt-30,'dự báo phát từ hôm trước',{fill:'#EAF4F5','font-size':14});
-  later(function(){ obs.style.strokeDashoffset=0; }, 300);
-  later(function(){ steps('s5',1); prd.style.strokeDashoffset=0; }, 1200);
-  later(function(){ steps('s5',2); }, 3000);
-  var im=D.fc.obs.indexOf(Math.max.apply(null,D.fc.obs));
-  later(function(){ steps('s5',3);
-    el('circle',{cx:X(im),cy:Y(D.fc.obs[im]),r:7,fill:'#EAF4F5',stroke:'#07141A','stroke-width':2},s);
-    el('circle',{cx:X(im),cy:Y(D.fc.pred[im]),r:6,fill:'#2FC2CC',stroke:'#07141A','stroke-width':2},s);
-    el('line',{x1:X(im),y1:Y(D.fc.obs[im])+8,x2:X(im),y2:Y(D.fc.pred[im])-8,stroke:'#E8665C','stroke-width':2,'stroke-dasharray':'3 3'},s);
-    txt(s,X(im)+14,Y(D.fc.obs[im])-4,'thực tế '+fi(D.fc.obs[im])+' m³/s · '+D.fc.dates[im],{fill:'#EAF4F5','font-size':13});
-    txt(s,X(im)+14,Y(D.fc.pred[im])+16,'dự báo '+fi(D.fc.pred[im])+' — thấp hơn',{fill:'#E8665C','font-size':13});
-    document.getElementById('m5').innerHTML='Trên toàn bộ giai đoạn kiểm tra, mô hình đạt NSE <b>'+fd(D.fc.nse,2)+
-      '</b>, so với <b>'+fd(D.fc.nse_p,2)+'</b> nếu chỉ đơn giản lặp lại giá trị hôm nay. NSE = 1 là dự báo hoàn hảo.'; }, 4400);
-}
+  el('line',{x1:pl+230,y1:pt-44,x2:pl+262,y2:pt-44,stroke:'#EAF4F5','stroke-width':2.6},lg);txd(lg,pl+270,pt-39,'thực tế',{fill:'#EAF4F5','font-size':15});
+  var lg2=el('g',{},s);lg2.style.opacity=0;
+  el('line',{x1:pl+370,y1:pt-44,x2:pl+402,y2:pt-44,stroke:'#2FC2CC','stroke-width':3.2},lg2);txd(lg2,pl+410,pt-39,'dự báo phát từ hôm trước',{fill:'#EAF4F5','font-size':15});
+  var tag=el('g',{},s);tag.style.opacity=0;
+  el('rect',{x:pl+10,y:pt+6,width:420,height:58,fill:'#0C222B',stroke:'#E8BE55','stroke-width':1.5},tag);
+  txd(tag,pl+26,pt+31,'Mô hình chỉ học dữ liệu đến 30/06/2022',{fill:'#E8BE55','font-size':16,'font-weight':700});
+  txd(tag,pl+26,pt+53,'→ tháng 10/2025 là dữ liệu chưa từng thấy',{fill:'#EAF4F5','font-size':15});
+  var im=D.fc.obs.indexOf(Math.max.apply(null,D.fc.obs)),gap=el('g',{},s);gap.style.opacity=0;
+  el('circle',{cx:X(im),cy:Y(D.fc.obs[im]),r:7,fill:'#EAF4F5',stroke:'#07141A','stroke-width':2},gap);
+  el('circle',{cx:X(im),cy:Y(D.fc.pred[im]),r:6,fill:'#2FC2CC',stroke:'#07141A','stroke-width':2},gap);
+  el('line',{x1:X(im),y1:Y(D.fc.obs[im])+9,x2:X(im),y2:Y(D.fc.pred[im])-9,stroke:'#E8665C','stroke-width':3,'stroke-dasharray':'4 3'},gap);
+  txd(gap,X(im)+16,Y(D.fc.obs[im])-2,'thực tế '+fi(D.fc.obs[im])+' m³/s · '+D.fc.dates[im],{fill:'#EAF4F5','font-size':15,'font-weight':700});
+  txd(gap,X(im)+16,Y(D.fc.pred[im])+18,'dự báo '+fi(D.fc.pred[im])+' — thấp hơn',{fill:'#E8665C','font-size':15,'font-weight':700});
+  document.getElementById('m5').innerHTML='Trên toàn giai đoạn kiểm tra, mô hình đạt NSE <b>'+fd(D.fc.nse,2)+'</b>, so với <b>'+fd(D.fc.nse_p,2)+
+    '</b> nếu chỉ lặp lại giá trị hôm nay. NSE = 1 là dự báo hoàn hảo.';
+  return {obs:obs,prd:prd,lg2:lg2,tag:tag,gap:gap};},
+ step:function(c,k,anim){
+  if(k===0){c.obs.style.opacity=1;drawLine(c.obs,anim,2200);}
+  if(k===1){fade(c.tag,1,anim,600);}
+  if(k===2){c.prd.style.opacity=1;fade(c.lg2,1,anim,500);drawLine(c.prd,anim,2600);}
+  if(k===3){fade(c.tag,.35,anim,600);}
+  if(k===4){fade(c.gap,1,anim,700);}
+ }};
 
-var scenes=[scene0,scene1,scene2,scene3,scene4,scene5], cur=0;
-var secs=document.querySelectorAll('.scene'), dots=document.getElementById('dots');
-for(var i=0;i<secs.length;i++) dots.appendChild(document.createElement('i'));
-function show(i){ stopAll(); cur=Math.max(0,Math.min(scenes.length-1,i));
-  for(var k=0;k<secs.length;k++){ secs[k].classList.toggle('on',k===cur); dots.children[k].classList.toggle('on',k===cur); }
-  try{ history.replaceState(null,'','#s'+(cur+1)); }catch(e){}
-  scenes[cur](); }
-document.getElementById('next').onclick=function(){ show(cur+1); };
-document.getElementById('prev').onclick=function(){ show(cur-1); };
-document.getElementById('replay').onclick=function(){ show(cur); };
-addEventListener('keydown',function(e){ if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); show(cur+1); }
-  else if(e.key==='ArrowLeft'||e.key==='PageUp'){ show(cur-1); } else if(e.key==='r'||e.key==='R'){ show(cur); } });
-var mh=(location.hash||'').match(/^#s(\d)$/);
-show(mh?parseInt(mh[1],10)-1:0);
+/* ===================== điều khiển ===================== */
+var SC=[sc0,sc1,sc2,sc3,sc4,sc5],IDS=['s0','s1','s2','s3','s4','s5'],cur=0,st=0,ctx=null;
+var secs=document.querySelectorAll('.scene'),pos=document.getElementById('pos');
+function narr(i,k){var li=secs[i].querySelectorAll('.steps li');for(var j=0;j<li.length;j++){li[j].classList.toggle('on',j<k);li[j].classList.toggle('cur',j===k);}}
+function render(i,k,anim){stopAll();cur=i;st=k;
+  for(var j=0;j<secs.length;j++)secs[j].classList.toggle('on',j===i);
+  ctx=SC[i].setup();for(var q=0;q<k;q++)SC[i].step(ctx,q,false);SC[i].step(ctx,k,anim);
+  narr(i,k);pos.innerHTML='Cảnh <b>'+(i+1)+'/'+SC.length+'</b> · Bước <b>'+(k+1)+'/'+SC[i].n+'</b>';
+  try{history.replaceState(null,'','#s'+(i+1)+'-'+(k+1));}catch(e){}}
+function next(){if(st<SC[cur].n-1){stopAll();st++;SC[cur].step(ctx,st,true);narr(cur,st);
+    pos.innerHTML='Cảnh <b>'+(cur+1)+'/'+SC.length+'</b> · Bước <b>'+(st+1)+'/'+SC[cur].n+'</b>';
+    try{history.replaceState(null,'','#s'+(cur+1)+'-'+(st+1));}catch(e){}}
+  else if(cur<SC.length-1)render(cur+1,0,true);}
+function prev(){if(st>0)render(cur,st-1,false);else if(cur>0)render(cur-1,SC[cur-1].n-1,false);}
+document.getElementById('next').onclick=next;document.getElementById('prev').onclick=prev;
+document.getElementById('again').onclick=function(){render(cur,st,true);};
+addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'||e.key==='Enter'){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='Backspace'){e.preventDefault();prev();}
+  else if(e.key==='r'||e.key==='R'){render(cur,st,true);}});
+var mh=(location.hash||'').match(/^#s(\d)(?:-(\d+))?$/);
+if(mh){var si=Math.min(SC.length-1,parseInt(mh[1],10)-1),sk=mh[2]?Math.min(SC[si].n-1,parseInt(mh[2],10)-1):0;render(si,sk,false);}
+else render(0,0,true);
 })();
 </script>
