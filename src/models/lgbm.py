@@ -58,7 +58,8 @@ def feature_cols(panel: pd.DataFrame) -> list[str]:
     thông tin tương lai: panel chỉ chứa lag và cửa sổ trượt lùi về sau
     (`tests/test_no_leakage.py` khoá điều này).
     """
-    drop = {"date", "alert_level"} | {c for c in panel.columns if c.startswith("target_")}
+    # alert_level / risk_level là NHÃN, không bao giờ là feature.
+    drop = {"date", "alert_level", "risk_level"} | {c for c in panel.columns if c.startswith("target_")}
     return [c for c in panel.columns if c not in drop
             and pd.api.types.is_numeric_dtype(panel[c])]
 
