@@ -62,17 +62,20 @@ def main() -> int:
     for k, q in QUANTILES.items():
         print(f"  {k:<12} Q{q:.3%} = {thr[k]:8.1f} m³/s")
 
-    panel["risk_level"] = apply_levels(panel["discharge"], thr)
-    panel["alert_level"] = panel["risk_level"]      # giữ tên cột cũ cho tương thích
+    # Ghi nhãn vào cột `alert_level` có sẵn của panel, KHÔNG thêm cột mới: một
+    # cột thừa trong panel sẽ lọt vào feature của mọi mô hình đọc panel sau đó
+    # (đã xảy ra: 66 → 67 feature). Panel giữ đúng 71 cột.
+    risk = apply_levels(panel["discharge"], thr)
+    panel = panel.drop(columns=["risk_level"], errors="ignore")
+    panel["alert_level"] = risk
 
     rows = []
     print("\nPhân bố lớp:")
     print(f"  {'nhãn':<14}{'toàn chuỗi':>12}{'train+valid':>13}{'test':>8}{'% test':>9}")
     for lv in (0, 1, 2, 3):
-        n_all = int((panel.risk_level == lv).sum())
-        n_tr = int((panel.risk_level == lv & train).sum()) if False else \
-            int(((panel.risk_level == lv) & train).sum())
-        n_te = int(((panel.risk_level == lv) & test).sum())
+        n_all = int((risk == lv).sum())
+        n_tr = int(((risk == lv) & train).sum())
+        n_te = int(((risk == lv) & test).sum())
         pct = n_te / int(test.sum()) * 100
         print(f"  {TEN_NHAN[lv]:<14}{n_all:>12}{n_tr:>13}{n_te:>8}{pct:>8.2f}%")
         rows.append({"muc": TEN_NHAN[lv], "nguong_m3s": round(thr.get(TEN_NHAN[lv], 0.0), 1),
@@ -85,7 +88,7 @@ def main() -> int:
     print("Số ngày ≥ mỗi mức trong TEST (đây mới là số mẫu của bài toán):")
     for r in rows[1:]:
         lv = [k for k, v in TEN_NHAN.items() if v == r["muc"]][0]
-        n_cum = int(((panel.risk_level >= lv) & test).sum())
+        n_cum = int(((risk >= lv) & test).sum())
         r["n_test_luy_ke"] = n_cum
         w = metrics.warn_small_sample(n_cum)
         r["du_mau_test"] = w is None
@@ -101,8 +104,8 @@ def main() -> int:
     res.to_csv(OUT, index=False)
     panel.to_parquet(PANEL, index=False)
     print(f"\n→ {OUT.relative_to(cfg.ROOT)}")
-    print(f"→ {PANEL.relative_to(cfg.ROOT)}  (cột risk_level đã điền, "
-          f"{int((panel.risk_level >= 0).sum())} ngày có nhãn)")
+    print(f"→ {PANEL.relative_to(cfg.ROOT)}  (cột alert_level đã điền, "
+          f"{int((risk >= 0).sum())} ngày có nhãn · panel {panel.shape[1]} cột)")
     print("\n⚠️ Nhãn này là MỨC NGUY CƠ theo phân vị lưu lượng, KHÔNG phải cấp")
     print("   báo động BĐ I/II/III của nhà nước. Không được gọi nhầm tên trong")
     print("   báo cáo hay dashboard — xem docs/THRESHOLDS.md R4.")

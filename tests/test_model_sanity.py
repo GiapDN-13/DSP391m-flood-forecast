@@ -39,6 +39,9 @@ def test_feature_khong_chua_target():
     feats = feature_cols(d)
     assert not [c for c in feats if c.startswith("target_")]
     assert "alert_level" not in feats
+    assert "risk_level" not in feats
+    # panel giữ đúng 71 cột; cột nhãn thừa từng lọt vào feature (66 → 67)
+    assert d.shape[1] == 71, f"panel có {d.shape[1]} cột, kỳ vọng 71"
     assert "date" not in feats
 
 
