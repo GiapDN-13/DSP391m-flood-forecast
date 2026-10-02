@@ -9,6 +9,7 @@ dán thẳng vào báo cáo thay vì chép tay.
 
 from __future__ import annotations
 
+import os
 import sys
 
 import matplotlib
@@ -16,6 +17,7 @@ import numpy as np
 import pandas as pd
 
 matplotlib.use("Agg")
+import matplotlib.dates  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 
 from src import config as cfg  # noqa: E402
@@ -36,9 +38,21 @@ plt.rcParams.update({
 })
 INK, ACC, WARN = "#1a1a1a", "#00666e", "#b35c00"
 
+# Ngôn ngữ nhãn hình. Report 2–4 viết tiếng Anh theo mẫu IEEE, còn tài liệu
+# nội bộ của nhóm thì tiếng Việt — nên cùng một hình phải sinh được cả hai.
+#     EDA_LANG=en python -m src.eval.eda   →  reports/figures/report/*_en.png
+LANG = os.environ.get("EDA_LANG", "vi")
+_EN = {'Lưu lượng ngày, 2010–2026': 'Daily discharge, 2010–2026', 'Phân bố log₁₀(Q+1)': 'Distribution of log₁₀(Q+1)', 'số ngày': 'days', 'Q trung vị (m³/s)': 'median Q (m³/s)', 'mưa TB (mm/ngày)': 'mean rainfall (mm/day)', 'tháng': 'month', 'Chu kỳ mùa': 'Seasonal cycle', 'mm/ngày': 'mm/day', 'Theo mùa': 'By season', 'độ trễ mưa (ngày)': 'rainfall lag (days)', 'hệ số tương quan': 'correlation coefficient', 'Theo tiểu lưu vực': 'By sub-basin', 'cả năm': 'all year', 'mùa lũ (9–12)': 'flood season (Sep–Dec)', 'mùa khô (1–8)': 'dry season (Jan–Aug)', 'basin': 'basin', 'thuong': 'upper', 'trung': 'middle', 'ha': 'lower', 'chỉ số mưa tích luỹ API (mm)': 'antecedent precipitation index (mm)', 'Q (m³/s, log)': 'Q (m³/s, log scale)', 'Độ ẩm nền quyết định phản ứng của sông': 'Antecedent wetness controls the river response', 'Q đỉnh': 'peak Q', 'Đỉnh lưu lượng từng năm': 'Annual peak discharge', '% số ngày vượt': '% of days exceeded', 'Đường duy trì dòng chảy': 'Flow duration curve', 'trước 2022-07': 'before 2022-07', 'sau 2022-07': 'after 2022-07', 'mật độ': 'density', 'Hai chế độ gần như trùng nhau': 'The two data regimes nearly coincide', 'Tương quan mưa – lưu lượng': 'Rainfall–discharge correlation'}
+
+
+def _(text: str) -> str:
+    return _EN.get(text, text) if LANG == "en" else text
+
 
 def save(fig, name: str) -> str:
     FIGS.mkdir(parents=True, exist_ok=True)
+    if LANG == "en":
+        name = name.replace(".png", "_en.png")
     p = FIGS / name
     fig.savefig(p)
     plt.close(fig)
@@ -66,9 +80,9 @@ def m1_tong_quan(d: pd.DataFrame) -> list[dict]:
 
     fig, ax = plt.subplots(1, 2, figsize=(9, 2.9))
     ax[0].plot(d.date, d.discharge, lw=0.35, color=ACC)
-    ax[0].set(title="Lưu lượng ngày, 2010–2026", ylabel="m³/s")
+    ax[0].set(title=_("Lưu lượng ngày, 2010–2026"), ylabel="m³/s")
     ax[1].hist(np.log10(q.dropna() + 1), bins=60, color=ACC, edgecolor="white", lw=0.3)
-    ax[1].set(title="Phân bố log₁₀(Q+1)", xlabel="log₁₀(m³/s)", ylabel="số ngày")
+    ax[1].set(title=_("Phân bố log₁₀(Q+1)"), xlabel="log₁₀(m³/s)", ylabel=_("số ngày"))
     out.append({"muc": 1, "chi_tieu": "hình", "gia_tri": save(fig, "eda1_tong_quan.png")})
     return out
 
@@ -88,12 +102,12 @@ def m2_mua_vu(d: pd.DataFrame) -> list[dict]:
         print(f"    {r['chi_tieu']:<32} {r['gia_tri']}")
 
     fig, ax = plt.subplots(figsize=(6.2, 2.9))
-    ax.bar(g.index - 0.2, g.q, width=0.4, color=ACC, label="Q trung vị (m³/s)")
+    ax.bar(g.index - 0.2, g.q, width=0.4, color=ACC, label=_("Q trung vị (m³/s)"))
     ax2 = ax.twinx()
     ax2.grid(False)
-    ax2.bar(g.index + 0.2, g.r, width=0.4, color=WARN, label="mưa TB (mm/ngày)")
-    ax.set(xlabel="tháng", ylabel="m³/s", xticks=range(1, 13), title="Chu kỳ mùa")
-    ax2.set_ylabel("mm/ngày")
+    ax2.bar(g.index + 0.2, g.r, width=0.4, color=WARN, label=_("mưa TB (mm/ngày)"))
+    ax.set(xlabel=_("tháng"), ylabel="m³/s", xticks=range(1, 13), title=_("Chu kỳ mùa"))
+    ax2.set_ylabel(_("mm/ngày"))
     h1, l1 = ax.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
     ax.legend(h1 + h2, l1 + l2, loc="upper left", fontsize=8, framealpha=0.9)
@@ -139,12 +153,12 @@ def m3_lag(d: pd.DataFrame) -> list[dict]:
 
     fig, ax = plt.subplots(1, 2, figsize=(9, 3))
     for name, st in zip(sets, ["-o", "-s", "-^"]):
-        ax[0].plot(lags, curves[name], st, ms=3.5, lw=1.3, label=name)
-    ax[0].set(title="Theo mùa", xlabel="độ trễ mưa (ngày)", ylabel="hệ số tương quan")
+        ax[0].plot(lags, curves[name], st, ms=3.5, lw=1.3, label=_(name))
+    ax[0].set(title=_("Theo mùa"), xlabel=_("độ trễ mưa (ngày)"), ylabel=_("hệ số tương quan"))
     ax[0].legend(fontsize=8)
     for b, st in zip(basins, ["-o", "-s", "-^", "-d"]):
-        ax[1].plot(lags, curves[b], st, ms=3.5, lw=1.3, label=b.replace("rain_", ""))
-    ax[1].set(title="Theo tiểu lưu vực", xlabel="độ trễ mưa (ngày)")
+        ax[1].plot(lags, curves[b], st, ms=3.5, lw=1.3, label=_(b.replace("rain_", "")))
+    ax[1].set(title=_("Theo tiểu lưu vực"), xlabel=_("độ trễ mưa (ngày)"))
     ax[1].legend(fontsize=8)
     out.append({"muc": 3, "chi_tieu": "hình", "gia_tri": save(fig, "eda3_lag.png")})
     return out
@@ -176,8 +190,8 @@ def m4_api(d: pd.DataFrame) -> list[dict]:
     fig, ax = plt.subplots(figsize=(6.2, 3))
     s = d.dropna(subset=["api", "discharge"])
     ax.scatter(s.api, s.discharge, s=2.5, alpha=0.25, color=ACC, edgecolors="none")
-    ax.set(yscale="log", xlabel="chỉ số mưa tích luỹ API (mm)", ylabel="Q (m³/s, log)",
-           title="Độ ẩm nền quyết định phản ứng của sông")
+    ax.set(yscale="log", xlabel=_("chỉ số mưa tích luỹ API (mm)"), ylabel=_("Q (m³/s, log)"),
+           title=_("Độ ẩm nền quyết định phản ứng của sông"))
     out.append({"muc": 4, "chi_tieu": "hình", "gia_tri": save(fig, "eda4_api.png")})
     return out
 
@@ -189,19 +203,23 @@ def m5_su_kien(d: pd.DataFrame) -> list[dict]:
     pick = ["2020-10b", "2023-11", "2025-10a"]
     sel = ev[ev.event_id.isin(pick)]
     out = []
-    fig, axes = plt.subplots(1, 3, figsize=(10, 2.9), sharey=True)
-    for ax, (_, r) in zip(axes, sel.iterrows()):
+    # Xếp dọc: ở bề rộng một cột báo cáo IEEE, ba ô nằm ngang nhỏ tới mức
+    # không đọc được nhãn ngày.
+    fig, axes = plt.subplots(3, 1, figsize=(5.2, 6.4), sharey=True)
+    for ax, (_i, r) in zip(axes, sel.iterrows()):
         w = d[(d.date >= r.peak_date - pd.Timedelta(days=12)) &
               (d.date <= r.peak_date + pd.Timedelta(days=8))]
         ax.plot(w.date, w.discharge, color=ACC, lw=1.5)
         ax.axvline(r.peak_date, color=WARN, ls="--", lw=1.2)
-        ax.set_title(f"{r.event_id} · H = {r.peak_H_m:.2f} m\nQ đỉnh = {r.peak_Q:.0f} m³/s",
+        ax.set_title(f"{r.event_id} · H = {r.peak_H_m:.2f} m\n{_('Q đỉnh')} = {r.peak_Q:.0f} m³/s",
                      fontsize=8.5)
-        ax.tick_params(axis="x", rotation=45, labelsize=7)
+        ax.tick_params(axis="x", rotation=0, labelsize=7.5)
+        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%d/%m"))
         out.append({"muc": 5, "chi_tieu": f"{r.event_id} · H (m)", "gia_tri": r.peak_H_m})
         out.append({"muc": 5, "chi_tieu": f"{r.event_id} · Q (m³/s)", "gia_tri": round(r.peak_Q)})
         print(f"    {r.event_id}: H = {r.peak_H_m:.2f} m · Q = {r.peak_Q:.0f} m³/s")
-    axes[0].set_ylabel("m³/s")
+    for ax in axes:
+        ax.set_ylabel("m³/s")
     out.append({"muc": 5, "chi_tieu": "hình", "gia_tri": save(fig, "eda5_su_kien.png")})
     return out
 
@@ -221,12 +239,12 @@ def m6_cuc_tri(d: pd.DataFrame) -> list[dict]:
     out.append({"muc": 6, "chi_tieu": "đỉnh năm trung vị (m³/s)", "gia_tri": round(float(am.median()), 1)})
     fig, ax = plt.subplots(1, 2, figsize=(9, 2.9))
     ax[0].bar(am.index, am.values, color=ACC)
-    ax[0].set(title="Đỉnh lưu lượng từng năm", ylabel="m³/s")
+    ax[0].set(title=_("Đỉnh lưu lượng từng năm"), ylabel="m³/s")
     ax[0].tick_params(axis="x", rotation=45, labelsize=7)
     srt = np.sort(q)[::-1]
     ax[1].plot(np.arange(1, len(srt) + 1) / len(srt) * 100, srt, color=ACC, lw=1.2)
-    ax[1].set(xscale="log", yscale="log", xlabel="% số ngày vượt", ylabel="m³/s",
-              title="Đường duy trì dòng chảy")
+    ax[1].set(xscale="log", yscale="log", xlabel=_("% số ngày vượt"), ylabel="m³/s",
+              title=_("Đường duy trì dòng chảy"))
     out.append({"muc": 6, "chi_tieu": "hình", "gia_tri": save(fig, "eda6_cuc_tri.png")})
     return out
 
@@ -246,9 +264,9 @@ def m7_che_do(d: pd.DataFrame) -> list[dict]:
 
     fig, ax = plt.subplots(figsize=(6.2, 3))
     bins = np.linspace(0, 3, 50)
-    ax.hist(np.log10(a + 1), bins=bins, alpha=0.55, density=True, color=ACC, label="trước 2022-07")
-    ax.hist(np.log10(b + 1), bins=bins, alpha=0.55, density=True, color=WARN, label="sau 2022-07")
-    ax.set(xlabel="log₁₀(Q+1)", ylabel="mật độ", title="Hai chế độ gần như trùng nhau")
+    ax.hist(np.log10(a + 1), bins=bins, alpha=0.55, density=True, color=ACC, label=_("trước 2022-07"))
+    ax.hist(np.log10(b + 1), bins=bins, alpha=0.55, density=True, color=WARN, label=_("sau 2022-07"))
+    ax.set(xlabel="log₁₀(Q+1)", ylabel=_("mật độ"), title=_("Hai chế độ gần như trùng nhau"))
     ax.legend(fontsize=8)
     out.append({"muc": 7, "chi_tieu": "hình", "gia_tri": save(fig, "eda7_che_do.png")})
     return out
@@ -267,9 +285,9 @@ def m8_khong_gian(d: pd.DataFrame) -> list[dict]:
 
     fig, ax = plt.subplots(figsize=(4.4, 3.4))
     im = ax.imshow(cm.values, cmap="BuPu", vmin=0, vmax=1)
-    lbl = [c.replace("rain_", "") for c in cols] + ["Q"]
+    lbl = [_(c.replace("rain_", "")) for c in cols] + ["Q"]
     ax.set(xticks=range(4), yticks=range(4), xticklabels=lbl, yticklabels=lbl,
-           title="Tương quan mưa – lưu lượng")
+           title=_("Tương quan mưa – lưu lượng"))
     for i in range(4):
         for j in range(4):
             v = cm.values[i, j]
