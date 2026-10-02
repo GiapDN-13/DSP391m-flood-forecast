@@ -140,6 +140,60 @@ def forecast_scene(start="2025-10-08", end="2025-11-25") -> dict:
             "nse": round(nse1, 3), "nse_p": round(nse_p, 3)}
 
 
+BBOX = (16.05, 16.95, 107.05, 107.95)     # lat_min, lat_max, lon_min, lon_max
+HUE_CITY = (16.463, 107.590)
+RIVER_CLASS = {"Sông Hương": "main", "Sông Tả Trạch": "branch",
+               "Sông Hữu Trạch": "branch", "Sông Bồ": "bo"}
+
+
+def _rdp(pts: list, eps: float) -> list:
+    """Giản lược đường gấp khúc (Ramer–Douglas–Peucker) để nhúng cho nhẹ."""
+    if len(pts) < 3:
+        return pts
+    a, b = np.array(pts[0]), np.array(pts[-1])
+    ab = b - a
+    n = np.hypot(*ab) or 1e-12
+    d = [abs(ab[0] * (a[1] - p[1]) - ab[1] * (a[0] - p[0])) / n for p in pts[1:-1]]
+    i = int(np.argmax(d)) + 1
+    if d[i - 1] > eps:
+        return _rdp(pts[:i + 1], eps)[:-1] + _rdp(pts[i:], eps)
+    return [pts[0], pts[-1]]
+
+
+def _clip(geom: list) -> list[list]:
+    """Cắt đường theo khung bản đồ; ra nhiều đoạn nếu đi ra ngoài rồi vào lại."""
+    la0, la1, lo0, lo1 = BBOX
+    segs, cur = [], []
+    for g in geom:
+        if la0 - .02 <= g["lat"] <= la1 + .02 and lo0 - .02 <= g["lon"] <= lo1 + .02:
+            cur.append([round(g["lon"], 4), round(g["lat"], 4)])
+        elif cur:
+            segs.append(cur)
+            cur = []
+    if cur:
+        segs.append(cur)
+    return [s for s in segs if len(s) >= 2]
+
+
+def geo_scene() -> dict:
+    """Hình học thật từ OpenStreetMap: sông, bờ biển, phá Tam Giang."""
+    rivers, coast, lagoon = [], [], []
+    rv = json.loads((cfg.DATA_EXTERNAL / "osm_rivers.json").read_text(encoding="utf-8"))
+    for e in rv["elements"]:
+        name = (e.get("tags") or {}).get("name", "")
+        for seg in _clip(e.get("geometry", [])):
+            rivers.append({"n": name, "c": RIVER_CLASS.get(name, "minor"),
+                           "p": _rdp(seg, 0.0012)})
+    cf = cfg.DATA_EXTERNAL / "osm_coast.json"
+    if cf.exists():
+        for e in json.loads(cf.read_text(encoding="utf-8"))["elements"]:
+            tags = e.get("tags") or {}
+            for seg in _clip(e.get("geometry", [])):
+                (lagoon if tags.get("water") == "lagoon" else coast).append(_rdp(seg, 0.0015))
+    return {"bbox": BBOX, "rivers": rivers, "coast": coast, "lagoon": lagoon,
+            "city": list(HUE_CITY)}
+
+
 # HTML/CSS/JS nằm riêng ở explainer_template.html cho dễ sửa; file này chỉ lo dữ liệu.
 TEMPLATE = (Path(__file__).with_name("explainer_template.html")
             .read_text(encoding="utf-8"))
@@ -147,7 +201,7 @@ TEMPLATE = (Path(__file__).with_name("explainer_template.html")
 
 def main() -> int:
     data = {"rain": rain_scene(), "probe": probe_scene(),
-            "files": files_scene(), "fc": forecast_scene()}
+            "files": files_scene(), "fc": forecast_scene(), "geo": geo_scene()}
     payload = json.dumps(data, separators=(",", ":")).replace("</", "<\\/")
     page = TEMPLATE.replace("__DATA__", payload)
     OUTDIR.mkdir(parents=True, exist_ok=True)

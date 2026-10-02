@@ -1,7 +1,8 @@
 <title>Chuyện con lũ sông Hương</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Bố cục: một sân khấu 16:9 co giãn theo cửa sổ; mỗi cảnh = hình bên trái + thuyết minh từng bước bên phải. */
+/* Bố cục: sân khấu 16:9 co giãn theo cửa sổ. Người thuyết trình bấm → để đi TỪNG BƯỚC;
+   mỗi bước chỉ làm nổi một thứ trên hình và sáng đúng một dòng thuyết minh. */
 :root{
   color-scheme:dark;
   --water:#07141A; --deep:#0C222B; --edge:#16313C;
@@ -17,444 +18,494 @@ body{font-family:var(--display)}
 .stage{width:1600px;height:900px;position:relative;transform-origin:center center;flex:none}
 .scene{position:absolute;inset:0;visibility:hidden;pointer-events:none}
 .scene.on{visibility:visible;pointer-events:auto}
-.head{position:absolute;left:72px;right:72px;top:46px}
+.head{position:absolute;left:72px;right:72px;top:42px}
 .kick{font:600 14px/1 var(--mono);letter-spacing:.18em;color:var(--flow);text-transform:uppercase}
-h1{font:900 50px/1.06 var(--display);letter-spacing:-.025em;margin:12px 0 0;text-wrap:balance;max-width:1400px}
+h1{font:900 48px/1.06 var(--display);letter-spacing:-.025em;margin:12px 0 0;text-wrap:balance;max-width:1440px}
 h1 .t{font-weight:300;color:var(--flow)}
-.body{position:absolute;left:72px;right:72px;top:178px;bottom:58px;display:grid;
+.body{position:absolute;left:72px;right:72px;top:170px;bottom:70px;display:grid;
   grid-template-columns:minmax(0,1fr) 470px;gap:44px}
 .vis{position:relative;min-width:0}
 .narr{min-width:0;display:flex;flex-direction:column}
-.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;counter-reset:s}
-.steps li{position:relative;padding:10px 14px 10px 50px;border-left:3px solid var(--edge);
-  color:var(--muted);font:300 18px/1.45 var(--display);opacity:.5;
-  transition:opacity .5s ease,border-color .5s ease,color .5s ease,background .5s ease}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;counter-reset:s}
+.steps li{position:relative;padding:10px 14px 10px 48px;border-left:3px solid var(--edge);
+  color:var(--muted);font:300 17.5px/1.45 var(--display);opacity:.42;
+  transition:opacity .4s ease,border-color .4s ease,color .4s ease,background .4s ease}
 .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:16px;top:11px;
-  font:600 15px/1 var(--mono);color:var(--dim)}
-.steps li b{font-weight:600;color:inherit}
-.steps li.on{opacity:1;color:var(--ink)}
-.steps li.cur{border-left-color:var(--flow);background:rgba(47,194,204,.07)}
+  font:600 14px/1 var(--mono);color:var(--dim)}
+.steps li b{font-weight:600}
+.steps li.on{opacity:.75;color:var(--ink)}
+.steps li.cur{opacity:1;border-left-color:var(--flow);background:rgba(47,194,204,.08)}
 .steps li.cur::before{color:var(--flow)}
-.mean{margin-top:16px;padding:14px 18px;background:var(--deep);border:1px solid var(--edge)}
+.mean{margin-top:14px;padding:13px 18px;background:var(--deep);border:1px solid var(--edge)}
 .mean span{font:600 12px/1 var(--mono);letter-spacing:.16em;color:var(--r1);text-transform:uppercase}
-.mean p{margin:8px 0 0;font:300 17px/1.45 var(--display);color:var(--ink)}
+.mean p{margin:8px 0 0;font:300 16.5px/1.45 var(--display);color:var(--ink)}
 .mean b{font-weight:600}
 svg text{font-family:var(--mono)}
-.date{font:900 64px/1 var(--display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
-.read{font:500 15px/1.3 var(--mono);color:var(--muted);letter-spacing:.04em;margin-top:6px}
-.big{font:900 104px/1 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.date{font:900 58px/1 var(--display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.read{font:500 14px/1.35 var(--mono);color:var(--muted);letter-spacing:.03em;margin-top:6px}
+.big{font:900 110px/1 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .lab{font:500 14px/1.35 var(--mono);color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:6px}
-.nav{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
-  display:flex;gap:10px;align-items:center;z-index:5}
-.nav button{background:var(--deep);color:var(--ink);border:1px solid var(--edge);
-  font:500 14px/1 var(--mono);padding:10px 14px;cursor:pointer}
-.nav button:hover{border-color:var(--flow)}
-.nav button:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
-.dots{display:flex;gap:8px;margin:0 6px}
-.dots i{width:9px;height:9px;border-radius:50%;background:var(--dim);display:block}
-.dots i.on{background:var(--flow)}
-.pipe-notes{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:22px}
+.bar{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  display:flex;gap:10px;align-items:center;z-index:5;background:rgba(7,20,26,.85);padding:6px 8px;border:1px solid var(--edge)}
+.bar button{background:var(--deep);color:var(--ink);border:1px solid var(--edge);
+  font:500 14px/1 var(--mono);padding:9px 14px;cursor:pointer}
+.bar button:hover{border-color:var(--flow)}
+.bar button:focus-visible{outline:2px solid var(--flow);outline-offset:2px}
+.pos{font:500 13px/1 var(--mono);color:var(--muted);min-width:170px;text-align:center}
+.pos b{color:var(--ink);font-weight:600}
+.hint{font:400 12px/1 var(--mono);color:var(--dim)}
+.notes2{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:26px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 <div class="viewport"><div class="stage" id="stage">
 
-<!-- ======================= CẢNH 1: TOÀN CẢNH ======================= -->
+<!-- ===================== CẢNH 1 ===================== -->
 <section class="scene on" id="s0">
   <div class="head">
-    <div class="kick">DSP391m · Nhóm 3 · Lưu vực sông Hương, Huế</div>
+    <div class="kick">DSP391m · Lưu vực sông Hương, Huế</div>
     <h1>Nhóm đang làm gì? <span class="t">Dự báo lũ trước 1–3 ngày, chỉ bằng dữ liệu miễn phí</span></h1>
   </div>
-  <div style="position:absolute;left:72px;right:72px;top:178px;bottom:58px">
+  <div style="position:absolute;left:72px;right:72px;top:170px">
     <svg id="pipe" viewBox="0 0 1456 300" style="width:1456px;height:300px"></svg>
-    <div class="pipe-notes">
+    <div class="notes2" id="notes0">
       <div class="mean"><span>Câu hỏi nghiên cứu</span>
-        <p>Từ mưa và lưu lượng hôm nay, có dự báo được <b>lưu lượng sông 1, 2, 3 ngày tới</b> không — và
-          có cảnh báo được <b>ngày nào vượt mức nguy cơ</b> không?</p></div>
+        <p>Từ mưa và lưu lượng <b>hôm nay</b>, có dự báo được <b>lưu lượng sông 1, 2, 3 ngày tới</b> không —
+          và có cảnh báo trước được <b>những ngày vượt mức nguy cơ</b> không?</p></div>
       <div class="mean"><span>Vì sao đáng làm</span>
-        <p>Miền Trung chịu lũ nặng nhất cả nước, nhưng cảnh báo tới cấp xã còn yếu. Nếu
-          <b>dữ liệu mở, miễn phí</b> đủ tốt thì địa phương nào cũng tự làm được, không cần trạm đo đắt tiền.</p></div>
+        <p>Miền Trung chịu lũ nặng nhất cả nước, nhưng cảnh báo tới cấp xã còn yếu. Nếu <b>dữ liệu mở, miễn phí</b>
+          đủ tốt, địa phương nào cũng tự làm được mà không cần trạm đo đắt tiền.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 2: LƯU VỰC ======================= -->
+<!-- ===================== CẢNH 2 ===================== -->
 <section class="scene" id="s1">
   <div class="head">
-    <div class="kick">Bước 1 · Thu thập · Không gian</div>
+    <div class="kick">Bước 1 · Thu thập · Bản đồ thật (OpenStreetMap)</div>
     <h1>Mưa rơi ở đâu <span class="t">trước khi thành phố ngập?</span></h1>
   </div>
   <div class="body">
-    <div class="vis"><svg id="map0" viewBox="0 0 980 640" style="width:100%;height:100%"></svg></div>
+    <div class="vis"><svg id="map1" viewBox="0 0 942 660" style="width:100%;height:100%"></svg></div>
     <div class="narr">
       <ol class="steps">
-        <li>Lưu vực sông Hương rộng khoảng <b>2 830 km²</b>, nhiều núi, dốc — nước dồn về rất nhanh.</li>
-        <li>Nhóm phủ một <b>lưới 64 ô mưa</b>, mỗi ô khoảng 11 km, chia thành <b>3 vùng</b>: thượng, trung và hạ lưu.</li>
-        <li>Mưa gây lũ chủ yếu rơi ở <b>vùng núi thượng nguồn</b>, cách thành phố 30–50 km, rồi mới chảy xuống.</li>
-        <li>Điểm cần dự báo là <b>ô lưu lượng (16,45° B · 107,50° Đ)</b>, ngay phía trên trạm thuỷ văn <b>Kim Long</b> ở Huế.</li>
+        <li>Đây là vùng <b>Thừa Thiên Huế</b>: biển ở phía đông bắc, <b>phá Tam Giang</b> chạy dọc bờ biển, thành phố <b>Huế</b> nằm sát phá.</li>
+        <li><b>Sông Hương</b> (xanh sáng) sinh ra từ hai nhánh <b>Tả Trạch</b> và <b>Hữu Trạch</b> trên núi, chảy qua Huế rồi đổ ra phá. Sông Bồ (xám) ở phía bắc là một sông khác.</li>
+        <li>Nhóm phủ lên một <b>lưới 64 ô mưa</b>, mỗi ô khoảng 11 × 11 km. Mỗi ô là một chuỗi mưa <b>từng ngày từ 2010 đến 2026</b>.</li>
+        <li>Gộp các ô thành <b>3 vùng</b>: thượng lưu (núi, mưa nhiều nhất), trung lưu, và hạ lưu (đồng bằng gần biển).</li>
+        <li>Điểm cần dự báo: <b>ô lưu lượng ngay trên trạm Kim Long</b> — nơi Nhà nước đo mực nước và phát cảnh báo lũ cho Huế.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p>Nếu chỉ đo mưa tại một điểm trong thành phố, ta bỏ mất đúng nơi sinh ra lũ. Vì vậy phải lấy mưa
-          <b>trên toàn lưu vực</b> rồi gộp theo vùng.</p></div>
+        <p>Lũ ở Huế sinh ra từ mưa trên núi cách thành phố 30–50 km. Đo mưa tại một điểm trong thành phố là bỏ mất
+          đúng nơi sinh ra lũ — nên phải lấy mưa <b>trên toàn lưu vực</b>.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 3: MƯA → SÔNG ======================= -->
+<!-- ===================== CẢNH 3 ===================== -->
 <section class="scene" id="s2">
   <div class="head">
-    <div class="kick">Bước 3 · Phân tích · Dữ liệu thật tháng 10/2020</div>
+    <div class="kick">Bước 3 · Phân tích · Trận lũ tháng 10/2020, dữ liệu thật</div>
     <h1>Mưa rơi hôm nay, <span class="t">sông dâng ngày mai</span></h1>
   </div>
   <div class="body">
-    <div class="vis" style="display:flex;gap:26px;align-items:flex-start">
-      <div style="flex:none;width:330px">
-        <svg id="map1" viewBox="0 0 330 330" style="width:330px;height:330px"></svg>
-        <div class="read" style="margin-top:8px">Mỗi ô sáng theo lượng mưa của ngày đó</div>
+    <div class="vis" style="display:flex;gap:24px;align-items:flex-start">
+      <div style="flex:none;width:370px">
+        <svg id="map2" viewBox="0 0 370 386" style="width:370px;height:386px"></svg>
+        <div class="read">Ô càng sáng = mưa càng nhiều trong ngày</div>
       </div>
       <div style="flex:1;min-width:0">
-        <div class="date" id="d1">03/10</div>
-        <div class="read" id="r1">mưa lưu vực 0 mm · sông 0 m³/s</div>
-        <svg id="ch1" viewBox="0 0 590 420" style="width:100%;height:auto;margin-top:10px"></svg>
+        <div class="date" id="d2">03/10/2020</div>
+        <div class="read" id="r2">mưa lưu vực 0 mm · sông 0 m³/s</div>
+        <svg id="ch2" viewBox="0 0 548 440" style="width:100%;height:auto;margin-top:8px"></svg>
       </div>
     </div>
     <div class="narr">
       <ol class="steps">
-        <li><b>03–06/10:</b> mưa nhỏ, sông ở mức bình thường, khoảng 120 m³/s.</li>
-        <li><b>07–11/10:</b> mưa lớn gần như mỗi ngày, có ngày <b>180 mm</b>. Sông bắt đầu dâng nhanh.</li>
-        <li><b>12/10:</b> sông đạt đỉnh <b>2 060 m³/s</b>, vượt mức nguy cơ 3. Mực nước ở Kim Long lên <b>4,17 m</b>.</li>
-        <li><b>17/10:</b> một nhịp mưa mới — và đúng <b>ngày hôm sau</b>, 18/10, sông lại dâng.</li>
+        <li>Xem lại trận lũ tháng 10/2020, <b>từng ngày một</b>. Trái: mưa trên từng ô. Phải: mưa trung bình (cột) và lưu lượng sông (đường).</li>
+        <li><b>03–06/10:</b> mưa nhỏ, các ô còn tối. Sông chỉ khoảng <b>120 m³/s</b> — mức bình thường.</li>
+        <li><b>07–11/10:</b> mưa lớn dồn dập — ô sáng rực, có ngày tới <b>180 mm</b>. Sông dâng liên tục.</li>
+        <li><b>12/10:</b> sông lên đỉnh <b>2 060 m³/s</b>, vượt mức nguy cơ 3 — đúng <b>một ngày sau</b> nhịp mưa lớn 11/10. Mực nước Kim Long: 4,17 m.</li>
+        <li><b>13–18/10:</b> nước rút, rồi 17/10 mưa lại 126 mm → <b>ngày 18/10 sông dâng lại</b>. Vẫn đúng quy luật: trễ 1 ngày.</li>
+        <li>Hết mưa, sông về bình thường. Quy luật "trễ 1 ngày" đúng trên <b>cả 16 năm dữ liệu</b>, không riêng trận này.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p>Trên 16 năm dữ liệu, mưa và lưu lượng khớp nhau rõ nhất khi lệch <b>đúng 1 ngày</b> (r = 0,79),
-          vì nước từ núi về thành phố chỉ mất 5–6 giờ. Nên dự báo trước 1 ngày làm được; trước 3 ngày thì khó hơn nhiều.</p></div>
+        <p>Mưa và lưu lượng khớp nhau rõ nhất khi lệch <b>đúng 1 ngày</b> (r = 0,79), vì nước từ núi về Huế chỉ mất
+          5–6 giờ. Nên dự báo trước 1 ngày làm được; trước 3 ngày khó hơn nhiều.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 4: TÌM DÒNG SÔNG ======================= -->
+<!-- ===================== CẢNH 4 ===================== -->
 <section class="scene" id="s3">
   <div class="head">
-    <div class="kick">Bước 1 · Thu thập · Chọn đúng điểm</div>
+    <div class="kick">Bước 1 · Thu thập · Chọn đúng điểm trên sông</div>
     <h1>361 chỗ để tìm, <span class="t">chỉ một là sông Hương</span></h1>
   </div>
   <div class="body">
-    <div class="vis" style="display:flex;gap:30px;align-items:flex-start">
-      <svg id="map2" viewBox="0 0 600 600" style="width:600px;height:600px;flex:none"></svg>
-      <div style="flex:1;min-width:0;padding-top:20px">
-        <div class="big" id="cnt2">361</div>
-        <div class="lab" id="lab2">ô lưới được dò</div>
+    <div class="vis" style="display:flex;gap:24px;align-items:flex-start">
+      <svg id="map3" viewBox="0 0 620 650" style="width:620px;height:650px;flex:none"></svg>
+      <div style="flex:1;min-width:0;padding-top:16px">
+        <div class="big" id="cnt3">361</div>
+        <div class="lab" id="lab3">ô lưới được dò</div>
       </div>
     </div>
     <div class="narr">
       <ol class="steps">
-        <li>Mô hình GloFAS vẽ sông trên lưới 5 km, nên <b>chưa biết ô nào trùng sông thật</b>. Nhóm dò <b>361 ô</b>, mỗi ô chỉ tải 1 năm cho rẻ.</li>
-        <li><b>234 ô</b> có nước chảy — ô càng sáng, lưu lượng càng lớn. Số còn lại là sườn núi hoặc biển.</li>
-        <li>Chỉ <b>83 ô</b> có dòng chảy thật mới tải đủ chuỗi 1997–2026 → tiết kiệm phần lớn chi phí tải.</li>
-        <li>Hai quy tắc dễ nghĩ đều <b>sai</b>: ô lớn nhất gộp cả sông Bồ; ô ngay tại trạm lại gần như khô, vì sông trong mô hình lệch khoảng 7 km.</li>
-        <li>Chọn ô có lưu lượng <b>khớp với diện tích lưu vực thật</b>. Toạ độ trong kế hoạch ban đầu chỉ cho <b>5,7 m³/s</b> — sai ô.</li>
+        <li>Mô hình GloFAS vẽ sông trên <b>lưới 5 km</b>. Nhóm chưa biết ô nào là sông Hương thật, nên <b>dò cả 361 ô</b> quanh lưu vực.</li>
+        <li>Mỗi ô tải thử 1 năm. <b>234 ô có nước chảy</b> — ô càng sáng càng nhiều nước. Chúng xếp theo đúng các dòng sông thật trên bản đồ.</li>
+        <li>Chỉ <b>83 ô</b> có dòng chảy đáng kể mới được tải đủ <b>30 năm (1997–2026)</b>. Bỏ qua phần còn lại giúp tiết kiệm phần lớn thời gian tải.</li>
+        <li>Hai cách chọn dễ nghĩ đều <b>sai</b>: ô nhiều nước nhất (đỏ) gộp cả sông Bồ; ô ngay tại trạm (vàng) gần như khô vì sông trong mô hình lệch khoảng 7 km.</li>
+        <li><b>Ô được chọn</b>: lượng nước khớp với diện tích lưu vực thật (~2 830 km²). Toạ độ trong kế hoạch ban đầu chỉ cho <b>5,7 m³/s</b> — sai ô.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p>Nếu dùng toạ độ ban đầu, toàn bộ 30 năm dữ liệu sẽ là của <b>một nhánh suối nhỏ</b>, và mọi mô hình phía sau đều vô nghĩa.</p></div>
+        <p>Nếu dùng toạ độ ban đầu, toàn bộ 30 năm dữ liệu sẽ là của <b>một nhánh suối nhỏ</b> và mọi mô hình phía sau đều vô nghĩa.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 5: GỘP + LÀM SẠCH ======================= -->
+<!-- ===================== CẢNH 5 ===================== -->
 <section class="scene" id="s4">
   <div class="head">
     <div class="kick">Bước 2 · Làm sạch</div>
     <h1>Hơn một nghìn file, <span class="t">thành một bảng duy nhất</span></h1>
   </div>
   <div class="body">
-    <div class="vis"><svg id="ch3" viewBox="0 0 980 640" style="width:100%;height:100%"></svg></div>
+    <div class="vis"><svg id="ch4" viewBox="0 0 942 660" style="width:100%;height:100%"></svg></div>
     <div class="narr">
       <ol class="steps">
-        <li>Dữ liệu thô gồm <b>1 295 file</b> từ 5 loại nguồn: mưa theo giờ, mưa theo ngày, lưu lượng, dò lưới, mưa dự báo.</li>
-        <li>Đổi giờ <b>UTC → giờ Việt Nam</b>, cộng mưa theo giờ thành theo ngày, gộp 64 ô mưa thành 3 vùng.</li>
-        <li>Kiểm từng nguồn thay vì tin tài liệu → tìm ra <b>4 lỗi</b>: 13 năm lưu lượng rỗng · lưới mưa lệch · mưa "dự báo" trùng mưa thực đo · toạ độ sai.</li>
-        <li>Kết quả: <b>một bảng 6 087 ngày × 71 cột</b>, mỗi dòng là một ngày, không thiếu giá trị nào.</li>
+        <li>Dữ liệu thô: <b>1 295 file</b>, chia thành 5 loại. Mỗi ô vuông nhỏ trên hình tượng trưng cho khoảng 8 file.</li>
+        <li>Làm sạch: đổi giờ <b>UTC sang giờ Việt Nam</b>, cộng mưa theo giờ thành theo ngày, gộp 64 ô mưa thành 3 vùng — tất cả đổ vào <b>một bảng</b>.</li>
+        <li>Kiểm từng nguồn thay vì tin tài liệu → tìm ra <b>4 lỗi</b> (bên trái). Lỗi nào cũng lọt qua bước kiểm tra thông thường.</li>
+        <li>Kết quả: <b>6 087 ngày × 71 cột</b>. Mỗi dòng là một ngày từ 2010 đến 2026, không thiếu giá trị nào.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p><b>Đếm số dòng không phải đếm dữ liệu.</b> File lưu lượng có 15 584 dòng, nhưng chỉ 10 835 dòng có số —
-          13 năm đầu hoàn toàn rỗng mà kiểm tra thông thường không phát hiện.</p></div>
+        <p><b>Đếm số dòng không phải đếm dữ liệu.</b> File lưu lượng có 15 584 dòng nhưng chỉ 10 835 dòng có số —
+          13 năm đầu rỗng hoàn toàn mà kiểm tra thông thường không phát hiện.</p></div>
     </div>
   </div>
 </section>
 
-<!-- ======================= CẢNH 6: DỰ BÁO ======================= -->
+<!-- ===================== CẢNH 6 ===================== -->
 <section class="scene" id="s5">
   <div class="head">
     <div class="kick">Bước 4 · Dự báo · Trận lũ mô hình chưa từng thấy</div>
     <h1>Dự báo sông ngày mai, <span class="t">ngay từ hôm nay</span></h1>
   </div>
   <div class="body">
-    <div class="vis"><svg id="ch4" viewBox="0 0 980 600" style="width:100%;height:100%"></svg></div>
+    <div class="vis"><svg id="ch5" viewBox="0 0 942 640" style="width:100%;height:100%"></svg></div>
     <div class="narr">
       <ol class="steps">
-        <li>Mô hình chỉ được học dữ liệu <b>đến 30/06/2022</b>. Tháng 10/2025 nằm trong phần mô hình <b>chưa từng thấy</b>.</li>
+        <li>Đây là lưu lượng <b>thực tế</b> tháng 10–11/2025 (đường trắng): hai đợt lũ lớn liên tiếp.</li>
+        <li>Mô hình chỉ được học dữ liệu <b>đến 30/06/2022</b>. Năm 2025 là phần mô hình <b>chưa từng thấy</b> — đúng như khi dùng thật.</li>
         <li>Mỗi ngày, mô hình nhìn mưa và lưu lượng <b>hôm nay</b> để đoán lưu lượng <b>ngày mai</b> (đường xanh).</li>
-        <li>So với thực tế (đường trắng): mô hình bắt <b>đúng thời điểm</b> các đợt lũ lên và xuống.</li>
-        <li>Nhưng <b>đỉnh cao nhất bị đoán thấp hơn thực tế</b> — đây là điểm yếu nhóm đang xử lý ở Report 3.</li>
+        <li>Đường xanh lên xuống gần như <b>cùng lúc</b> với thực tế: mô hình bắt đúng thời điểm lũ lên và rút.</li>
+        <li>Nhưng ở <b>đỉnh cao nhất</b>, dự báo thấp hơn thực tế (vạch đỏ). Đây là điểm yếu nhóm đang sửa ở Report 3.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
-        <p id="m5">Trên toàn bộ giai đoạn kiểm tra, mô hình đạt NSE <b>0,74</b>, so với <b>0,54</b> nếu chỉ đơn giản
-          lặp lại giá trị hôm nay. NSE = 1 là dự báo hoàn hảo.</p></div>
+        <p id="m5">Trên toàn giai đoạn kiểm tra, mô hình đạt NSE <b>0,74</b>, so với <b>0,54</b> nếu chỉ lặp lại
+          giá trị hôm nay. NSE = 1 là dự báo hoàn hảo.</p></div>
     </div>
   </div>
 </section>
 
 </div></div>
 
-<nav class="nav" aria-label="Chuyển cảnh">
-  <button id="prev" type="button" aria-label="Cảnh trước">&larr;</button>
-  <div class="dots" id="dots"></div>
-  <button id="next" type="button" aria-label="Cảnh sau">&rarr;</button>
-  <button id="replay" type="button">Phát lại</button>
-</nav>
+<div class="bar" role="navigation" aria-label="Điều khiển">
+  <button id="prev" type="button" aria-label="Bước trước">&larr;</button>
+  <div class="pos" id="pos">Cảnh 1/6 · Bước 1/5</div>
+  <button id="next" type="button" aria-label="Bước sau">&rarr;</button>
+  <button id="again" type="button">Phát lại bước</button>
+  <span class="hint">phím → hoặc cách để tiếp</span>
+</div>
 
 <script id="data" type="application/json">__DATA__</script>
 <script>
 (function(){
-var D = JSON.parse(document.getElementById('data').textContent);
-var NS = 'http://www.w3.org/2000/svg';
-var REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
-function el(tag,a,parent){ var e=document.createElementNS(NS,tag); for(var k in a) e.setAttribute(k,a[k]); if(parent) parent.appendChild(e); return e; }
-function txt(parent,x,y,s,a){ var t=el('text',Object.assign({x:x,y:y,fill:'#8BA8B1','font-size':13},a||{}),parent); t.textContent=s; return t; }
-function clear(s){ while(s.firstChild) s.removeChild(s.firstChild); }
-function fi(n){ return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' '); }
-function fd(x,k){ return x.toFixed(k).replace('.',','); }
-var timers=[], raf=null;
-function later(fn,ms){ timers.push(setTimeout(fn, REDUCED?0:ms)); }
-function stopAll(){ timers.forEach(clearTimeout); timers=[]; if(raf){cancelAnimationFrame(raf);raf=null;} }
-function steps(id,k){ var li=document.querySelectorAll('#'+id+' .steps li');
-  for(var i=0;i<li.length;i++){ li[i].classList.toggle('on',i<=k); li[i].classList.toggle('cur',i===k); } }
+var D=JSON.parse(document.getElementById('data').textContent);
+var NS='http://www.w3.org/2000/svg';
+var REDUCED=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function tx(p,x,y,s,a){var t=el('text',Object.assign({x:x,y:y,fill:'#8BA8B1','font-size':13},a||{}),p);t.textContent=s;return t;}
+function txd(p,x,y,s,a){var t=tx(p,x,y,s,a);t.setAttribute('font-family','Be Vietnam Pro, sans-serif');return t;}
+function clear(s){while(s.firstChild)s.removeChild(s.firstChild);}
+function fi(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
+function fd(x,k){return x.toFixed(k).replace('.',',');}
+var timers=[];
+function after(ms,fn){timers.push(setTimeout(fn,ms));}
+function stopAll(){timers.forEach(clearTimeout);timers=[];}
+function ms(anim,v){return (anim&&!REDUCED)?v:0;}
+function fade(e,op,anim,dur){e.style.transition=ms(anim,dur)?'opacity '+dur+'ms ease':'none';e.style.opacity=op;}
+function drawLine(p,anim,dur){var L=p.getTotalLength();p.style.strokeDasharray=L;
+  if(!ms(anim,dur)){p.style.transition='none';p.style.strokeDashoffset=0;return;}
+  p.style.transition='none';p.style.strokeDashoffset=L;p.getBoundingClientRect();
+  p.style.transition='stroke-dashoffset '+dur+'ms ease-in-out';p.style.strokeDashoffset=0;}
+function countTo(node,from,to,anim,dur){ if(!ms(anim,dur)){node.textContent=fi(to);return;}
+  var n=18;for(var i=1;i<=n;i++)(function(i){after(dur*i/n,function(){node.textContent=fi(from+(to-from)*i/n);});})(i);}
 
 var stage=document.getElementById('stage');
-function fit(){ var s=Math.min(innerWidth/1600,(innerHeight-56)/900); stage.style.transform='scale('+s+')'; }
-addEventListener('resize',fit); fit();
+function fit(){var s=Math.min(innerWidth/1600,(innerHeight-60)/900);stage.style.transform='scale('+s+')';}
+addEventListener('resize',fit);fit();
 
-function mix(a,b,t){ var p=function(h){return [1,3,5].map(function(i){return parseInt(h.substr(i,2),16);});};
-  var x=p(a),y=p(b); return 'rgb('+x.map(function(v,i){return Math.round(v+(y[i]-v)*t);}).join(',')+')'; }
-function rainCol(v){ return mix('#0C222B','#9CC3EE',Math.min(1,Math.sqrt(Math.max(0,v)/D.rain.rmax))); }
-function flowCol(v){ return mix('#123540','#7FE9EF',Math.min(1,Math.log10(1+v)/Math.log10(1+340))); }
-var RB={latMin:16.05,latMax:16.85,lonMin:107.05,lonMax:107.85};
-function proj(lat,lon,x0,y0,size){ return [x0+(lon-RB.lonMin)/(RB.lonMax-RB.lonMin)*size, y0+(RB.latMax-lat)/(RB.latMax-RB.latMin)*size]; }
-var THR_NAMES=['nguy cơ 1','nguy cơ 2','nguy cơ 3'], THR_COLS=['#E8BE55','#E0833C','#E8665C'];
+function mix(a,b,t){var p=function(h){return[1,3,5].map(function(i){return parseInt(h.substr(i,2),16);});};
+  var x=p(a),y=p(b);return'rgb('+x.map(function(v,i){return Math.round(v+(y[i]-v)*t);}).join(',')+')';}
+function rainCol(v){return mix('#0E2A34','#B7D6F5',Math.min(1,Math.sqrt(Math.max(0,v)/D.rain.rmax)));}
+function flowCol(v){return mix('#164552','#8FF0F5',Math.min(1,Math.log10(1+v)/Math.log10(1+340)));}
+var THR_N=['mức nguy cơ 1','mức nguy cơ 2','mức nguy cơ 3'],THR_C=['#E8BE55','#E0833C','#E8665C'];
 
-/* ================= Cảnh 1: toàn cảnh quy trình ================= */
-function scene0(){
-  var s=document.getElementById('pipe'); clear(s);
-  var stg=[
-    ['1','Thu thập','Tải lưu lượng sông (GloFAS) và','mưa (ERA5) cho cả lưu vực','1 295 file · 98 MB'],
+/* ---------- bản đồ thật ---------- */
+var BB=D.geo.bbox,KX=Math.cos(16.5*Math.PI/180);
+function mkP(x0,y0,H){var s=H/(BB[1]-BB[0]);var P=function(lat,lon){return[x0+(lon-BB[2])*s*KX,y0+(BB[1]-lat)*s];};P.s=s;return P;}
+function path(pts,P){return pts.map(function(p,i){var q=P(p[1],p[0]);return(i?'L':'M')+q[0].toFixed(1)+','+q[1].toFixed(1);}).join('');}
+var RIVER_STYLE={main:['#56DCE4',3.4],branch:['#3FB6C0',2.4],bo:['#5F7D87',2],minor:['#24404A',1.1]};
+function baseMap(svg,P){
+  var L={};
+  L.sea=el('g',{},svg);
+  D.geo.lagoon.forEach(function(p){el('path',{d:path(p,P)+'Z',fill:'#103744',stroke:'#1F5A68','stroke-width':1},L.sea);});
+  D.geo.coast.forEach(function(p){el('path',{d:path(p,P),fill:'none',stroke:'#4A7786','stroke-width':1.6,'stroke-linejoin':'round'},L.sea);});
+  ['minor','bo','branch','main'].forEach(function(c){L[c]=el('g',{},svg);});
+  D.geo.rivers.forEach(function(r){var st=RIVER_STYLE[r.c]||RIVER_STYLE.minor;
+    el('path',{d:path(r.p,P),fill:'none',stroke:st[0],'stroke-width':st[1],'stroke-linecap':'round','stroke-linejoin':'round'},L[r.c]||L.minor);});
+  return L;
+}
+function riverLabel(name,P){var best=null;D.geo.rivers.forEach(function(r){if(r.n===name&&(!best||r.p.length>best.length))best=r.p;});
+  if(!best)return null;var m=best[Math.floor(best.length/2)];return P(m[1],m[0]);}
+function rainCells(svg,P,fillFn){var w=0.1*P.s*KX*0.86,h=0.1*P.s*0.86,out=[];
+  D.rain.cells.forEach(function(c,i){var p=P(c[0],c[1]);out.push(el('rect',{x:p[0]-w/2,y:p[1]-h/2,width:w,height:h,rx:2,
+    fill:fillFn?fillFn(c,i):'#0E2A34',stroke:'#2A4E5A','stroke-width':.8},svg));});return out;}
+
+/* ===================== Cảnh 1: quy trình ===================== */
+var sc0={n:5,setup:function(){
+  var s=document.getElementById('pipe');clear(s);
+  var stg=[['1','Thu thập','Tải lưu lượng sông (GloFAS) và','mưa (ERA5) cho cả lưu vực','1 295 file · 98 MB'],
     ['2','Làm sạch','Kiểm từng nguồn, sửa 4 lỗi,','gộp lại theo từng ngày','6 087 ngày × 71 cột'],
     ['3','Phân tích','Tìm quy luật giữa mưa','và lưu lượng sông','mưa hôm nay → sông ngày mai'],
     ['4','Dự báo','Mô hình LightGBM dự báo','lưu lượng và mức nguy cơ','trước 1, 2, 3 ngày']];
-  var W=310, G=72, x0=0, y=40, H=210, boxes=[], arrows=[];
-  stg.forEach(function(t,i){ var x=x0+i*(W+G);
-    var g=el('g',{style:'opacity:.35;transition:opacity .6s ease, transform .6s ease;transform:translateY(10px)'},s);
+  var W=310,G=72,y=30,H=220,boxes=[],arrows=[];
+  stg.forEach(function(t,i){var x=i*(W+G);var g=el('g',{},s);
     el('rect',{x:x,y:y,width:W,height:H,fill:'#0C222B',stroke:'#16313C','stroke-width':1.5},g);
     el('rect',{x:x,y:y,width:W,height:4,fill:'#2FC2CC'},g);
-    txt(g,x+22,y+46,t[0],{fill:'#2FC2CC','font-size':16,'font-weight':600});
-    var h=txt(g,x+52,y+48,t[1],{fill:'#EAF4F5','font-size':26,'font-weight':600}); h.setAttribute('font-family','Be Vietnam Pro, sans-serif');
-    [t[2],t[3]].forEach(function(l,k){ var q=txt(g,x+22,y+96+k*26,l,{fill:'#8BA8B1','font-size':17}); q.setAttribute('font-family','Be Vietnam Pro, sans-serif'); });
-    txt(g,x+22,y+H-24,t[4],{fill:'#EAF4F5','font-size':15});
-    boxes.push(g);
-    if(i<3){ var ax=x+W+8, bx=x+W+G-8, ay=y+H/2;
+    tx(g,x+22,y+48,t[0],{fill:'#2FC2CC','font-size':18,'font-weight':600});
+    txd(g,x+54,y+50,t[1],{fill:'#EAF4F5','font-size':28,'font-weight':700});
+    txd(g,x+22,y+102,t[2],{fill:'#8BA8B1','font-size':17});txd(g,x+22,y+128,t[3],{fill:'#8BA8B1','font-size':17});
+    tx(g,x+22,y+H-26,t[4],{fill:'#EAF4F5','font-size':15});
+    g.style.opacity=.18;boxes.push(g);
+    if(i<3){var ax=x+W+8,bx=x+W+G-10,ay=y+H/2;
       var a=el('path',{d:'M'+ax+','+ay+' L'+bx+','+ay,stroke:'#2FC2CC','stroke-width':2.5,fill:'none'},s);
-      var L=bx-ax; a.style.strokeDasharray=L; a.style.strokeDashoffset=REDUCED?0:L; a.style.transition='stroke-dashoffset .5s ease';
-      el('path',{d:'M'+(bx-8)+','+(ay-6)+' L'+bx+','+ay+' L'+(bx-8)+','+(ay+6),stroke:'#2FC2CC','stroke-width':2.5,fill:'none'},s);
-      arrows.push(a); }
-  });
-  boxes.forEach(function(g,i){ later(function(){ g.style.opacity='1'; g.style.transform='translateY(0)';
-    if(arrows[i]) later(function(){ arrows[i].style.strokeDashoffset=0; }, 350); }, 200+i*750); });
-}
+      var head=el('path',{d:'M'+(bx-9)+','+(ay-7)+' L'+(bx+1)+','+ay+' L'+(bx-9)+','+(ay+7),stroke:'#2FC2CC','stroke-width':2.5,fill:'none'},s);
+      a.style.opacity=0;head.style.opacity=0;arrows.push([a,head]);}});
+  var notes=document.getElementById('notes0');notes.style.opacity=.15;
+  return {boxes:boxes,arrows:arrows,notes:notes};},
+ step:function(c,k,anim){
+  if(k<4){fade(c.boxes[k],1,anim,600);
+    if(k>0){var a=c.arrows[k-1];a[0].style.opacity=1;a[1].style.opacity=1;drawLine(a[0],anim,500);}}
+  else fade(c.notes,1,anim,600);}};
 
-/* ================= Cảnh 2: lưu vực ================= */
-function scene1(){
-  var s=document.getElementById('map0'); clear(s); steps('s1',0);
-  var size=560, x0=260, y0=30, cs=size/8*0.82;
-  var bandCol={thuong:'#1E4F5C',trung:'#2B6C7A',ha:'#1A3F4A'}, cells=[];
-  D.rain.cells.forEach(function(c){ var p=proj(c[0],c[1],x0,y0,size);
-    var r=el('rect',{x:p[0]-cs/2,y:p[1]-cs/2,width:cs,height:cs,rx:3,fill:bandCol[c[2]]||'#16313C',
-      style:'transform-origin:'+p[0]+'px '+p[1]+'px;transform:scale(.55);opacity:.35;transition:transform .5s ease, opacity .5s ease'},s);
-    cells.push([r,c]); });
-  later(function(){ steps('s1',1); cells.forEach(function(rc){ var c=rc[1];
-    setTimeout(function(){ rc[0].style.transform='scale(1)'; rc[0].style.opacity='1'; },
-      REDUCED?0:(7-Math.round((c[0]-16.1)*10))*80+Math.round((c[1]-107.1)*10)*22); }); }, 500);
-  var names={thuong:'Thượng lưu',trung:'Trung lưu',ha:'Hạ lưu'};
-  var lbls=[['thuong',16.22],['trung',16.45],['ha',16.70]].map(function(b){ var p=proj(b[1],107.85,x0,y0,size);
-    var t=txt(s,p[0]+18,p[1]+6,names[b[0]],{fill:'#EAF4F5','font-size':19,style:'opacity:.25;transition:opacity .6s'});
-    t.setAttribute('font-family','Be Vietnam Pro, sans-serif'); return t; });
-  var mt=proj(16.22,107.10,x0,y0,size);
-  var mtn=txt(s,x0-20,mt[1]+6,'núi, mưa nhiều →',{fill:'#9CC3EE','font-size':15,'text-anchor':'end',style:'opacity:.2;transition:opacity .6s'});
-  later(function(){ steps('s1',2); lbls.forEach(function(t){ t.style.opacity='1'; }); mtn.style.opacity='1'; }, 1700);
-  var st=proj(D.probe.station[0],D.probe.station[1],x0,y0,size), ch=proj(D.probe.chosen[0],D.probe.chosen[1],x0,y0,size);
-  var g=el('g',{style:'opacity:.2;transition:opacity .6s'},s);
-  el('circle',{cx:ch[0],cy:ch[1],r:15,fill:'none',stroke:'#7FE9EF','stroke-width':3},g);
-  el('circle',{cx:st[0],cy:st[1],r:7,fill:'#E8BE55'},g);
-  el('line',{x1:x0-14,y1:ch[1],x2:ch[0]-17,y2:ch[1],stroke:'#7FE9EF','stroke-width':1},g);
-  txt(g,x0-20,ch[1]+5,'ô cần dự báo',{fill:'#7FE9EF','font-size':15,'text-anchor':'end'});
-  el('line',{x1:x0-14,y1:st[1]+30,x2:st[0]-8,y2:st[1]+4,stroke:'#E8BE55','stroke-width':1},g);
-  txt(g,x0-20,st[1]+35,'trạm Kim Long (Huế)',{fill:'#E8BE55','font-size':15,'text-anchor':'end'});
-  later(function(){ steps('s1',3); g.style.opacity='1'; }, 2900);
-  txt(s,x0,y0+size+34,'lưới 0,1° · mỗi ô ≈ 11 km',{'font-size':14});
-}
+/* ===================== Cảnh 2: lưu vực ===================== */
+var sc1={n:5,setup:function(){
+  var s=document.getElementById('map1');clear(s);var H=640,P=mkP((942-H*0.9*KX/0.9)/2,8,H);
+  var L=baseMap(s,P);
+  ['main','branch','bo'].forEach(function(k){L[k].style.opacity=.15;});
+  L.lab=el('g',{},s);
+  txd(L.lab,P(16.9,107.82)[0],P(16.9,107.82)[1],'Biển Đông',{fill:'#6E98A6','font-size':20,'font-style':'italic'});
+  var lg=P(16.66,107.47);txd(L.lab,lg[0],lg[1],'phá Tam Giang',{fill:'#6E98A6','font-size':15,'font-style':'italic'});
+  // Thành phố, trạm và ô dự báo cách nhau chưa tới 5 km: nhãn đặt ra xa, nối bằng đường dẫn.
+  function lead(g,from,to,label,col,anchor){el('line',{x1:from[0],y1:from[1],x2:to[0],y2:to[1],stroke:col,'stroke-width':1},g);
+    txd(g,to[0]+(anchor==='end'?-6:6),to[1]+5,label,{fill:col,'font-size':16,'font-weight':700,'text-anchor':anchor||'start'});}
+  var cy=P(D.geo.city[0],D.geo.city[1]);el('circle',{cx:cy[0],cy:cy[1],r:6,fill:'#EAF4F5'},L.lab);
+  lead(L.lab,[cy[0]+5,cy[1]-4],P(16.535,107.71),'TP. Huế','#EAF4F5');
+  L.rn=el('g',{},s);L.rn.style.opacity=0;
+  [['Sông Tả Trạch','Tả Trạch','#3FB6C0'],['Sông Hữu Trạch','Hữu Trạch','#3FB6C0']]
+    .forEach(function(r){var q=riverLabel(r[0],P);if(q)txd(L.rn,q[0]+10,q[1]-8,r[1],{fill:r[2],'font-size':15,'font-weight':700});});
+  var qh=P(16.585,107.665);txd(L.rn,qh[0]+8,qh[1],'sông Hương →  ra phá',{fill:'#56DCE4','font-size':15,'font-weight':700});
+  var qb=P(16.62,107.36);txd(L.rn,qb[0],qb[1],'sông Bồ',{fill:'#7E9AA3','font-size':15,'font-weight':700,'text-anchor':'end'});
+  L.cells=rainCells(s,P);L.grid=L.cells;L.cells.forEach(function(e){e.style.opacity=0;e.setAttribute('fill-opacity',.55);});
+  // sông và nhãn phải nằm TRÊN lưới ô mưa, không bị che
+  [L.bo,L.branch,L.main,L.lab,L.rn].forEach(function(g){s.appendChild(g);});
+  L.bands=el('g',{},s);L.bands.style.opacity=0;
+  var names={thuong:'Thượng lưu',trung:'Trung lưu',ha:'Hạ lưu'},pos={thuong:16.22,trung:16.45,ha:16.70};
+  Object.keys(names).forEach(function(k){var q=P(pos[k],107.81);txd(L.bands,q[0]+8,q[1]+6,names[k],{fill:'#EAF4F5','font-size':17,'font-weight':700});});
+  L.pt=el('g',{},s);L.pt.style.opacity=0;
+  var st=P(D.probe.station[0],D.probe.station[1]),ch=P(D.probe.chosen[0],D.probe.chosen[1]);
+  var ring=el('circle',{cx:ch[0],cy:ch[1],r:16,fill:'none',stroke:'#8FF0F5','stroke-width':3},L.pt);
+  if(!REDUCED)el('animate',{attributeName:'r',values:'12;22;12',dur:'1.8s',repeatCount:'indefinite'},ring);
+  el('circle',{cx:st[0],cy:st[1],r:6,fill:'#E8BE55',stroke:'#07141A','stroke-width':2},L.pt);
+  lead(L.pt,[ch[0]-16,ch[1]],P(16.45,107.36),'ô cần dự báo','#8FF0F5','end');
+  lead(L.pt,[st[0]+4,st[1]+5],P(16.375,107.70),'trạm Kim Long','#E8BE55');
+  return L;},
+ step:function(L,k,anim){
+  if(k===0){fade(L.sea,1,anim,600);fade(L.lab,1,anim,600);}
+  if(k===1){['main','branch'].forEach(function(c){fade(L[c],1,anim,700);});fade(L.bo,.75,anim,700);fade(L.rn,1,anim,900);
+    if(anim)Array.prototype.forEach.call(L.main.childNodes,function(p){drawLine(p,anim,1800);});}
+  if(k===2){L.cells.forEach(function(e,i){e.style.transition=ms(anim,1)?'opacity .5s ease '+(i*12)+'ms':'none';e.style.opacity=1;});}
+  if(k===3){var col={thuong:'#2E6E80',trung:'#3C8C9C',ha:'#24525F'};
+    L.cells.forEach(function(e,i){e.style.transition=ms(anim,1)?'fill .6s ease':'none';e.setAttribute('fill',col[D.rain.cells[i][2]]||'#24404A');});
+    fade(L.bands,1,anim,700);}
+  if(k===4){fade(L.pt,1,anim,700);L.cells.forEach(function(e){e.setAttribute('fill-opacity',.3);});}
+ }};
 
-/* ================= Cảnh 3: mưa → sông ================= */
-function scene2(){
-  var m=document.getElementById('map1'); clear(m); steps('s2',0);
-  var cs=310/8*0.82, cells=[];
-  D.rain.cells.forEach(function(c){ var p=proj(c[0],c[1],10,10,310);
-    cells.push(el('rect',{x:p[0]-cs/2,y:p[1]-cs/2,width:cs,height:cs,rx:2,fill:'#0C222B',stroke:'#16313C'},m)); });
-  var c=document.getElementById('ch1'); clear(c);
-  var W=590,H=420,pl=52,pr=118,pt=22,ph=110,qt=pt+ph+44,qh=H-qt-30, n=D.rain.q.length, bw=(W-pl-pr)/n;
-  var qmax=Math.max.apply(null,D.rain.q.concat([D.fc.thr[2]]))*1.1, rmax=Math.max.apply(null,D.rain.rb)*1.12;
-  function X(i){return pl+bw*(i+.5);} function YQ(v){return qt+qh-(v/qmax)*qh;}
-  txt(c,pl,pt-6,'mưa trung bình lưu vực, mm/ngày',{'font-size':12});
-  txt(c,pl,qt-8,'lưu lượng sông, m³/s',{'font-size':12});
-  el('line',{x1:pl,y1:pt+ph,x2:W-pr,y2:pt+ph,stroke:'#16313C'},c);
-  el('line',{x1:pl,y1:qt+qh,x2:W-pr,y2:qt+qh,stroke:'#16313C'},c);
-  D.fc.thr.forEach(function(v,i){ var y=YQ(v);
-    el('line',{x1:pl,y1:y,x2:W-pr,y2:y,stroke:THR_COLS[i],'stroke-width':1,'stroke-dasharray':'5 4'},c);
-    txt(c,W-pr+8,y+4,THR_NAMES[i],{fill:'#EAF4F5','font-size':12}); });
-  var bars=D.rain.rb.map(function(v,i){ var h=v/rmax*ph;
-    return el('rect',{x:X(i)-bw*.38,y:pt+ph-h,width:bw*.76,height:h,rx:2,fill:'#7FA7D9',opacity:.16},c); });
+/* ===================== Cảnh 3: mưa → sông ===================== */
+var sc2={n:6,setup:function(){
+  var m=document.getElementById('map2');clear(m);var H=360,P=mkP((370-H*KX)/2,10,H);
+  var L=baseMap(m,P);L.minor.style.opacity=.6;
+  var cells=rainCells(m,P);cells.forEach(function(e){e.setAttribute('fill-opacity',.85);});
+  [L.branch,L.main].forEach(function(g){m.appendChild(g);});
+  var cy=P(D.geo.city[0],D.geo.city[1]);el('circle',{cx:cy[0],cy:cy[1],r:4,fill:'#EAF4F5'},m);
+  txd(m,cy[0]+8,cy[1]+14,'Huế',{fill:'#EAF4F5','font-size':13,'font-weight':700});
+  var c=document.getElementById('ch2');clear(c);
+  var W=548,Hc=440,pl=50,pr=118,pt=24,ph=110,qt=pt+ph+46,qh=Hc-qt-30,n=D.rain.q.length,bw=(W-pl-pr)/n;
+  var qmax=Math.max.apply(null,D.rain.q.concat([D.fc.thr[2]]))*1.12,rmax=Math.max.apply(null,D.rain.rb)*1.12;
+  function X(i){return pl+bw*(i+.5);}function YQ(v){return qt+qh-(v/qmax)*qh;}
+  tx(c,pl,pt-8,'mưa trung bình lưu vực (mm/ngày)',{'font-size':12});tx(c,pl,qt-10,'lưu lượng sông (m³/s)',{'font-size':12});
+  el('line',{x1:pl,y1:pt+ph,x2:W-pr,y2:pt+ph,stroke:'#16313C'},c);el('line',{x1:pl,y1:qt+qh,x2:W-pr,y2:qt+qh,stroke:'#16313C'},c);
+  D.fc.thr.forEach(function(v,i){var y=YQ(v);el('line',{x1:pl,y1:y,x2:W-pr,y2:y,stroke:THR_C[i],'stroke-width':1,'stroke-dasharray':'5 4'},c);
+    tx(c,W-pr+8,y+4,THR_N[i],{fill:'#EAF4F5','font-size':11});});
+  var bars=D.rain.rb.map(function(v,i){var h=v/rmax*ph;return el('rect',{x:X(i)-bw*.38,y:pt+ph-h,width:bw*.76,height:h,rx:2,fill:'#7FA7D9',opacity:.12},c);});
+  [0,Math.floor(n/2),n-1].forEach(function(i){tx(c,X(i),qt+qh+20,D.rain.days[i],{'text-anchor':'middle','font-size':12});});
   var line=el('path',{d:'',fill:'none',stroke:'#2FC2CC','stroke-width':3,'stroke-linejoin':'round'},c);
   var dot=el('circle',{cx:X(0),cy:YQ(D.rain.q[0]),r:6,fill:'#2FC2CC',stroke:'#07141A','stroke-width':2},c);
-  [0,Math.floor(n/2),n-1].forEach(function(i){ txt(c,X(i),qt+qh+20,D.rain.days[i],{'text-anchor':'middle','font-size':12}); });
-  var marks=el('g',{},c), dEl=document.getElementById('d1'), rl=document.getElementById('r1');
-  var at={}; ['07/10','12/10','17/10'].forEach(function(d,k){ var i=D.rain.days.indexOf(d); if(i>=0) at[i]=k+1; });
-  function frame(i){
-    D.rain.rain[i].forEach(function(v,k){ cells[k].setAttribute('fill',rainCol(v)); });
-    bars.forEach(function(b,k){ b.setAttribute('opacity',k<=i?1:.16); });
-    var d=''; for(var k=0;k<=i;k++) d+=(k?'L':'M')+X(k).toFixed(1)+','+YQ(D.rain.q[k]).toFixed(1);
-    line.setAttribute('d',d); dot.setAttribute('cx',X(i)); dot.setAttribute('cy',YQ(D.rain.q[i]));
-    dEl.textContent=D.rain.days[i]+'/2020';
-    rl.textContent='mưa lưu vực '+fi(D.rain.rb[i])+' mm  ·  sông '+fi(D.rain.q[i])+' m³/s';
-    if(at[i]!==undefined) steps('s2',at[i]);
-    D.rain.pairs.forEach(function(p){ if(p[1]===i){ var y=YQ(D.rain.q[i])-20;
-      el('line',{x1:X(p[0]),y1:y,x2:X(i)-6,y2:y,stroke:'#EAF4F5','stroke-width':2},marks);
-      el('path',{d:'M'+(X(i)-6)+','+(y-5)+' L'+X(i)+','+y+' L'+(X(i)-6)+','+(y+5)+'Z',fill:'#EAF4F5'},marks);
-      txt(marks,(X(p[0])+X(i))/2,y-8,'1 ngày',{fill:'#EAF4F5','font-size':13,'text-anchor':'middle'}); } });
-  }
-  if(REDUCED){ for(var q=0;q<n;q++) frame(q); return; }
-  var cur=0; frame(0); var t0=null, STEP=560;
-  function tick(ts){ if(t0===null) t0=ts; var k=Math.min(n-1,Math.floor((ts-t0)/STEP));
-    while(cur<k){ cur++; frame(cur); } raf=(cur<n-1)?requestAnimationFrame(tick):null; }
-  later(function(){ raf=requestAnimationFrame(tick); }, 700);
-}
+  var marks=el('g',{},c);
+  var ix=function(d){return Math.max(0,D.rain.days.indexOf(d));};
+  return {cells:cells,bars:bars,line:line,dot:dot,marks:marks,X:X,YQ:YQ,n:n,drawn:{},
+    seg:[[0,0],[0,ix('06/10')],[ix('07/10'),ix('11/10')],[ix('12/10'),ix('12/10')],[ix('13/10'),ix('18/10')],[ix('19/10'),n-1]]};},
+ frame:function(c,i){
+  D.rain.rain[i].forEach(function(v,k){c.cells[k].setAttribute('fill',rainCol(v));});
+  c.bars.forEach(function(b,k){b.setAttribute('opacity',k<=i?1:.12);});
+  var d='';for(var k=0;k<=i;k++)d+=(k?'L':'M')+c.X(k).toFixed(1)+','+c.YQ(D.rain.q[k]).toFixed(1);
+  c.line.setAttribute('d',d);c.dot.setAttribute('cx',c.X(i));c.dot.setAttribute('cy',c.YQ(D.rain.q[i]));
+  document.getElementById('d2').textContent=D.rain.days[i]+'/2020';
+  document.getElementById('r2').textContent='mưa lưu vực '+fi(D.rain.rb[i])+' mm  ·  sông '+fi(D.rain.q[i])+' m³/s';
+  D.rain.pairs.forEach(function(p){if(p[1]<=i&&!c.drawn[p[1]]){c.drawn[p[1]]=1;var y=c.YQ(D.rain.q[p[1]])-22,x0=c.X(p[0]),x1=c.X(p[1]);
+    el('line',{x1:x0,y1:y,x2:x1-6,y2:y,stroke:'#EAF4F5','stroke-width':2},c.marks);
+    el('path',{d:'M'+(x1-7)+','+(y-5)+' L'+x1+','+y+' L'+(x1-7)+','+(y+5)+'Z',fill:'#EAF4F5'},c.marks);
+    tx(c.marks,(x0+x1)/2,y-9,'1 ngày',{fill:'#EAF4F5','font-size':13,'text-anchor':'middle','font-weight':600});}});},
+ step:function(c,k,anim){var a=c.seg[k][0],b=c.seg[k][1],self=this;
+  if(!ms(anim,1)||a===b){this.frame(c,b);return;}
+  for(var i=a;i<=b;i++)(function(i,j){after(j*900,function(){self.frame(c,i);});})(i,i-a);}};
 
-/* ================= Cảnh 4: 361 → 1 ================= */
-function scene3(){
-  var s=document.getElementById('map2'); clear(s); steps('s3',0);
-  var B={latMin:16.05,latMax:16.95,lonMin:107.05,lonMax:107.95}, size=580, x0=10,y0=10, cs=size/19*.78;
-  function P(lat,lon){ return [x0+(lon-B.lonMin)/(B.lonMax-B.lonMin)*(size-cs)+cs/2, y0+(B.latMax-lat)/(B.latMax-B.latMin)*(size-cs)+cs/2]; }
-  var nodes=D.probe.cells.map(function(c){ var p=P(c[0],c[1]);
-    return {c:c,r:el('rect',{x:p[0]-cs/2,y:p[1]-cs/2,width:cs,height:cs,rx:2,fill:'#2A4650',
-      style:'transition:fill .7s ease, opacity .7s ease'},s)}; });
-  var cnt=document.getElementById('cnt2'), lab=document.getElementById('lab2');
-  cnt.textContent='361'; lab.textContent='ô lưới được dò';
-  function count(a,b,ms){ var t0=performance.now(); (function f(t){ var k=Math.min(1,(t-t0)/ms);
-    cnt.textContent=Math.round(a+(b-a)*k); if(k<1) requestAnimationFrame(f); })(t0);
-    // rAF có thể bị trình duyệt bóp (tab nền) — luôn chốt giá trị cuối bằng timer
-    timers.push(setTimeout(function(){ cnt.textContent=b; }, REDUCED?0:ms+60)); }
-  later(function(){ steps('s3',1); nodes.forEach(function(n){ if(n.c[2]==null) n.r.style.opacity='.12'; else n.r.setAttribute('fill',flowCol(n.c[2])); });
-    count(361,234,700); lab.textContent='ô có nước chảy'; }, 1800);
-  later(function(){ steps('s3',2); nodes.forEach(function(n){ if(n.c[2]!=null && !n.c[3]) n.r.style.opacity='.3'; });
-    count(234,83,700); lab.textContent='ô tải đủ chuỗi 1997–2026'; }, 4200);
-  var big=P(D.probe.largest[0],D.probe.largest[1]), st=P(D.probe.station[0],D.probe.station[1]), ch=P(D.probe.chosen[0],D.probe.chosen[1]);
-  later(function(){ steps('s3',3);
-    el('circle',{cx:big[0],cy:big[1],r:16,fill:'none',stroke:'#E8665C','stroke-width':2.5},s);
-    txt(s,big[0]+22,big[1]-12,'lớn nhất: gộp 2 sông',{fill:'#E8665C','font-size':13});
-    el('circle',{cx:st[0],cy:st[1],r:6,fill:'#E8BE55'},s);
-    txt(s,st[0]+12,st[1]+22,'tại trạm: gần như khô',{fill:'#E8BE55','font-size':13}); }, 6600);
-  later(function(){ steps('s3',4);
-    nodes.forEach(function(n){ var same=Math.abs(n.c[0]-D.probe.chosen[0])<1e-6&&Math.abs(n.c[1]-D.probe.chosen[1])<1e-6;
-      if(!same) n.r.style.opacity=Math.min(parseFloat(n.r.style.opacity||1),.18); });
-    var ring=el('circle',{cx:ch[0],cy:ch[1],r:28,fill:'none',stroke:'#7FE9EF','stroke-width':3},s);
-    if(!REDUCED) el('animate',{attributeName:'r',values:'18;34;18',dur:'1.8s',repeatCount:'indefinite'},ring);
-    txt(s,ch[0]-38,ch[1]+5,'ô được chọn',{fill:'#7FE9EF','font-size':14,'text-anchor':'end'});
-    count(83,1,600); lab.textContent='ô được chọn làm điểm dự báo'; }, 9200);
-}
+/* ===================== Cảnh 4: 361 → 1 ===================== */
+var sc3={n:5,setup:function(){
+  var s=document.getElementById('map3');clear(s);var H=630,P=mkP((620-H*KX)/2,8,H);
+  var L=baseMap(s,P);['main','branch','bo','minor'].forEach(function(k){L[k].style.opacity=.55;});
+  var w=0.05*P.s*KX*0.8,h=0.05*P.s*0.8;
+  var nodes=D.probe.cells.map(function(c){var p=P(c[0],c[1]);
+    return{c:c,r:el('rect',{x:p[0]-w/2,y:p[1]-h/2,width:w,height:h,rx:1.5,fill:'#3A5A64','fill-opacity':.75},s)};});
+  var marks=el('g',{},s);marks.style.opacity=0;
+  var big=P(D.probe.largest[0],D.probe.largest[1]),st=P(D.probe.station[0],D.probe.station[1]);
+  el('circle',{cx:big[0],cy:big[1],r:15,fill:'none',stroke:'#E8665C','stroke-width':3},marks);
+  txd(marks,big[0]+20,big[1]-10,'nhiều nước nhất — gộp 2 sông',{fill:'#E8665C','font-size':14,'font-weight':700});
+  el('circle',{cx:st[0],cy:st[1],r:7,fill:'#E8BE55',stroke:'#07141A','stroke-width':2},marks);
+  txd(marks,st[0]+14,st[1]+24,'tại trạm — gần như khô',{fill:'#E8BE55','font-size':14,'font-weight':700});
+  var pick=el('g',{},s);pick.style.opacity=0;var ch=P(D.probe.chosen[0],D.probe.chosen[1]);
+  var ring=el('circle',{cx:ch[0],cy:ch[1],r:22,fill:'none',stroke:'#8FF0F5','stroke-width':3.5},pick);
+  if(!REDUCED)el('animate',{attributeName:'r',values:'16;30;16',dur:'1.8s',repeatCount:'indefinite'},ring);
+  txd(pick,ch[0]-32,ch[1]+6,'ô được chọn',{fill:'#8FF0F5','font-size':16,'font-weight':700,'text-anchor':'end'});
+  return {nodes:nodes,marks:marks,pick:pick,cnt:document.getElementById('cnt3'),lab:document.getElementById('lab3')};},
+ step:function(c,k,anim){var T=ms(anim,1)?'fill .8s ease, opacity .8s ease':'none';
+  if(k===0){c.cnt.textContent='361';c.lab.textContent='ô lưới được dò';}
+  if(k===1){c.nodes.forEach(function(n){n.r.style.transition=T;if(n.c[2]==null)n.r.style.opacity=.06;else{n.r.setAttribute('fill',flowCol(n.c[2]));n.r.setAttribute('fill-opacity',.95);}});
+    countTo(c.cnt,361,234,anim,900);c.lab.textContent='ô có nước chảy';}
+  if(k===2){c.nodes.forEach(function(n){n.r.style.transition=T;if(n.c[2]!=null&&!n.c[3])n.r.style.opacity=.2;});
+    countTo(c.cnt,234,83,anim,900);c.lab.textContent='ô tải đủ chuỗi 1997–2026';}
+  if(k===3){fade(c.marks,1,anim,700);c.lab.textContent='hai cách chọn sai';}
+  if(k===4){c.nodes.forEach(function(n){var same=Math.abs(n.c[0]-D.probe.chosen[0])<1e-6&&Math.abs(n.c[1]-D.probe.chosen[1])<1e-6;
+      n.r.style.transition=T;if(!same)n.r.style.opacity=Math.min(parseFloat(n.r.style.opacity||1),.14);});
+    fade(c.marks,.5,anim,700);fade(c.pick,1,anim,700);countTo(c.cnt,83,1,anim,700);c.lab.textContent='ô được chọn làm điểm dự báo';}
+ }};
 
-/* ================= Cảnh 5: file → bảng ================= */
-function scene4(){
-  var s=document.getElementById('ch3'); clear(s); steps('s4',0);
-  var kinds=D.files.kinds, per=8, cols=['#7FA7D9','#3E7E8A','#2FC2CC','#9CC3EE','#55707A'];
+/* ===================== Cảnh 5: file → bảng ===================== */
+var sc4={n:4,setup:function(){
+  var s=document.getElementById('ch4');clear(s);
   var VN={'hourly rain':'mưa theo giờ','flow probes':'dò lưới lưu lượng','full flow':'lưu lượng đầy đủ','daily rain':'mưa theo ngày','forecast rain':'mưa dự báo'};
-  var y=24, items=[];
-  kinds.forEach(function(k,ki){
-    var t=txt(s,0,y+12,(VN[k.k]||k.k)+' · '+fi(k.n)+' file',{fill:'#EAF4F5','font-size':14}); t.setAttribute('font-family','Be Vietnam Pro, sans-serif');
+  var cols=['#7FA7D9','#3E7E8A','#2FC2CC','#9CC3EE','#55707A'],per=8,y=24,items=[],labels=el('g',{},s);
+  D.files.kinds.forEach(function(k,ki){txd(labels,0,y+12,(VN[k.k]||k.k)+' · '+fi(k.n)+' file',{fill:'#EAF4F5','font-size':15});
     var m=Math.max(1,Math.round(k.n/per));
-    for(var i=0;i<m;i++){ var x=210+(i%28)*11, yy=y+Math.floor(i/28)*11;
-      items.push({r:el('rect',{x:x,y:yy,width:8,height:8,rx:1,fill:cols[ki],style:'transition:transform 1.1s cubic-bezier(.6,.05,.3,1)'},s),x:x,y:yy}); }
-    y+=Math.max(30,Math.ceil(m/28)*11+20);
-  });
-  txt(s,210,y+6,'mỗi ô vuông ≈ '+per+' file',{'font-size':13});
-  var TX=640,TY=40,TW=300,TH=330;
-  var tbl=el('g',{style:'opacity:.25;transition:opacity .8s'},s);
+    for(var i=0;i<m;i++){var x=210+(i%26)*11,yy=y+Math.floor(i/26)*11;
+      items.push({r:el('rect',{x:x,y:yy,width:8,height:8,rx:1,fill:cols[ki]},s),x:x,y:yy});}
+    y+=Math.max(32,Math.ceil(m/26)*11+22);});
+  tx(labels,210,y+6,'mỗi ô vuông ≈ '+per+' file',{'font-size':13});
+  var TX=600,TY=50,TW=320,TH=340,tbl=el('g',{},s);tbl.style.opacity=.2;
   el('rect',{x:TX,y:TY,width:TW,height:TH,fill:'#0C222B',stroke:'#2FC2CC','stroke-width':2},tbl);
-  for(var r=1;r<9;r++) el('line',{x1:TX,y1:TY+r*TH/9,x2:TX+TW,y2:TY+r*TH/9,stroke:'#16313C'},tbl);
-  for(var q=1;q<6;q++) el('line',{x1:TX+q*TW/6,y1:TY,x2:TX+q*TW/6,y2:TY+TH,stroke:'#16313C'},tbl);
-  txt(s,TX+TW/2,TY-14,'daily_panel.parquet',{fill:'#2FC2CC','font-size':14,'text-anchor':'middle'});
-  var big=txt(s,TX+TW/2,TY+TH+62,'',{fill:'#EAF4F5','font-size':38,'text-anchor':'middle','font-weight':600});
-  txt(s,TX+TW/2,TY+TH+94,'ngày × cột · mỗi dòng một ngày',{'text-anchor':'middle','font-size':14});
-  later(function(){ steps('s4',1); items.forEach(function(it,i){ var dx=TX+18+Math.random()*(TW-36)-it.x, dy=TY+18+Math.random()*(TH-36)-it.y;
-    setTimeout(function(){ it.r.style.transform='translate('+dx+'px,'+dy+'px)'; }, REDUCED?0:i*5); }); tbl.style.opacity='1'; }, 900);
-  later(function(){ steps('s4',2); }, 2600);
-  later(function(){ steps('s4',3); var t0=performance.now(), ms=900; (function f(t){ var k=Math.min(1,(t-t0)/ms);
-    big.textContent=fi(D.files.rows*k)+' × '+D.files.cols; if(k<1) requestAnimationFrame(f); })(t0); }, 4200);
-  if(REDUCED) big.textContent=fi(D.files.rows)+' × '+D.files.cols;
-}
+  for(var r=1;r<9;r++)el('line',{x1:TX,y1:TY+r*TH/9,x2:TX+TW,y2:TY+r*TH/9,stroke:'#16313C'},tbl);
+  for(var q=1;q<6;q++)el('line',{x1:TX+q*TW/6,y1:TY,x2:TX+q*TW/6,y2:TY+TH,stroke:'#16313C'},tbl);
+  tx(s,TX+TW/2,TY-16,'daily_panel.parquet',{fill:'#2FC2CC','font-size':14,'text-anchor':'middle'});
+  var big=tx(s,TX+TW/2,TY+TH+66,'',{fill:'#EAF4F5','font-size':40,'text-anchor':'middle','font-weight':600});
+  var cap=txd(s,TX+TW/2,TY+TH+100,'ngày × cột · mỗi dòng là một ngày',{'text-anchor':'middle','font-size':15});cap.style.opacity=0;
+  var defs=el('g',{},s);defs.style.opacity=0;
+  [['13 năm rỗng','1984–1996 chỉ có dòng, không có số'],['Lưới mưa lệch','vùng giữa chỉ có 9/16 ô'],
+   ['"Dự báo" = thực đo','chênh lệch đúng 0,0 mm'],['Toạ độ sai ô','kế hoạch gốc: 5,7 m³/s']].forEach(function(d,i){
+    var yy=40+i*120;el('rect',{x:0,y:yy,width:520,height:96,fill:'#1A1416',stroke:'#E8665C','stroke-width':1.5},defs);
+    txd(defs,22,yy+40,d[0],{fill:'#E8665C','font-size':22,'font-weight':700});txd(defs,22,yy+72,d[1],{fill:'#EAF4F5','font-size':17});});
+  items.forEach(function(it){it.dx=TX+20+Math.random()*(TW-40)-it.x;it.dy=TY+20+Math.random()*(TH-40)-it.y;});
+  return {items:items,labels:labels,tbl:tbl,big:big,cap:cap,defs:defs};},
+ step:function(c,k,anim){
+  if(k===1){c.items.forEach(function(it,i){it.r.style.transition=ms(anim,1)?'transform 1.4s cubic-bezier(.6,.05,.3,1) '+(i*4)+'ms':'none';
+      it.r.style.transform='translate('+it.dx+'px,'+it.dy+'px)';});fade(c.tbl,1,anim,800);fade(c.labels,0,anim,600);}
+  if(k===2){fade(c.defs,1,anim,800);}
+  if(k===3){countTo(c.big,0,D.files.rows,anim,1200);if(!ms(anim,1))c.big.textContent=fi(D.files.rows)+' × '+D.files.cols;
+    else after(1250,function(){c.big.textContent=fi(D.files.rows)+' × '+D.files.cols;});fade(c.cap,1,anim,600);}
+ }};
 
-/* ================= Cảnh 6: dự báo ngoài mẫu ================= */
-function scene5(){
-  var s=document.getElementById('ch4'); clear(s); steps('s5',0);
-  var W=980,H=600,pl=62,pr=118,pt=56,pb=46,n=D.fc.obs.length;
+/* ===================== Cảnh 6: dự báo ngoài mẫu ===================== */
+var sc5={n:5,setup:function(){
+  var s=document.getElementById('ch5');clear(s);
+  var W=942,H=640,pl=64,pr=128,pt=70,pb=50,n=D.fc.obs.length;
   var vmax=Math.max.apply(null,D.fc.obs.concat(D.fc.pred,[D.fc.thr[2]]))*1.1;
-  function X(i){return pl+(W-pl-pr)*i/(n-1);} function Y(v){return pt+(H-pt-pb)*(1-v/vmax);}
-  [0,1000,2000,3000].forEach(function(v){ if(v<vmax){ el('line',{x1:pl,y1:Y(v),x2:W-pr,y2:Y(v),stroke:'#16313C'},s);
-    txt(s,pl-10,Y(v)+4,fi(v),{'text-anchor':'end','font-size':12}); }});
-  txt(s,pl,pt-30,'lưu lượng, m³/s',{'font-size':12});
-  D.fc.thr.forEach(function(v,i){ el('line',{x1:pl,y1:Y(v),x2:W-pr,y2:Y(v),stroke:THR_COLS[i],'stroke-dasharray':'5 4'},s);
-    txt(s,W-pr+10,Y(v)+4,THR_NAMES[i],{fill:'#EAF4F5','font-size':13}); });
-  [0,Math.floor(n/3),Math.floor(2*n/3),n-1].forEach(function(i){ txt(s,X(i),H-pb+22,D.fc.dates[i],{'text-anchor':'middle','font-size':12}); });
-  function path(a){ return a.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);}).join(''); }
-  var obs=el('path',{d:path(D.fc.obs),fill:'none',stroke:'#EAF4F5','stroke-width':2.5,opacity:.9},s);
-  var prd=el('path',{d:path(D.fc.pred),fill:'none',stroke:'#2FC2CC','stroke-width':3},s);
-  [obs,prd].forEach(function(o){ var L=o.getTotalLength(); o.style.strokeDasharray=L; o.style.strokeDashoffset=REDUCED?0:L;
-    o.style.transition='stroke-dashoffset 3s ease-in-out'; });
+  function X(i){return pl+(W-pl-pr)*i/(n-1);}function Y(v){return pt+(H-pt-pb)*(1-v/vmax);}
+  [0,1000,2000,3000].forEach(function(v){if(v<vmax){el('line',{x1:pl,y1:Y(v),x2:W-pr,y2:Y(v),stroke:'#16313C'},s);tx(s,pl-10,Y(v)+4,fi(v),{'text-anchor':'end','font-size':12});}});
+  tx(s,pl,pt-40,'lưu lượng sông (m³/s)',{'font-size':12});
+  D.fc.thr.forEach(function(v,i){el('line',{x1:pl,y1:Y(v),x2:W-pr,y2:Y(v),stroke:THR_C[i],'stroke-dasharray':'5 4'},s);tx(s,W-pr+10,Y(v)+4,THR_N[i],{fill:'#EAF4F5','font-size':12});});
+  [0,Math.floor(n/3),Math.floor(2*n/3),n-1].forEach(function(i){tx(s,X(i),H-pb+22,D.fc.dates[i],{'text-anchor':'middle','font-size':12});});
+  function pth(a){return a.map(function(v,i){return(i?'L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);}).join('');}
+  var obs=el('path',{d:pth(D.fc.obs),fill:'none',stroke:'#EAF4F5','stroke-width':2.6},s);
+  var prd=el('path',{d:pth(D.fc.pred),fill:'none',stroke:'#2FC2CC','stroke-width':3.2},s);
+  obs.style.opacity=0;prd.style.opacity=0;
   var lg=el('g',{},s);
-  el('line',{x1:pl+260,y1:pt-34,x2:pl+290,y2:pt-34,stroke:'#EAF4F5','stroke-width':2.5},lg); txt(lg,pl+298,pt-30,'thực tế',{fill:'#EAF4F5','font-size':14});
-  el('line',{x1:pl+390,y1:pt-34,x2:pl+420,y2:pt-34,stroke:'#2FC2CC','stroke-width':3},lg); txt(lg,pl+428,pt-30,'dự báo phát từ hôm trước',{fill:'#EAF4F5','font-size':14});
-  later(function(){ obs.style.strokeDashoffset=0; }, 300);
-  later(function(){ steps('s5',1); prd.style.strokeDashoffset=0; }, 1200);
-  later(function(){ steps('s5',2); }, 3000);
-  var im=D.fc.obs.indexOf(Math.max.apply(null,D.fc.obs));
-  later(function(){ steps('s5',3);
-    el('circle',{cx:X(im),cy:Y(D.fc.obs[im]),r:7,fill:'#EAF4F5',stroke:'#07141A','stroke-width':2},s);
-    el('circle',{cx:X(im),cy:Y(D.fc.pred[im]),r:6,fill:'#2FC2CC',stroke:'#07141A','stroke-width':2},s);
-    el('line',{x1:X(im),y1:Y(D.fc.obs[im])+8,x2:X(im),y2:Y(D.fc.pred[im])-8,stroke:'#E8665C','stroke-width':2,'stroke-dasharray':'3 3'},s);
-    txt(s,X(im)+14,Y(D.fc.obs[im])-4,'thực tế '+fi(D.fc.obs[im])+' m³/s · '+D.fc.dates[im],{fill:'#EAF4F5','font-size':13});
-    txt(s,X(im)+14,Y(D.fc.pred[im])+16,'dự báo '+fi(D.fc.pred[im])+' — thấp hơn',{fill:'#E8665C','font-size':13});
-    document.getElementById('m5').innerHTML='Trên toàn bộ giai đoạn kiểm tra, mô hình đạt NSE <b>'+fd(D.fc.nse,2)+
-      '</b>, so với <b>'+fd(D.fc.nse_p,2)+'</b> nếu chỉ đơn giản lặp lại giá trị hôm nay. NSE = 1 là dự báo hoàn hảo.'; }, 4400);
-}
+  el('line',{x1:pl+230,y1:pt-44,x2:pl+262,y2:pt-44,stroke:'#EAF4F5','stroke-width':2.6},lg);txd(lg,pl+270,pt-39,'thực tế',{fill:'#EAF4F5','font-size':15});
+  var lg2=el('g',{},s);lg2.style.opacity=0;
+  el('line',{x1:pl+370,y1:pt-44,x2:pl+402,y2:pt-44,stroke:'#2FC2CC','stroke-width':3.2},lg2);txd(lg2,pl+410,pt-39,'dự báo phát từ hôm trước',{fill:'#EAF4F5','font-size':15});
+  var tag=el('g',{},s);tag.style.opacity=0;
+  el('rect',{x:pl+10,y:pt+6,width:420,height:58,fill:'#0C222B',stroke:'#E8BE55','stroke-width':1.5},tag);
+  txd(tag,pl+26,pt+31,'Mô hình chỉ học dữ liệu đến 30/06/2022',{fill:'#E8BE55','font-size':16,'font-weight':700});
+  txd(tag,pl+26,pt+53,'→ tháng 10/2025 là dữ liệu chưa từng thấy',{fill:'#EAF4F5','font-size':15});
+  var im=D.fc.obs.indexOf(Math.max.apply(null,D.fc.obs)),gap=el('g',{},s);gap.style.opacity=0;
+  el('circle',{cx:X(im),cy:Y(D.fc.obs[im]),r:7,fill:'#EAF4F5',stroke:'#07141A','stroke-width':2},gap);
+  el('circle',{cx:X(im),cy:Y(D.fc.pred[im]),r:6,fill:'#2FC2CC',stroke:'#07141A','stroke-width':2},gap);
+  el('line',{x1:X(im),y1:Y(D.fc.obs[im])+9,x2:X(im),y2:Y(D.fc.pred[im])-9,stroke:'#E8665C','stroke-width':3,'stroke-dasharray':'4 3'},gap);
+  txd(gap,X(im)+16,Y(D.fc.obs[im])-2,'thực tế '+fi(D.fc.obs[im])+' m³/s · '+D.fc.dates[im],{fill:'#EAF4F5','font-size':15,'font-weight':700});
+  txd(gap,X(im)+16,Y(D.fc.pred[im])+18,'dự báo '+fi(D.fc.pred[im])+' — thấp hơn',{fill:'#E8665C','font-size':15,'font-weight':700});
+  document.getElementById('m5').innerHTML='Trên toàn giai đoạn kiểm tra, mô hình đạt NSE <b>'+fd(D.fc.nse,2)+'</b>, so với <b>'+fd(D.fc.nse_p,2)+
+    '</b> nếu chỉ lặp lại giá trị hôm nay. NSE = 1 là dự báo hoàn hảo.';
+  return {obs:obs,prd:prd,lg2:lg2,tag:tag,gap:gap};},
+ step:function(c,k,anim){
+  if(k===0){c.obs.style.opacity=1;drawLine(c.obs,anim,2200);}
+  if(k===1){fade(c.tag,1,anim,600);}
+  if(k===2){c.prd.style.opacity=1;fade(c.lg2,1,anim,500);drawLine(c.prd,anim,2600);}
+  if(k===3){fade(c.tag,.35,anim,600);}
+  if(k===4){fade(c.gap,1,anim,700);}
+ }};
 
-var scenes=[scene0,scene1,scene2,scene3,scene4,scene5], cur=0;
-var secs=document.querySelectorAll('.scene'), dots=document.getElementById('dots');
-for(var i=0;i<secs.length;i++) dots.appendChild(document.createElement('i'));
-function show(i){ stopAll(); cur=Math.max(0,Math.min(scenes.length-1,i));
-  for(var k=0;k<secs.length;k++){ secs[k].classList.toggle('on',k===cur); dots.children[k].classList.toggle('on',k===cur); }
-  try{ history.replaceState(null,'','#s'+(cur+1)); }catch(e){}
-  scenes[cur](); }
-document.getElementById('next').onclick=function(){ show(cur+1); };
-document.getElementById('prev').onclick=function(){ show(cur-1); };
-document.getElementById('replay').onclick=function(){ show(cur); };
-addEventListener('keydown',function(e){ if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); show(cur+1); }
-  else if(e.key==='ArrowLeft'||e.key==='PageUp'){ show(cur-1); } else if(e.key==='r'||e.key==='R'){ show(cur); } });
-var mh=(location.hash||'').match(/^#s(\d)$/);
-show(mh?parseInt(mh[1],10)-1:0);
+/* ===================== điều khiển ===================== */
+var SC=[sc0,sc1,sc2,sc3,sc4,sc5],IDS=['s0','s1','s2','s3','s4','s5'],cur=0,st=0,ctx=null;
+var secs=document.querySelectorAll('.scene'),pos=document.getElementById('pos');
+function narr(i,k){var li=secs[i].querySelectorAll('.steps li');for(var j=0;j<li.length;j++){li[j].classList.toggle('on',j<k);li[j].classList.toggle('cur',j===k);}}
+function render(i,k,anim){stopAll();cur=i;st=k;
+  for(var j=0;j<secs.length;j++)secs[j].classList.toggle('on',j===i);
+  ctx=SC[i].setup();for(var q=0;q<k;q++)SC[i].step(ctx,q,false);SC[i].step(ctx,k,anim);
+  narr(i,k);pos.innerHTML='Cảnh <b>'+(i+1)+'/'+SC.length+'</b> · Bước <b>'+(k+1)+'/'+SC[i].n+'</b>';
+  try{history.replaceState(null,'','#s'+(i+1)+'-'+(k+1));}catch(e){}}
+function next(){if(st<SC[cur].n-1){stopAll();st++;SC[cur].step(ctx,st,true);narr(cur,st);
+    pos.innerHTML='Cảnh <b>'+(cur+1)+'/'+SC.length+'</b> · Bước <b>'+(st+1)+'/'+SC[cur].n+'</b>';
+    try{history.replaceState(null,'','#s'+(cur+1)+'-'+(st+1));}catch(e){}}
+  else if(cur<SC.length-1)render(cur+1,0,true);}
+function prev(){if(st>0)render(cur,st-1,false);else if(cur>0)render(cur-1,SC[cur-1].n-1,false);}
+document.getElementById('next').onclick=next;document.getElementById('prev').onclick=prev;
+document.getElementById('again').onclick=function(){render(cur,st,true);};
+addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'||e.key==='Enter'){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='Backspace'){e.preventDefault();prev();}
+  else if(e.key==='r'||e.key==='R'){render(cur,st,true);}});
+var mh=(location.hash||'').match(/^#s(\d)(?:-(\d+))?$/);
+if(mh){var si=Math.min(SC.length-1,parseInt(mh[1],10)-1),sk=mh[2]?Math.min(SC[si].n-1,parseInt(mh[2],10)-1):0;render(si,sk,false);}
+else render(0,0,true);
 })();
 </script>
