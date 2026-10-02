@@ -370,11 +370,11 @@ def story() -> list:
     # ============================================================ VII
     s += [h1("VII", "Next Steps"),
           p("A first gradient-boosting model already beats persistence at all three "
-            "horizons, and an ablation shows that beyond one day, discharge lags add "
-            "noise rather than information. Report 3 will therefore select "
-            "horizon-specific feature sets on the validation period, add quantile "
-            "regression to address the systematic under-prediction of peaks, and explain "
-            "the models with SHAP values.")]
+            "horizons. Horizon-specific feature sets were also tested, selected on the "
+            "validation period only; they did not improve on the full feature set, so the "
+            "full set is kept. Report 3 will add quantile regression to address the "
+            "systematic under-prediction of flood peaks, and explain the models with SHAP "
+            "values.")]
 
     # ============================================================ refs
     s += [p("REFERENCES", "h1")]
