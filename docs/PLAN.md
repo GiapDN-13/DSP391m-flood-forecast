@@ -49,6 +49,28 @@
 
 ---
 
+## 📍 Trạng thái thực tế — 02/10/2026 (giữa W3)
+
+Phần dữ liệu và mô hình **đi trước kế hoạch khoảng 3 tuần**. Kế hoạch W1–W3 bên
+dưới giữ nguyên làm lịch sử; từ W4 trở đi đã **lập lại** theo những gì thực sự
+còn phải làm.
+
+| Hạng mục | Kế hoạch gốc | Thực tế |
+|---|---|---|
+| Crawl + panel | W3 | ✅ W1 |
+| Report 1 | W2 | ✅ nộp đúng hạn |
+| EDA 8 mục | W4 | ✅ 22/09 |
+| Baseline + LightGBM + classifier | W5–W6 | ✅ 22/09 — thắng persistence cả 3 horizon |
+| Report 2 (PDF) | W4 | ✅ bản nháp 02/10, PR #13 |
+| Ngưỡng báo động | W3, ánh xạ H→Q | 🔄 **đổi hướng**: nhãn theo phân vị lưu lượng (`FINDINGS_REGIME.md`) |
+| Kịch bản B | W6 | 🔄 **đổi hướng**: thay bằng B′ vì mưa dự báo lưu trữ trùng ERA5 (`FINDINGS_MODEL.md` §4b) |
+| Literature review | W2 | ✅ 6/6 bài |
+
+Những thay đổi lớn về thiết kế đều có file `FINDINGS_*.md` ghi lý do — **đọc
+trước khi thi vấn đáp**.
+
+---
+
 ## W1 · S1–7 · 15/09 – 21/09 — Khởi động + crawl bắt đầu NGAY
 
 Nguyên tắc tuần này: **không có tuần "chuẩn bị"**. Crawl phải chạy từ ngày 2.
@@ -98,107 +120,86 @@ Nguyên tắc tuần này: **không có tuần "chuẩn bị"**. Crawl phải ch
 | **D** | Kiểm tra chất lượng: ngày thiếu, giá trị âm, outlier | `notebooks/02_data_quality.ipynb` |
 | **H** | Data dictionary + mục pháp lý/bản quyền (CC BY 4.0) | `docs/DATA_DICTIONARY.md` |
 
-## W4 · S21–27 · 06/10 – 12/10 — 🎯 Report 2 (EDA)
+## W4 · 06/10 – 12/10 — 🎯 Report 2 + thuyết trình
 
 | Ai | Việc | Xong khi |
 |---|---|---|
-| **D** | EDA đủ 8 mục theo `docs/EDA_CHECKLIST.md` — trọng tâm **tương quan mưa–lưu lượng theo lag 0–7 ngày** | `notebooks/03_eda.ipynb` |
-| **D** | Đối chiếu 3 đợt lũ lịch sử 1999 / 2020 / 2023 | 3 hình |
-| **G** | Bản đồ mưa lưu vực + phân tích extreme value / return period | `reports/figures/map_rain.png` |
-| **H** | Biên tập insight EDA thành văn xuôi; caption + đánh số hình/bảng | Draft |
-| **H** | **Gộp + format Report 2** (Data Collection + Cleaning + EDA) | `Report2_v1.docx` |
-| **G + D** | Review chéo — **mỗi hình phải kèm 1 insight** | Xong |
+| **G** | Đọc lại văn xuôi Report 2, merge PR #13 | PDF chốt |
+| **G** | Slide Report 2 + script EN/VI | Deck xong |
+| **Cả 3** | Luyện thuyết trình Report 2, bấm giờ | ≥ 2 lần |
 | **Cả 3** | **Nộp Report 2 ngày 09/10** | ✅ |
-| **G** | Song song: khung `src/models/` + hàm walk-forward split | Code chạy |
+| **G** | Report 3 bước 1: **bộ feature theo horizon, chọn trên valid** | Bảng so sánh valid/test |
+| **D, H** | Đọc `FINDINGS_GRID.md` + `CRAWL_EXPLAINED.md`, tự trả lời 5 câu đầu của `EXAM_QUESTION_BANK.md` | Trả lời được không cần tài liệu |
 
-## W5 · S28–33 · 13/10 – 19/10 — Baseline + mô hình chính
-
-| Ai | Việc | Xong khi |
-|---|---|---|
-| **D** | 4 baseline: persistence · seasonal naive · ARIMA · **GloFAS thô** | Bảng RMSE/MAE/NSE |
-| **G** | LightGBM hồi quy, horizon 1/2/3, **có GloFAS forecast làm feature** | Model v1 |
-| **G** | 3 classifier lồng nhau: `≥BĐ I`, `≥BĐ II`, `≥BĐ III`, `scale_pos_weight` | Model v1 |
-| **G** | Crawl mưa dự báo quá khứ (Historical Forecast API) cho tập test → phục vụ kịch bản B | Dữ liệu sẵn sàng |
-| **H** | Viết Methodology Report 3 (mô tả từng mô hình bằng lời) | Draft |
-| **H** | Cập nhật `docs/EXPLAINER.md` sau handoff | 2–3 trang |
-
-## W6 · S34–40 · 20/10 – 26/10 — Đánh giá 2 kịch bản + tuning
+## W5 · 13/10 – 19/10 — Mô hình chính cho Report 3
 
 | Ai | Việc | Xong khi |
 |---|---|---|
-| **D** | Walk-forward validation, RMSE/MAE/NSE/KGE — **cả kịch bản A và B** | Bảng §2.4 `RESEARCH_DESIGN.md` |
-| **D** | Metric sự kiện hiếm: POD / FAR / CSI / F1 / PR-AUC + đánh giá theo đợt lũ | Bảng |
-| **G** | Optuna 30 trial; chọn ngưỡng quyết định theo chi phí 10:1 + độ nhạy 5:1, 20:1 | `reports/experiments.csv` |
-| **G** | Error analysis: sai ở đâu, có cắt ngọn đỉnh lũ không | Notebook + hình |
-| **H** | Viết mục Evaluation Report 3 | Draft |
-| **Cả 3** | 🔁 **Mock exam lần 1** | Ghi điểm |
+| **G** | **Hồi quy phân vị 0,9** — xử lý `peak_bias` −0,46 (R24) | Bảng NSE + peak_bias + độ phủ phân vị |
+| **G** | Classifier mức nguy cơ dùng bộ feature theo horizon | POD/FAR/CSI cập nhật |
+| **G** | **SHAP** cho mô hình h=1 và h=2 | 2 hình summary + dependence |
+| **D, H** | Đọc `FINDINGS_EVENTS.md` + `FINDINGS_REGIME.md` | Giải thích được vì sao bỏ ánh xạ H→Q |
 
-## W7 · S41–47 · 27/10 – 02/11 — SHAP + dashboard + viết Report 3
+## W6 · 20/10 – 26/10 — Dashboard + hoàn thiện đánh giá
 
 | Ai | Việc | Xong khi |
 |---|---|---|
-| **G** | SHAP; kiểm tra feature quan trọng có hợp lý thuỷ văn không | `reports/figures/shap_*.png` |
-| **G** | Viết Model Development + Interpretation | Draft |
-| **D** | Dashboard 2 trang: bản đồ nguy cơ (tiểu lưu vực/xã) + biểu đồ dự báo 1–3 ngày | `dashboard/app.py` chạy |
-| **D** | Ablation bỏ từng nhóm feature | Bảng |
-| **D** | Conclusion & Recommendation + Limitations | Draft |
-| **H** | **Gộp + format Report 3** — 40 % điểm, quan trọng nhất | `Report3_v1.docx` |
+| **G** | Dashboard Streamlit 2 trang (FR-P1/P2): dự báo hôm nay + lịch sử | Chạy được local |
+| **G** | Optuna — **chỉ sau khi bộ feature đã chốt** | Cải thiện ghi vào `experiments.csv` |
+| **G** | Đánh giá theo sự kiện: các đợt lũ 2023–2025 trong tập test | Bảng hit/miss |
+| **D, H** | Đọc `FINDINGS_MODEL.md` | Giải thích được ablation và peak_bias |
 
-## W8 · S48–53 · 03/11 – 09/11 — 🎯 Report 3 + deploy
+## W7 · 27/10 – 02/11 — 🎯 Viết Report 3
 
 | Ai | Việc | Xong khi |
 |---|---|---|
-| **Cả 3** | Review chéo Report 3 **2 vòng** | Xong |
-| **H** | Checklist nộp, citation, kiểm tra trùng lặp | Tick đủ |
-| **Cả 3** | **Nộp Report 3 ngày 02/11** | ✅ |
-| **G** | Freeze model, tag `v1.0`; bật GitHub Actions cron + deploy Streamlit Cloud | Link công khai |
-| **G** | `docs/RUNBOOK.md` + README reproduce từ số 0 | Người lạ chạy được |
-| **D** | Quay **video demo backup** phòng mất mạng | Video xong |
-| **H** | Bắt đầu slide 30 phút + script nói từng người | Outline |
-| *(nếu dư)* | **G** | LSTM so sánh — chỉ làm nếu mọi việc trên đã xong | Bảng so sánh |
+| **G** | `reports/report3/build_report.py` theo mẫu IEEE | PDF |
+| **Cả 3** | Review chéo | Xong |
+| **Cả 3** | **Nộp Report 3 ngày 02/11** (40 %) | ✅ |
 
-## W9 · S54–60 · 10/11 – 16/11 — 🎯 Report 4 + thi
+## W8 · 03/11 – 09/11 — Thuyết trình Report 3 + luyện thi
 
 | Ai | Việc | Xong khi |
 |---|---|---|
-| **H** | Gộp R1+R2+R3 → **Report 4**, sửa theo toàn bộ feedback | `Final_v1.docx` |
-| **G** | Kiểm tra nhất quán số liệu giữa 3 report | Bảng đối chiếu |
+| **G** | Slide Report 3 + script | Deck xong |
+| **G** | Hoàn thiện `EXPLAINER.md` + `EXAM_QUESTION_BANK.md` | Đủ 30 câu |
+| **Cả 3** | 🔁 **Mock exam lần 1** — hỏi xoáy phần **không phải mình làm** | Xong |
+
+## W9 · 10/11 – 16/11 — 🎯 Report 4 + thi
+
+| Ai | Việc | Xong khi |
+|---|---|---|
+| **G** | Report 4 = R1 + R2 + R3 đã sửa theo feedback, **kèm đính chính abstract Report 1** | PDF |
+| **G** | Đối chiếu số liệu giữa 3 report | Bảng đối chiếu |
 | **Cả 3** | **Nộp Report 4 ngày 10/11** | ✅ |
-| **H** | Hoàn thiện slide + script | Xong |
-| **Cả 3** | Luyện thuyết trình **3 lần**, bấm giờ | Xong |
-| **Cả 3** | 🔁 **Mock exam lần 2** — hỏi xoáy phần KHÔNG phải mình làm | Xong |
+| **Cả 3** | 🔁 Mock exam lần 2 + luyện nói 3 lần | Xong |
 | **Cả 3** | Thi vấn đáp S58–60 | ✅ |
 
 ---
 
-## Đường găng
+## Đường găng (từ 02/10)
 
 ```
-W1  chốt ô lưới GloFAS + khởi động crawl
- └─> W3  daily_panel.parquet + ngưỡng BĐ      ← ĐIỂM CHẾT, không được trễ
-       └─> W4  EDA (Report 2)
-             └─> W5–W6  model + đánh giá
-                   └─> W8  Report 3 (40 %)
+Report 2 (09/10)
+   └─> feature theo horizon (W4) ─> phân vị 0,9 + SHAP (W5) ─> dashboard (W6)
+                                                                  └─> Report 3 (02/11, 40 %)
+                                                                        └─> Report 4 + thi
+Song song suốt W4–W9:  D, H đọc FINDINGS_*  →  mock exam  →  thi vấn đáp (20 %, chấm cá nhân)
 ```
 
-Hai việc chạy song song trên đường găng phải xong **cùng lúc ở W3**:
-- **G**: crawl → panel
-- **H**: `flood_events.csv` → nếu thiếu, G không chạy được ánh xạ ngưỡng
+Rủi ro lớn nhất còn lại **không phải kỹ thuật** mà là thi vấn đáp: mỗi người bị
+chấm riêng, nên ai cũng phải giải thích được toàn bộ dự án — kể cả phần mình
+không trực tiếp làm.
 
-## Chốt kiểm tra bắt buộc
+## Chốt kiểm tra
 
-| Khi nào | Điều kiện phải đạt | Không đạt thì làm gì |
+| Khi nào | Điều kiện | Không đạt thì |
 |---|---|---|
-| **Hết W1** | Đã chốt ô lưới + crawl discharge chạy | Dừng mọi việc khác, cả team tập trung vào crawl |
-| **Hết W3** | Có `daily_panel.parquet` + bảng ngưỡng BĐ | Cắt tiếp: mưa còn 2015–2026, lưới còn 25 điểm; ngưỡng lùi về phương án R4 (phân vị) |
-| **Hết W6** | Có bảng metric đầy đủ 2 kịch bản | Bỏ kịch bản B, chỉ báo cáo A + nêu rõ trong Limitations |
-| **Hết W8** | Report 3 đã nộp | — |
+| **09/10** | Report 2 nộp | — |
+| **19/10** | Có hồi quy phân vị + SHAP | Bỏ Optuna, dùng tham số hiện tại |
+| **26/10** | Dashboard chạy được | Cắt còn 1 trang |
+| **02/11** | Report 3 nộp | — |
 
-## Buffer
-
-Lịch 9 tuần **gần như không có buffer**. Đệm duy nhất:
-- Deadline nội bộ sớm 2–3 ngày.
-- LSTM và trang dashboard thứ 3 là phần "có thì tốt" — hy sinh trước tiên.
-- W9 không có việc kỹ thuật mới, chỉ viết và luyện nói.
-
-👉 Vì vậy **các chốt kiểm tra ở trên là bắt buộc**. Trễ mà không cắt scope là cách chắc chắn nhất để mất điểm Report 3.
+Thứ tự hy sinh khi thiếu thời gian: **Optuna → trang dashboard thứ 2 → đánh giá
+theo sự kiện**. Không bao giờ hy sinh: walk-forward đúng cách · metric sự kiện
+hiếm · SHAP · phần Limitations.
