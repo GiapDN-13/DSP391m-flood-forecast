@@ -35,7 +35,7 @@ from src import config as cfg
 from src.etl import clean
 from src.eval import metrics, walk_forward
 from src.features.build_panel import (
-    SUBBASINS,
+    aggregate_rain,
     antecedent_index,
     make_lags,
     make_rolling,
@@ -49,24 +49,20 @@ OUT = cfg.ROOT / "reports" / "scenario_b_results.csv"
 
 
 def forecast_rain_panel() -> pd.DataFrame:
-    """Dựng các cột mưa từ **mưa dự báo**, đúng cách gộp như panel chính."""
-    fc = clean.load_forecast_rain().rename(columns={"rain_fc": "rain"})
-    frames = []
-    for name, (lo, hi) in SUBBASINS.items():
-        sub = fc[(fc["lat"] >= lo) & (fc["lat"] < hi)]
-        if sub.empty:
-            continue
-        frames.append(sub.groupby("date")["rain"].mean()
-                      .rename(f"rain_{name}").to_frame())
-    out = pd.concat(frames, axis=1).reset_index()
-    out["rain_basin"] = out[[c for c in out.columns if c.startswith("rain_")]].mean(axis=1)
+    """Dựng các cột mưa từ **mưa dự báo**, đúng cách gộp như panel chính.
+
+    Dùng lại nguyên các hàm của tầng dữ liệu (DuckDB + Polars), rồi mới chuyển
+    sang bảng pandas ở cuối vì phần mô hình bên dưới vẫn làm việc với pandas.
+    """
+    fc = clean.load_forecast_rain().rename({"rain_fc": "rain"})
+    out = aggregate_rain(fc)
 
     # Lag và cửa sổ trượt phải dựng lại TỪ chuỗi dự báo, không mượn của panel A.
     for c in [c for c in out.columns if c.startswith("rain_")]:
         out = make_lags(out, c, cfg.RAIN_LAGS)
         out = make_rolling(out, c, [3, 5, 7], how="sum")
-    out["api"] = antecedent_index(out["rain_basin"])
-    return out
+    out = out.with_columns(antecedent_index("rain_basin").alias("api"))
+    return out.to_pandas()
 
 
 def main() -> int:
