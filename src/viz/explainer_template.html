@@ -93,11 +93,61 @@ svg text{font-family:var(--mono)}
         <li><b>Sông Hương</b> (xanh sáng) sinh ra từ hai nhánh <b>Tả Trạch</b> và <b>Hữu Trạch</b> trên núi, chảy qua Huế rồi đổ ra phá. Sông Bồ (xám) ở phía bắc là một sông khác.</li>
         <li>Nhóm phủ lên một <b>lưới 64 ô mưa</b>, mỗi ô khoảng 11 × 11 km. Mỗi ô là một chuỗi mưa <b>từng ngày từ 2010 đến 2026</b>.</li>
         <li>Gộp các ô thành <b>3 vùng</b>: thượng lưu (núi, mưa nhiều nhất), trung lưu, và hạ lưu (đồng bằng gần biển).</li>
-        <li>Điểm cần dự báo: <b>ô lưu lượng ngay trên trạm Kim Long</b> — nơi Nhà nước đo mực nước và phát cảnh báo lũ cho Huế.</li>
+        <li>Điểm cần dự báo: <b>ô lưu lượng đại diện cho trạm Kim Long</b> — nơi Nhà nước đo mực nước và phát cảnh báo lũ cho Huế. Ô này cách trạm khoảng 7 km — lý do ở cảnh sau.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
         <p>Lũ ở Huế sinh ra từ mưa trên núi cách thành phố 30–50 km. Đo mưa tại một điểm trong thành phố là bỏ mất
           đúng nơi sinh ra lũ — nên phải lấy mưa <b>trên toàn lưu vực</b>.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CẢNH 4 ===================== -->
+<section class="scene" id="s3">
+  <div class="head">
+    <div class="kick">Bước 1 · Thu thập · Chọn đúng điểm trên sông</div>
+    <h1>361 chỗ để tìm, <span class="t">chỉ một là sông Hương</span></h1>
+  </div>
+  <div class="body">
+    <div class="vis" style="display:flex;gap:24px;align-items:flex-start">
+      <svg id="map3" viewBox="0 0 620 650" style="width:620px;height:650px;flex:none"></svg>
+      <div style="flex:1;min-width:0;padding-top:16px">
+        <div class="big" id="cnt3">361</div>
+        <div class="lab" id="lab3">ô lưới được dò</div>
+      </div>
+    </div>
+    <div class="narr">
+      <ol class="steps">
+        <li>Mô hình GloFAS vẽ sông trên <b>lưới 5 km</b>. Nhóm chưa biết ô nào là sông Hương thật, nên <b>dò cả 361 ô</b> quanh lưu vực.</li>
+        <li>Mỗi ô tải thử 1 năm. <b>234 ô có nước chảy</b> — ô càng sáng càng nhiều nước. Chúng xếp theo đúng các dòng sông thật trên bản đồ.</li>
+        <li>Chỉ <b>83 ô</b> có dòng chảy đáng kể mới được tải đủ <b>29 năm có số liệu (1997–2026)</b>. Bỏ qua phần còn lại giúp tiết kiệm phần lớn thời gian tải.</li>
+        <li>Hai cách chọn dễ nghĩ đều <b>sai</b>: ô nhiều nước nhất (đỏ) gộp cả sông Bồ; ô ngay tại trạm (vàng) gần như khô vì sông trong mô hình lệch khoảng 7 km.</li>
+        <li><b>Ô được chọn</b>: lượng nước khớp với diện tích lưu vực thật (~2 830 km²). Toạ độ trong kế hoạch ban đầu chỉ cho <b>5,7 m³/s</b> — sai ô.</li>
+      </ol>
+      <div class="mean"><span>Ý nghĩa</span>
+        <p>Nếu dùng toạ độ ban đầu, toàn bộ 29 năm dữ liệu sẽ là của <b>một nhánh suối nhỏ</b> và mọi mô hình phía sau đều vô nghĩa.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CẢNH 5 ===================== -->
+<section class="scene" id="s4">
+  <div class="head">
+    <div class="kick">Bước 2 · Làm sạch</div>
+    <h1>Hơn một nghìn file, <span class="t">thành một bảng duy nhất</span></h1>
+  </div>
+  <div class="body">
+    <div class="vis"><svg id="ch4" viewBox="0 0 942 660" style="width:100%;height:100%"></svg></div>
+    <div class="narr">
+      <ol class="steps">
+        <li>Dữ liệu thô: <b>1 295 file</b>, chia thành 5 loại. Mỗi ô vuông nhỏ trên hình tượng trưng cho khoảng 8 file.</li>
+        <li>Làm sạch bằng <b>DuckDB + Polars</b>: đổi giờ <b>UTC sang giờ Việt Nam</b>, cộng mưa theo giờ thành theo ngày, gộp 64 ô mưa thành 3 vùng — tất cả đổ vào <b>một bảng</b>.</li>
+        <li>Kiểm từng nguồn thay vì tin tài liệu → tìm ra <b>4 lỗi</b> (bên trái). Lỗi nào cũng lọt qua bước kiểm tra thông thường.</li>
+        <li>Kết quả: <b>6 087 ngày × 71 cột</b>. Mỗi dòng là một ngày từ 2010 đến 2026, liên tục, <b>không thiếu ngày nào</b>.</li>
+      </ol>
+      <div class="mean"><span>Ý nghĩa</span>
+        <p><b>Đếm số dòng không phải đếm dữ liệu.</b> File lưu lượng có 15 584 dòng nhưng chỉ 10 835 dòng có số —
+          13 năm đầu rỗng hoàn toàn mà kiểm tra thông thường không phát hiện.</p></div>
     </div>
   </div>
 </section>
@@ -127,61 +177,11 @@ svg text{font-family:var(--mono)}
         <li><b>07–11/10:</b> mưa lớn dồn dập — ô sáng rực, có ngày tới <b>180 mm</b>. Sông dâng liên tục.</li>
         <li><b>12/10:</b> sông lên đỉnh <b>2 060 m³/s</b>, vượt mức nguy cơ 3 — đúng <b>một ngày sau</b> nhịp mưa lớn 11/10. Mực nước Kim Long: 4,17 m.</li>
         <li><b>13–18/10:</b> nước rút, rồi 17/10 mưa lại 126 mm → <b>ngày 18/10 sông dâng lại</b>. Vẫn đúng quy luật: trễ 1 ngày.</li>
-        <li>Hết mưa, sông về bình thường. Quy luật "trễ 1 ngày" đúng trên <b>cả 16 năm dữ liệu</b>, không riêng trận này.</li>
+        <li>Hết mưa, sông về bình thường. Không riêng trận này: trên <b>cả 16 năm dữ liệu</b>, mưa và sông khớp nhau nhất khi lệch <b>đúng 1 ngày</b>.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
         <p>Mưa và lưu lượng khớp nhau rõ nhất khi lệch <b>đúng 1 ngày</b> (r = 0,79), vì nước từ núi về Huế chỉ mất
           5–6 giờ. Nên dự báo trước 1 ngày làm được; trước 3 ngày khó hơn nhiều.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== CẢNH 4 ===================== -->
-<section class="scene" id="s3">
-  <div class="head">
-    <div class="kick">Bước 1 · Thu thập · Chọn đúng điểm trên sông</div>
-    <h1>361 chỗ để tìm, <span class="t">chỉ một là sông Hương</span></h1>
-  </div>
-  <div class="body">
-    <div class="vis" style="display:flex;gap:24px;align-items:flex-start">
-      <svg id="map3" viewBox="0 0 620 650" style="width:620px;height:650px;flex:none"></svg>
-      <div style="flex:1;min-width:0;padding-top:16px">
-        <div class="big" id="cnt3">361</div>
-        <div class="lab" id="lab3">ô lưới được dò</div>
-      </div>
-    </div>
-    <div class="narr">
-      <ol class="steps">
-        <li>Mô hình GloFAS vẽ sông trên <b>lưới 5 km</b>. Nhóm chưa biết ô nào là sông Hương thật, nên <b>dò cả 361 ô</b> quanh lưu vực.</li>
-        <li>Mỗi ô tải thử 1 năm. <b>234 ô có nước chảy</b> — ô càng sáng càng nhiều nước. Chúng xếp theo đúng các dòng sông thật trên bản đồ.</li>
-        <li>Chỉ <b>83 ô</b> có dòng chảy đáng kể mới được tải đủ <b>30 năm (1997–2026)</b>. Bỏ qua phần còn lại giúp tiết kiệm phần lớn thời gian tải.</li>
-        <li>Hai cách chọn dễ nghĩ đều <b>sai</b>: ô nhiều nước nhất (đỏ) gộp cả sông Bồ; ô ngay tại trạm (vàng) gần như khô vì sông trong mô hình lệch khoảng 7 km.</li>
-        <li><b>Ô được chọn</b>: lượng nước khớp với diện tích lưu vực thật (~2 830 km²). Toạ độ trong kế hoạch ban đầu chỉ cho <b>5,7 m³/s</b> — sai ô.</li>
-      </ol>
-      <div class="mean"><span>Ý nghĩa</span>
-        <p>Nếu dùng toạ độ ban đầu, toàn bộ 30 năm dữ liệu sẽ là của <b>một nhánh suối nhỏ</b> và mọi mô hình phía sau đều vô nghĩa.</p></div>
-    </div>
-  </div>
-</section>
-
-<!-- ===================== CẢNH 5 ===================== -->
-<section class="scene" id="s4">
-  <div class="head">
-    <div class="kick">Bước 2 · Làm sạch</div>
-    <h1>Hơn một nghìn file, <span class="t">thành một bảng duy nhất</span></h1>
-  </div>
-  <div class="body">
-    <div class="vis"><svg id="ch4" viewBox="0 0 942 660" style="width:100%;height:100%"></svg></div>
-    <div class="narr">
-      <ol class="steps">
-        <li>Dữ liệu thô: <b>1 295 file</b>, chia thành 5 loại. Mỗi ô vuông nhỏ trên hình tượng trưng cho khoảng 8 file.</li>
-        <li>Làm sạch: đổi giờ <b>UTC sang giờ Việt Nam</b>, cộng mưa theo giờ thành theo ngày, gộp 64 ô mưa thành 3 vùng — tất cả đổ vào <b>một bảng</b>.</li>
-        <li>Kiểm từng nguồn thay vì tin tài liệu → tìm ra <b>4 lỗi</b> (bên trái). Lỗi nào cũng lọt qua bước kiểm tra thông thường.</li>
-        <li>Kết quả: <b>6 087 ngày × 71 cột</b>. Mỗi dòng là một ngày từ 2010 đến 2026, không thiếu giá trị nào.</li>
-      </ol>
-      <div class="mean"><span>Ý nghĩa</span>
-        <p><b>Đếm số dòng không phải đếm dữ liệu.</b> File lưu lượng có 15 584 dòng nhưng chỉ 10 835 dòng có số —
-          13 năm đầu rỗng hoàn toàn mà kiểm tra thông thường không phát hiện.</p></div>
     </div>
   </div>
 </section>
@@ -486,7 +486,7 @@ var sc5={n:5,setup:function(){
  }};
 
 /* ===================== điều khiển ===================== */
-var SC=[sc0,sc1,sc2,sc3,sc4,sc5],IDS=['s0','s1','s2','s3','s4','s5'],cur=0,st=0,ctx=null;
+var SC=[sc0,sc1,sc3,sc4,sc2,sc5],IDS=['s0','s1','s3','s4','s2','s5'],cur=0,st=0,ctx=null;
 var secs=document.querySelectorAll('.scene'),pos=document.getElementById('pos');
 function narr(i,k){var li=secs[i].querySelectorAll('.steps li');for(var j=0;j<li.length;j++){li[j].classList.toggle('on',j<k);li[j].classList.toggle('cur',j===k);}}
 function render(i,k,anim){stopAll();cur=i;st=k;
