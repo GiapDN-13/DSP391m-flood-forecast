@@ -64,7 +64,7 @@ svg text{font-family:var(--mono)}
 <section class="scene on" id="s0">
   <div class="head">
     <div class="kick">DSP391m · Lưu vực sông Hương, Huế</div>
-    <h1>Nhóm đang làm gì? <span class="t">Dự báo lũ trước 1–3 ngày, chỉ bằng dữ liệu miễn phí</span></h1>
+    <h1>Nhóm đang làm gì? <span class="t">Dự báo lũ trước <span style="white-space:nowrap">1–3 ngày</span>, chỉ bằng dữ liệu miễn phí</span></h1>
   </div>
   <div style="position:absolute;left:72px;right:72px;top:170px">
     <svg id="pipe" viewBox="0 0 1456 300" style="width:1456px;height:300px"></svg>
@@ -142,7 +142,7 @@ svg text{font-family:var(--mono)}
       <ol class="steps">
         <li>Dữ liệu thô: <b>1 295 file</b>, chia thành 5 loại. Mỗi ô vuông nhỏ trên hình tượng trưng cho khoảng 8 file.</li>
         <li>Làm sạch bằng <b>DuckDB + Polars</b>: đổi giờ <b>UTC sang giờ Việt Nam</b>, cộng mưa theo giờ thành theo ngày, gộp 64 ô mưa thành 3 vùng — tất cả đổ vào <b>một bảng</b>.</li>
-        <li>Kiểm từng nguồn thay vì tin tài liệu → tìm ra <b>4 lỗi</b> (bên trái). Lỗi nào cũng lọt qua bước kiểm tra thông thường.</li>
+        <li>Kiểm từng nguồn thay vì tin tài liệu → tìm ra <b>4 lỗi</b> (bên trái): mỗi lỗi ghi rõ <b>file, cột</b>, lỗi gì và đã xử lý ra sao. Lỗi nào cũng lọt qua bước kiểm tra thông thường.</li>
         <li>Kết quả: <b>6 087 ngày × 71 cột</b>. Mỗi dòng là một ngày từ 2010 đến 2026, liên tục, <b>không thiếu ngày nào</b>.</li>
       </ol>
       <div class="mean"><span>Ý nghĩa</span>
@@ -227,7 +227,7 @@ var NS='http://www.w3.org/2000/svg';
 var REDUCED=!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
 function el(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
 function tx(p,x,y,s,a){var t=el('text',Object.assign({x:x,y:y,fill:'#8BA8B1','font-size':13},a||{}),p);t.textContent=s;return t;}
-function txd(p,x,y,s,a){var t=tx(p,x,y,s,a);t.setAttribute('font-family','Be Vietnam Pro, sans-serif');return t;}
+function txd(p,x,y,s,a){var t=tx(p,x,y,s,a);t.style.fontFamily='"Be Vietnam Pro",system-ui,sans-serif';return t;}
 function clear(s){while(s.firstChild)s.removeChild(s.firstChild);}
 function fi(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
 function fd(x,k){return x.toFixed(k).replace('.',',');}
@@ -432,10 +432,20 @@ var sc4={n:4,setup:function(){
   var big=tx(s,TX+TW/2,TY+TH+66,'',{fill:'#EAF4F5','font-size':40,'text-anchor':'middle','font-weight':600});
   var cap=txd(s,TX+TW/2,TY+TH+100,'ngày × cột · mỗi dòng là một ngày',{'text-anchor':'middle','font-size':15});cap.style.opacity=0;
   var defs=el('g',{},s);defs.style.opacity=0;
-  [['13 năm rỗng','1984–1996 chỉ có dòng, không có số'],['Lưới mưa lệch','vùng giữa chỉ có 9/16 ô'],
-   ['"Dự báo" = thực đo','chênh lệch đúng 0,0 mm'],['Toạ độ sai ô','kế hoạch gốc: 5,7 m³/s']].forEach(function(d,i){
-    var yy=40+i*120;el('rect',{x:0,y:yy,width:520,height:96,fill:'#1A1416',stroke:'#E8665C','stroke-width':1.5},defs);
-    txd(defs,22,yy+40,d[0],{fill:'#E8665C','font-size':22,'font-weight':700});txd(defs,22,yy+72,d[1],{fill:'#EAF4F5','font-size':17});});
+  // Mỗi lỗi: tên · file + cột bị lỗi · lỗi gì → đã xử lý ra sao
+  [['1 · 13 năm rỗng','discharge/q_16.45_107.5.parquet · cột river_discharge',
+    '1984–1996: 15 584 dòng nhưng chỉ 10 835 có số','→ chuỗi bắt đầu từ 1997'],
+   ['2 · Lưới mưa không đều','rain_daily/ (lưới cũ 0,15°) · cột lat, lon',
+    'vùng trung lưu gần trạm chỉ có 9/16 ô','→ chia lại lưới đều 0,1° = 64 ô'],
+   ['3 · "Dự báo" = thực đo','fc_rain/ ↔ rain_daily/ · cột precipitation_sum',
+    'chênh lệch đúng 0,0 mm trên 1 523 ngày','→ không dùng làm mưa dự báo, đổi sang kiểm độ nhạy'],
+   ['4 · Toạ độ sai ô','config RIVER_POINTS · cột river_discharge',
+    'ô (16.46, 107.59) trung bình chỉ 5,7 m³/s — nhánh nhỏ','→ dời sang ô (16.45, 107.50), ~120 m³/s']].forEach(function(d,i){
+    var yy=6+i*160;el('rect',{x:0,y:yy,width:560,height:146,fill:'#1A1416',stroke:'#E8665C','stroke-width':1.5},defs);
+    txd(defs,20,yy+32,d[0],{fill:'#E8665C','font-size':21,'font-weight':700});
+    tx(defs,20,yy+60,d[1],{fill:'#E8BE55','font-size':13});
+    txd(defs,20,yy+92,d[2],{fill:'#EAF4F5','font-size':16});
+    txd(defs,20,yy+124,d[3],{fill:'#2FC2CC','font-size':16,'font-weight':600});});
   items.forEach(function(it){it.dx=TX+20+Math.random()*(TW-40)-it.x;it.dy=TY+20+Math.random()*(TH-40)-it.y;});
   return {items:items,labels:labels,tbl:tbl,big:big,cap:cap,defs:defs};},
  step:function(c,k,anim){
