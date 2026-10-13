@@ -1,8 +1,8 @@
 run_date,point,lat,lon,target_date,glofas_discharge,rain_forecast,temp_forecast,sea_level_max,horizon_days,alert_glofas
-2026-10-13,huong_kim_long,16.45,107.5,2026-10-13,173.18,15.2,24.4,1.21,0,chua_co_nguong
-2026-10-13,huong_kim_long,16.45,107.5,2026-10-14,143.88,2.9,25.4,1.09,1,chua_co_nguong
-2026-10-13,huong_kim_long,16.45,107.5,2026-10-15,133.28,1.1,25.5,1.02,2,chua_co_nguong
-2026-10-13,huong_kim_long,16.45,107.5,2026-10-16,99.0,0.5,25.4,1.03,3,chua_co_nguong
-2026-10-13,huong_kim_long,16.45,107.5,2026-10-17,61.23,4.5,25.8,1.0,4,chua_co_nguong
-2026-10-13,huong_kim_long,16.45,107.5,2026-10-18,43.36,1.2,26.0,0.96,5,chua_co_nguong
-2026-10-13,huong_kim_long,16.45,107.5,2026-10-19,44.81,11.4,25.0,0.96,6,chua_co_nguong
+2026-10-14,huong_kim_long,16.45,107.5,2026-10-14,131.74,1.5,25.6,1.07,0,chua_co_nguong
+2026-10-14,huong_kim_long,16.45,107.5,2026-10-15,120.06,0.7,25.5,1.02,1,chua_co_nguong
+2026-10-14,huong_kim_long,16.45,107.5,2026-10-16,80.85,0.4,25.6,1.04,2,chua_co_nguong
+2026-10-14,huong_kim_long,16.45,107.5,2026-10-17,46.97,2.7,26.0,1.01,3,chua_co_nguong
+2026-10-14,huong_kim_long,16.45,107.5,2026-10-18,38.9,2.1,26.0,0.98,4,chua_co_nguong
+2026-10-14,huong_kim_long,16.45,107.5,2026-10-19,43.36,1.1,25.9,0.96,5,chua_co_nguong
+2026-10-14,huong_kim_long,16.45,107.5,2026-10-20,,0.1,25.7,0.97,6,chua_co_nguong
