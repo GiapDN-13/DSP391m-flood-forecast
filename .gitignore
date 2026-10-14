@@ -7,6 +7,9 @@ data/**
 !data/external/grid_candidates.csv
 !data/external/grid_scan_region.csv
 !data/external/flood_events.csv
+!data/external/reservoir_info.csv
+!data/external/reservoir_releases.csv
+!data/external/reservoir_orders.csv
 
 # ===== Sản phẩm sinh tự động của màn hình theo dõi =====
 reports/live/

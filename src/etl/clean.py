@@ -138,19 +138,78 @@ def load_discharge(lat: float, lon: float) -> pl.DataFrame:
     return d
 
 
-def load_rain_daily() -> pl.DataFrame:
+def load_rain_daily(folders: tuple[str, ...] = ("rain_daily",)) -> pl.DataFrame:
     """Nạp toàn bộ điểm mưa ngày bằng MỘT câu SQL quét cả thư mục.
 
-    Giữ nguyên lat/lon để gộp theo tiểu lưu vực ở bước sau.
+    Giữ nguyên lat/lon để gộp theo tiểu lưu vực ở bước sau. `folders` cho phép
+    đọc chung phần mở rộng 1997–2009 (`rain_daily_ext`, cùng schema).
     """
+    globs = ", ".join(f"'{_glob(f, 'rd_*.parquet')}'" for f in folders)
     return _sql(f"""
         SELECT CAST(time AS TIMESTAMP) AS date,
                lat, lon,
                precipitation_sum       AS rain,
                * EXCLUDE (time, lat, lon, precipitation_sum)
-        FROM read_parquet('{_glob("rain_daily", "rd_*.parquet")}')
+        FROM read_parquet([{globs}])
         ORDER BY date, lat, lon
     """)
+
+
+def load_soil_daily() -> pl.DataFrame:
+    """Độ ẩm đất ERA5-Land ba tầng + ET₀, trung bình cả lưu vực theo ngày."""
+    return _sql(f"""
+        SELECT CAST(time AS TIMESTAMP)              AS date,
+               avg(soil_moisture_0_to_7cm_mean)    AS sm_0_7,
+               avg(soil_moisture_7_to_28cm_mean)   AS sm_7_28,
+               avg(soil_moisture_28_to_100cm_mean) AS sm_28_100,
+               avg(et0_fao_evapotranspiration)     AS et0
+        FROM read_parquet('{_glob("soil_daily", "sd_*.parquet")}')
+        GROUP BY 1 ORDER BY 1
+    """)
+
+
+def load_met_daily() -> pl.DataFrame:
+    """Khí áp, gió, ẩm, mây tại 3 điểm (`crawl_extend.MET_POINTS`), dạng bảng rộng.
+
+    Tên điểm lấy từ tên file `md_<điểm>.parquet`; mỗi cột có hậu tố `_<điểm>`.
+    """
+    long = _sql(f"""
+        SELECT CAST(time AS TIMESTAMP) AS date,
+               regexp_extract(filename, 'md_([a-z]+)[.]parquet', 1) AS point,
+               pressure_msl_mean            AS mslp,
+               wind_direction_10m_dominant  AS wind_dir,
+               wind_speed_10m_mean          AS wind_speed,
+               relative_humidity_2m_mean    AS rh,
+               cloud_cover_mean             AS cloud
+        FROM read_parquet('{_glob("met_daily", "md_*.parquet")}', filename = true)
+    """)
+    return long.pivot(on="point", index="date",
+                      values=["mslp", "wind_dir", "wind_speed", "rh", "cloud"],
+                      separator="_").sort("date")
+
+
+def load_storm_daily() -> pl.DataFrame:
+    """Bão gần Huế theo ngày (IBTrACS): khoảng cách gần nhất và sức gió mạnh nhất.
+
+    Ngày không có bão trong bán kính 1 500 km không có dòng — điền ở bước sau.
+    """
+    f = cfg.DATA_RAW / "storms" / "ibtracs_wp_near_hue.parquet"
+    if not f.exists():
+        raise FileNotFoundError("Chưa có bão — chạy python -m src.ingest.external_indices")
+    return _sql(f"""
+        SELECT CAST(date AS TIMESTAMP)                       AS date,
+               min(dist_km)                                  AS storm_dist_km,
+               max(wind_kt) FILTER (WHERE dist_km <= 1000)   AS storm_wind_kt
+        FROM read_parquet('{str(f).replace(chr(92), '/')}')
+        GROUP BY 1 ORDER BY 1
+    """)
+
+
+def load_oni() -> pl.DataFrame:
+    f = cfg.DATA_RAW / "indices" / "oni.parquet"
+    if not f.exists():
+        raise FileNotFoundError("Chưa có ONI — chạy python -m src.ingest.external_indices")
+    return pl.read_parquet(f)
 
 
 def load_forecast_rain() -> pl.DataFrame:

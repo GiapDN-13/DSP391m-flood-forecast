@@ -86,6 +86,9 @@ DATE_START = "1984-01-01"          # khoảng YÊU CẦU khi gọi API
 # docs/FINDINGS_EVENTS.md §3. Dùng hằng số này khi nói về độ dài chuỗi.
 DISCHARGE_DATA_START = "1997-01-01"
 RAIN_DATE_START = "2010-01-01"
+# Mở rộng cho Report 3 (src/ingest/crawl_extend.py): mưa + độ ẩm đất từ 1997,
+# trùng mốc lưu lượng thật sự có dữ liệu. Panel Report 2 vẫn dùng mốc 2010.
+RAIN_EXT_START = DISCHARGE_DATA_START
 DATE_END = "2026-08-31"
 
 # Mốc GloFAS đổi từ reanalysis sang archived forecast — xem docs/DATA_SPLITS.md
