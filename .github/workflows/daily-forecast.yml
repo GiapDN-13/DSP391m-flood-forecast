@@ -34,7 +34,8 @@ jobs:
       - name: Cài dependency tối thiểu
         # Không cài cả requirements.txt: job này chỉ gọi API và ghi CSV,
         # không cần torch/lightgbm — cài đủ dùng cho nhanh.
-        run: pip install requests pandas pyarrow
+        # polars: đọc lệnh xả hồ (src/features/reservoirs.py)
+        run: pip install requests pandas pyarrow polars==1.17.1
 
       - name: Tải mô hình mới nhất (nếu đã có)
         continue-on-error: true
