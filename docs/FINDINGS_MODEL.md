@@ -242,3 +242,38 @@ lưu lượng ở h=1, thiên về mưa ở h=2 và h=3. Với h=2, bộ chỉ-m
 
 Thứ tự này có chủ ý: **không tinh chỉnh siêu tham số trước khi chốt feature**.
 Optuna trên bộ feature sai chỉ tốn thời gian.
+
+---
+
+## 6. Ngưỡng nhiễu số của mô hình: NSE chỉ có nghĩa tới ±0,01
+
+Khi đổi tầng dữ liệu từ pandas sang **DuckDB + Polars** (10/2026), bảng phân
+tích mới khớp bản cũ tới **10⁻¹²** (`tests/test_build_panel_equivalence.py`),
+và khớp **tuyệt đối** về vị trí các giá trị bằng 0. Vậy mà NSE của LightGBM đổi
+từ 0,742 / 0,422 / 0,167 thành **0,747 / 0,420 / 0,175**.
+
+Đã kiểm nguyên nhân bằng cách cộng nhiễu **10⁻¹³** vào chính panel pandas gốc:
+
+| Panel | h=1 | h=2 | h=3 |
+|---|---|---|---|
+| pandas gốc | 0,742 | 0,422 | 0,167 |
+| gốc + nhiễu 10⁻¹³ (lần 1) | 0,747 | 0,421 | 0,164 |
+| gốc + nhiễu 10⁻¹³ (lần 2) | 0,734 | 0,432 | 0,173 |
+| gốc + nhiễu 10⁻¹³ (lần 3) | 0,741 | 0,410 | 0,169 |
+| **DuckDB/Polars mới** | **0,747** | **0,420** | **0,175** |
+
+⇒ Một thay đổi ở chữ số thứ 13 đủ làm NSE dao động **±0,01**. Lý do: boosting
+600 vòng là chuỗi quyết định nối tiếp; khi hai điểm chia gần ngang nhau, nhiễu
+nhỏ nhất cũng đổi lựa chọn và kéo theo toàn bộ các cây sau.
+
+**Hệ quả:**
+
+1. Báo cáo NSE với **2 chữ số thập phân**. Hai mô hình chênh dưới 0,01 là
+   **không phân biệt được**.
+2. Củng cố kết luận ở §4b: các bộ feature chênh nhau 0,001–0,04 trên valid là
+   nằm trong nhiễu, không phải khác biệt thật.
+3. Biên thắng persistence (≥ 0,19 ở mọi horizon) lớn gấp hàng chục lần ngưỡng
+   nhiễu này — kết luận chính không bị ảnh hưởng.
+
+Từ 10/2026, kết quả chính thức lấy theo panel DuckDB/Polars:
+**NSE 0,75 / 0,42 / 0,18**.
