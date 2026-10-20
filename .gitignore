@@ -10,6 +10,9 @@ data/**
 !data/external/reservoir_info.csv
 !data/external/reservoir_releases.csv
 !data/external/reservoir_orders.csv
+# Lưu vực con (geojson + trọng số ô lưới, ~200 KB) — người không có DEM vẫn dùng được
+!data/external/basins/
+!data/external/basins/**
 
 # ===== Sản phẩm sinh tự động của màn hình theo dõi =====
 reports/live/
