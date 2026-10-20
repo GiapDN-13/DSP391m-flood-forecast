@@ -183,7 +183,7 @@ hình cộng dồn lên cấu hình trước (`reports/ablation_ext.csv`):
 **Kết luận:**
 
 1. **Chuỗi dài hơn giúp h1** (+0,021): mưa từ 1997 cho mô hình thấy thêm nhiều trận lũ.
-2. **Yếu tố thời tiết quy mô lớn giúp h2–h3** (+0,055 / +0,023 so với D): bão và không
+2. **Yếu tố thời tiết quy mô lớn giúp h2–h3** (+0,055 / +0,014 so với D): bão và không
    khí lạnh báo trước mưa lớn 1–3 ngày — đúng thứ mà mưa đã quan trắc không biết.
 3. Độ ẩm đất và đặc trưng hồ không thêm được gì rõ — thông tin đó đã nằm sẵn trong
    lưu lượng trễ và API.
