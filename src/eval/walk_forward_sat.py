@@ -47,6 +47,7 @@ import polars as pl
 
 from src import config as cfg
 from src.eval import metrics, walk_forward
+from src.features import hourly_features as hf
 from src.features import risk_levels as rl
 from src.models import ablation_hourly as ab
 from src.models import ablation_sat as sa
@@ -58,6 +59,7 @@ OUT_FOLDS = cfg.ROOT / "reports" / "wf_sat_folds.csv"
 OUT_SUMMARY = cfg.ROOT / "reports" / "wf_sat_summary.csv"
 OUT_FIG = cfg.FIGURES / "report" / "wf_sat_en.png"
 OUT_LAG = cfg.ROOT / "reports" / "wf_sat_lag1.csv"   # phép thử độ trễ khi chạy thật
+OUT_NRT = cfg.ROOT / "reports" / "wf_sat_nrt.csv"    # GSMaP_NRT (JAXA) so với bản chuẩn
 SPLIT_CSV = sa.OUT                          # kết quả một-lần-chia để đối chiếu
 
 GAP = walk_forward.GAP_DAYS                 # 3 = horizon lớn nhất
@@ -121,6 +123,19 @@ def load_ext_lag1(group: str = "ext") -> tuple[pl.DataFrame, dict[str, list[str]
     panel = panel.sort("date").with_columns([pl.col(c).shift(1).alias(f"{c}_lag1") for c in gc])
     new = {next(iter(cfgs)): base, "E0+gsmap_gc": cfgs["E0+gsmap_gc"],
            "E0+gsmap_gc_lag1": base + [f"{c}_lag1" for c in gc]}
+    return panel, new, split
+
+
+def load_nrt(group: str) -> tuple[pl.DataFrame, dict[str, list[str]], dict]:
+    """Mốc của nhóm + GSMaP-GC bản chuẩn (Earth Engine, chỉ phân tích lại quá khứ)
+    + GSMaP_Gauge_NRT (JAXA, trễ ~4,7 h — dùng được khi chạy thật, không cần trễ)."""
+    panel, cfgs, split = sa.load_group(group)
+    panel = hf.join_panel(panel, sa.load_sat("gsmap_nrt"))
+    name0, base = next(iter(cfgs.items()))
+    std = next(k for k in cfgs if k.endswith("+gsmap_gc"))
+    tag = name0.split()[0]
+    new = {name0: base, std: cfgs[std],
+           f"{tag}+gsmap_nrt": base + sa.sat_cols("gsmap_nrt", [hf.WHOLE])}
     return panel, new, split
 
 
@@ -370,7 +385,37 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--plot-only", action="store_true")
     ap.add_argument("--lag-test", action="store_true",
                     help="chỉ chạy phép thử GSMaP-GC trễ 1 ngày → reports/wf_sat_lag1.csv")
+    ap.add_argument("--nrt-test", action="store_true",
+                    help="so GSMaP_NRT (JAXA) với bản chuẩn trên 2 nhóm → reports/wf_sat_nrt.csv")
     a = ap.parse_args(argv)
+
+    if a.nrt_test:
+        lgbm.PARAMS["n_jobs"] = a.n_jobs
+        std = sa.load_sat("gsmap_gc").select("date", pl.col(f"gsmap_gc_{hf.PREFIX}sum_{hf.WHOLE}").alias("std"))
+        nrt = sa.load_sat("gsmap_nrt").select("date", pl.col(f"gsmap_nrt_{hf.PREFIX}sum_{hf.WHOLE}").alias("nrt"))
+        both = std.join(nrt, on="date").drop_nulls()
+        fl = both.filter(pl.col("date").dt.month().is_in(rl.FLOOD_MONTHS))
+        for lab, x in (("cả năm", both), ("mùa lũ", fl)):
+            if x.height and x["std"].sum() > 0:
+                print(f"Mưa ngày toàn lưu vực, NRT so với bản chuẩn ({lab}): {x.height} ngày, "
+                      f"r = {x.select(pl.corr('std', 'nrt')).item():.3f}, "
+                      f"tổng NRT/chuẩn = {x['nrt'].sum() / x['std'].sum():.3f}")
+        rows = []
+        for g in a.groups:
+            rows += run_group(g, list(YEARS), loader=load_nrt)
+        folds = pl.from_dicts(rows, infer_schema_length=None)
+        folds.write_csv(OUT_NRT, float_precision=5)
+        for name in folds["config"].unique(maintain_order=True):
+            if name == "persistence" or folds.filter(pl.col("config") == name)["dNSE"].null_count() == \
+                    folds.filter(pl.col("config") == name).height:
+                continue
+            for h in cfg.HORIZONS:
+                d = folds.filter((pl.col("config") == name) & (pl.col("horizon") == h))["dNSE"].to_numpy()
+                lo, hi = boot_mean_ci(d)
+                print(f"{name:<18} h{h}: ΔNSE {d.mean():+.3f} [{lo:+.3f}; {hi:+.3f}] "
+                      f"thắng/thua {(d > 0).sum()}/{(d < 0).sum()} p {wilcoxon_p(d):.3f}")
+        print(f"→ {OUT_NRT}")
+        return 0
 
     if a.lag_test:
         lgbm.PARAMS["n_jobs"] = a.n_jobs

@@ -64,7 +64,12 @@ OUT_PANEL = cfg.DATA_PROCESSED / "daily_panel_hourly.parquet"
 # nguồn vệ tinh → (thư mục = tiền tố file, cột cường độ mm/giờ, số phút mỗi bước)
 GEE = {"imerg": ("imerg", "precip_mm_hr", 30),
        "gsmap": ("gsmap", "precip_mm_hr", 60),
-       "gsmap_gc": ("gsmap", "precip_gc_mm_hr", 60)}
+       "gsmap_gc": ("gsmap", "precip_gc_mm_hr", 60),
+       # GSMaP_Gauge_NRT tải thẳng từ JAXA (src/ingest/gsmap_nrt.py) — cùng lưới 0,1°
+       # tâm x,x5 với bản Earth Engine, nhưng là sản phẩm gần thời gian thực (trễ ~4,7 h)
+       "gsmap_nrt": ("gsmap_nrt", "precip_gc_mm_hr", 60)}
+# thư mục gốc riêng của nguồn không lấy từ Earth Engine
+SAT_ROOT = {"gsmap_nrt": cfg.DATA_RAW}
 SOURCES = ("era5", "pccs", *GEE)
 GEE_GRID = "gee_0p1"
 
@@ -322,15 +327,22 @@ def load_gee(source: str, months: list[str] | None = None, years: list[int] | No
     (= giờ UTC + 7) luôn đủ hai nửa trong cùng một file.
     """
     folder, col, step = GEE[source]
-    files = sorted((GEE_DIR / folder).glob(f"{folder}_*.parquet"))
+    base = SAT_ROOT.get(source, GEE_DIR) / folder
+    # file tháng <tiền tố>_YYYYMM + (nguồn JAXA) ngày lẻ chưa gộp _parts/YYYYMMDD
+    files = sorted(base.glob(f"{folder}_*.parquet")) + sorted((base / "_parts").glob("*.parquet"))
+
+    def ym(f: Path) -> str:
+        return f.stem[-6:] if f.stem.startswith(folder) else f.stem[:6]
+
     if months:
         keep = {m.replace("-", "") for m in months}
-        files = [f for f in files if f.stem.split("_")[1] in keep]
+        files = [f for f in files if ym(f) in keep]
     if years:
-        files = [f for f in files if int(f.stem.split("_")[1][:4]) in set(years)]
+        files = [f for f in files if int(ym(f)[:4]) in set(years)]
     if not files:
-        raise FileNotFoundError(f"không có file {folder} trong {GEE_DIR / folder} — chạy "
-                                f"`python -m src.ingest.gee_precip --dataset {folder}`")
+        raise FileNotFoundError(f"không có file {folder} trong {base} — chạy "
+                                f"`python -m src.ingest.gee_precip --dataset {folder}` "
+                                f"hoặc `python -m src.ingest.gsmap_nrt`")
     lf = (pl.scan_parquet(files)
             .select("time", pl.col("lat").round(4), pl.col("lon").round(4),
                     pl.col(col).cast(pl.Float64).alias("precip")))
