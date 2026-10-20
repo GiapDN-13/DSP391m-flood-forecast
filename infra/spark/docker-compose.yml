@@ -1,0 +1,55 @@
+# Cụm Spark standalone: 1 master + 2 worker, dùng chung một thư mục repo.
+#
+#   docker compose -f infra/spark/docker-compose.yml up -d --build
+#   docker compose -f infra/spark/docker-compose.yml exec spark-master \
+#       spark-submit --master spark://spark-master:7077 src/distributed/spark_etl.py
+#
+# Repo được mount vào /opt/repo ở CẢ BA container — đóng vai "ổ dùng chung"
+# (NFS/HDFS/S3 trong cụm thật) để mọi executor đọc/ghi cùng một đường dẫn.
+# Tài nguyên tính cho Docker Desktop ~7,4 GB RAM: mỗi worker 4 lõi + 2 GB.
+
+x-spark-common: &spark-common
+  build: .
+  image: dsp391m/spark:4.1.3
+  volumes:
+    - ../..:/opt/repo
+  working_dir: /opt/repo
+  environment:
+    SPARK_NO_DAEMONIZE: "true"
+    PYTHONPATH: /opt/repo
+    PYSPARK_PYTHON: python3
+    PYTHONIOENCODING: utf-8
+    PYTHONDONTWRITEBYTECODE: "1"
+    SPARK_MASTER: spark://spark-master:7077
+
+services:
+  spark-master:
+    <<: *spark-common
+    container_name: dsp-spark-master
+    hostname: spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
+             --host spark-master --port 7077 --webui-port 8080
+    ports:
+      - "8080:8080"   # giao diện master: xem worker, ứng dụng đang chạy
+      - "4040:4040"   # giao diện driver khi spark-submit chạy trong master
+      - "7077:7077"
+
+  spark-worker-1:
+    <<: *spark-common
+    container_name: dsp-spark-worker-1
+    hostname: spark-worker-1
+    depends_on: [spark-master]
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
+             --cores 4 --memory 2g --webui-port 8081 spark://spark-master:7077
+    ports:
+      - "8081:8081"
+
+  spark-worker-2:
+    <<: *spark-common
+    container_name: dsp-spark-worker-2
+    hostname: spark-worker-2
+    depends_on: [spark-master]
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
+             --cores 4 --memory 2g --webui-port 8082 spark://spark-master:7077
+    ports:
+      - "8082:8082"
