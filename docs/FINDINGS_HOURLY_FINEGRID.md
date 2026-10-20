@@ -346,7 +346,8 @@ Wilcoxon hai phía. Năm 2022 (GloFAS đổi chế độ) và 2026 (01–08) bá
 1. **Mức tăng là thật nhưng nhỏ**, và nhỏ hơn hẳn trên mốc mạnh E0 so với A0 (vệ tinh
    bù phần R2 còn thiếu: độ ẩm đất, ngữ cảnh thời tiết, chuỗi train ngắn). Report 3
    báo theo mốc **E0**.
-2. **Chọn GSMaP-GC toàn lưu vực (9 cột)** cho cấu hình chính: tăng đều ở h3 (11/13
+2. **GSMaP-GC toàn lưu vực (9 cột)** là nguồn tốt nhất khi PHÂN TÍCH LẠI QUÁ KHỨ — khi chạy
+   thật xem §12.3–12.4: tăng đều ở h3 (11/13
    fold, CI loại 0), giảm báo động nhầm mức 1 (FA 24 → 19, CSI 0,450 → 0,484). Ở h2
    dương nhưng dao động lớn giữa năm — ghi là **chưa có ý nghĩa thống kê**.
 3. **IMERG bị lần chia đơn đánh giá quá cao** (+0,018 / +0,017 → +0,010 / +0,008 qua
@@ -377,9 +378,7 @@ ngày t−1. Walk-forward lại nhóm EXT với đặc trưng GSMaP-GC **trễ 1
 
 ⇒ **Toàn bộ lợi ích nằm ở mưa của chính ngày t.** Qua Earth Engine thì chạy thật
 không còn lợi gì. Report 3 phải ghi: mức tăng ở §12.1 là **phân tích lại quá khứ**;
-muốn dùng khi vận hành cần nguồn trễ ít — GSMaP_NRT tải thẳng từ JAXA (công bố trễ
-khoảng 4 giờ, cần đăng ký miễn phí; chưa kiểm có đúng cùng sản phẩm với bản trên Earth
-Engine không) và dời job sang sau 07h.
+muốn dùng khi vận hành cần nguồn trễ ít — GSMaP_NRT tải thẳng từ JAXA (§12.4).
 
 ### 12.2 Deep Learning (`src/eval/walk_forward_dl.py`, `reports/wf_dl_*.csv`)
 
@@ -407,3 +406,28 @@ Tái lập:
     python -m src.eval.walk_forward_sat     # ~15–26 phút (882 lần fit)
     python -m src.eval.walk_forward_dl      # ~13 phút (6 tiến trình × 2 luồng)
     # --plot-only / --resume: dựng lại bảng + hình từ kết quả đã lưu
+
+### 12.4 GSMaP_NRT từ JAXA — nguồn dùng được khi chạy thật (21/10)
+
+Tài khoản FTP JAXA (`hokusai.eorc.jaxa.jp`, đăng ký miễn phí), tải bằng `src/ingest/gsmap_nrt.py`
+(10 × 10 ô quanh lưu vực, 1998 → 19/10/2026, cắt trong bộ nhớ, lưu ~0,1 GB).
+
+* **Độ trễ:** file giờ 11:00 UTC ngày 20/10 được đưa lên lúc 15:41 UTC ⇒ **~4,7 giờ**. Mưa tới
+  23h VN ngày t có trên FTP khoảng 04h sáng hôm sau.
+* **Bản trên Earth Engine là bản CHUẨN**, không phải NRT: sau ~3 ngày ảnh trên Earth Engine trùng
+  tuyệt đối (r 1,000, chênh 0,000) với `standard/v8/hourly_G` của JAXA. Bản NRT là sản phẩm khác:
+  tương quan từng giờ với bản chuẩn 0,6–0,8.
+* **So mưa ngày toàn lưu vực 2010–2026:** r 0,736 (mùa lũ 0,780); tổng NRT bằng 0,89 bản chuẩn
+  cả năm nhưng chỉ **0,70** mùa lũ, và dao động 0,42–0,89 giữa các năm (NRT không đồng nhất theo
+  thời gian). Spearman(mưa ngày, Q t+1) mùa lũ: chuẩn 0,69 · **NRT 0,48** · ERA5 0,80.
+* **Walk-forward, nhóm Report 2** (`reports/wf_sat_nrt_r2_partial.csv`, 13 fold, 3 seed):
+
+| Cấu hình | ΔNSE h1 | ΔNSE h2 | ΔNSE h3 |
+|---|---|---|---|
+| A0 + GSMaP bản chuẩn (phân tích lại) | +0,006 · 9/4 · p 0,068 | +0,032 · 13/0 | +0,025 · 12/1 · p 0,005 |
+| **A0 + GSMaP_NRT** (chạy thật được) | **+0,009 · 10/3 · p 0,008** | **+0,019 · 11/2 · p 0,006** | **+0,012 · 12/1 · p 0,005** |
+
+  NRT dù hụt mưa vẫn giúp đều ở cả 3 horizon — khoảng một nửa mức tăng của bản chuẩn ở h2–h3.
+* **Nhóm cấu hình E (mốc mạnh)**: chạy tự động khi tải xong 1998–2009 →
+  `python -m src.eval.walk_forward_sat --nrt-test` → `reports/wf_sat_nrt.csv`. Đây là phép thử
+  quyết định có đưa NRT vào job dự báo hằng ngày hay không.
