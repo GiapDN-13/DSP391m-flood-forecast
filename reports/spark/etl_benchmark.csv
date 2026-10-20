@@ -1,0 +1,18 @@
+run_at,tag,host,engine,master,n_executors,cores,default_parallelism,files,rows_in,rows_out,cells,seconds_startup,seconds_etl,seconds_subbasin
+2026-10-20T11:17:39+00:00,cluster_1w_1c,linux-docker,spark,spark://spark-master:7077,1,1,2,768,6544896,272704,64,5.31,100.78,
+2026-10-20T11:18:47+00:00,cluster_1w_4c,linux-docker,spark,spark://spark-master:7077,1,4,4,768,6544896,272704,64,4.97,38.23,17.71
+2026-10-20T11:19:58+00:00,cluster_2w_8c,linux-docker,spark,spark://spark-master:7077,2,8,8,768,6544896,272704,64,6.47,41.16,16.95
+2026-10-20T11:23:12+00:00,docker_local1,linux-docker,spark,local[1],0,1,1,768,6544896,272704,64,5.84,99.4,52.79
+2026-10-20T11:24:14+00:00,docker_local4,linux-docker,spark,local[4],0,4,4,768,6544896,272704,64,4.13,34.7,15.15
+2026-10-20T11:25:11+00:00,docker_local8,linux-docker,spark,local[8],0,8,8,768,6544896,272704,64,4.56,32.6,13.13
+2026-10-20T11:25:25+00:00,docker_polars,linux-docker,polars,1 process,0,16,16,768,6544896,272704,64,0.0,8.66,
+2026-10-20T11:28:33+00:00,cluster_1w_1c,linux-docker,spark,spark://spark-master:7077,1,1,2,768,6544896,272704,64,5.04,94.66,53.97
+2026-10-20T11:29:41+00:00,cluster_1w_4c,linux-docker,spark,spark://spark-master:7077,1,4,4,768,6544896,272704,64,4.86,38.25,17.55
+2026-10-20T11:30:49+00:00,cluster_2w_8c,linux-docker,spark,spark://spark-master:7077,2,8,8,768,6544896,272704,64,5.65,40.53,15.2
+2026-10-20T11:33:48+00:00,docker_local1,linux-docker,spark,local[1],0,1,1,768,6544896,272704,64,5.68,87.94,52.47
+2026-10-20T11:34:48+00:00,docker_local4,linux-docker,spark,local[4],0,4,4,768,6544896,272704,64,4.27,33.35,14.74
+2026-10-20T11:35:44+00:00,docker_local8,linux-docker,spark,local[8],0,8,8,768,6544896,272704,64,4.46,32.86,12.96
+2026-10-20T11:36:01+00:00,docker_polars,linux-docker,polars,1 process,0,16,16,768,6544896,272704,64,0.0,10.06,
+2026-10-20T11:36:25+00:00,windows_polars,windows-host,polars,1 process,0,16,16,768,6544896,272704,64,0.0,3.38,
+2026-10-20T11:36:29+00:00,windows_polars,windows-host,polars,1 process,0,16,16,768,6544896,272704,64,0.0,3.67,
+2026-10-20T11:38:21+00:00,windows_local8_arrow,windows-host,spark+arrow,local[8],0,8,8,768,6544896,272704,64,18.37,60.01,22.72
