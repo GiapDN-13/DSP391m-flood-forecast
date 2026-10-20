@@ -17,7 +17,7 @@ Open-Meteo Flood API **đã có sẵn dự báo lưu lượng 7 ngày** từ Glo
 
 ### Đóng góp 1 — Hiệu chỉnh sai số cục bộ (bias correction / statistical post-processing) ⭐ chính
 
-GloFAS là mô hình **toàn cầu**, lưới ~5 km, hiệu chuẩn cho lưu vực lớn. Sông Hương (~2 830 km²) và sông Bồ (~938 km²) là lưu vực **nhỏ, dốc, lũ lên nhanh, do bão và gió mùa đông bắc**, đúng loại mà mô hình toàn cầu thường sai nhiều nhất.
+GloFAS là mô hình **toàn cầu**, lưới ~5 km, hiệu chuẩn cho lưu vực lớn. Sông Hương tới Kim Long (~1 540 km²; cả hệ thống gồm sông Bồ ~2 830 km²) và sông Bồ (~938 km²) là lưu vực **nhỏ, dốc, lũ lên nhanh, do bão và gió mùa đông bắc**, đúng loại mà mô hình toàn cầu thường sai nhiều nhất.
 
 - **Đầu vào:** dự báo GloFAS thô tại horizon h **+** mưa dự báo **+** trạng thái lưu vực quá khứ.
 - **Đầu ra:** lưu lượng đã hiệu chỉnh.

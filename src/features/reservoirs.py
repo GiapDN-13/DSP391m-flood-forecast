@@ -1,7 +1,7 @@
 """Hồ chứa thượng nguồn — dữ liệu xả và luật xử lý (Report 3).
 
 Bốn hồ lớn quanh Huế, nhưng chỉ hai hồ nằm TRÊN dòng chảy tới ô lưới của ta
-(16.45, 107.50 ≈ Kim Long, lưu vực sông Hương ~2 830 km²):
+(16.45, 107.50 ≈ Kim Long, lưu vực sông Hương tới Kim Long ~1 540 km²):
 
 * **Tả Trạch** — trên sông Tả Trạch (nhánh chính sông Hương)   → ảnh hưởng
 * **Bình Điền** — trên sông Hữu Trạch (nhánh sông Hương)        → ảnh hưởng

@@ -96,17 +96,30 @@ nối tiếp thượng–hạ lưu, không phải hai sông.
 ## 3. ⭐ Suy ngược diện tích lưu vực — bằng chứng quyết định
 
 Lưu lượng trung bình nhiều năm ≈ diện tích lưu vực × dòng chảy đơn vị.
-Vùng Huế: mưa ~2 800–3 200 mm/năm, hệ số dòng chảy ~0,45–0,50
-⇒ dòng chảy đơn vị **~0,041–0,051 m³/s trên mỗi km²**.
+
+> **SỬA 20/10/2026.** Bản 15/09 có hai số tham chiếu sai, đã chạy lại `river_id.py`:
+>
+> 1. **2 830 km² là cả hệ thống sông Hương, đã gồm sông Bồ 938 km²** (UNESCO-IHP
+>    Catalogue of Rivers for Southeast Asia and the Pacific, Vol. V, mục Viet Nam-8:
+>    *"Area: 2,830 km² … Bo River (938 km²)"*). Kim Long nằm thượng lưu ngã ba Sình
+>    nên không gồm sông Bồ. Lưu vực tới Kim Long đo trên DEM Copernicus GLO-30 là
+>    **1 543 km²** (`src/features/basins.py`), ĐH Thuỷ lợi ghi 1 490 km² — lệch 3,6 %.
+>    Bản cũ lấy 2 830 + 938 = 3 768 là **đếm trùng sông Bồ**.
+> 2. Dòng chảy đơn vị bản cũ (0,041–0,051) là **giả định** từ hệ số dòng chảy 0,45–0,50.
+>    UNESCO cho **số đo**: Q_tb 198 m³/s trên 2 830 km² ⇒ **0,071 m³/s/km²** (lớp dòng
+>    chảy 2 210 mm), từ 0,040 ở đồng bằng ven biển tới hơn 0,080 ở vùng núi. Lưu vực
+>    tới Kim Long gần như toàn núi ⇒ dùng khoảng **0,060–0,080**.
+>
+> Kết luận chọn ô **không đổi**, và hai ô nối tiếp còn khớp hơn trước.
 
 | Ô | Q_tb (m³/s) | Diện tích suy ra (km²) | Đối chiếu |
 |---|---|---|---|
-| (16.45 · 107.50) | 120,7 | **2 366 – 2 943** | ✅ **sông Hương 2 830 km², lệch 7 %** |
-| (16.55 · 107.50) | 194,5 | 3 814 – 4 745 | Hương + Bồ 3 768 km², lệch 12 % |
-| (16.60 · 107.55) | 313,3 | 6 144 – 7 643 | ✗ vượt xa cả hai, lệch 81 % |
+| (16.45 · 107.50) | 120,7 | **1 508 – 2 011** | ✅ **lưu vực tới Kim Long ~1 540 km², lệch 10 %** |
+| (16.55 · 107.50) | 194,5 | 2 432 – 3 242 | ✅ hệ thống Hương gồm Bồ 2 830 km², lệch 3 % (UNESCO đo Q_tb 198 m³/s) |
+| (16.60 · 107.55) | 313,3 | 3 917 – 5 222 | ✗ vượt cả hệ thống, lệch 56 % |
 
 Ba dòng này nhất quán với nhau và với thứ tự dòng chảy: đi từ thượng xuống hạ lưu,
-lưu vực tích luỹ lớn dần — Hương đơn lẻ → Hương cộng Bồ → cộng thêm lưu vực ngoài.
+lưu vực tích luỹ lớn dần — Hương tới Kim Long → cả hệ thống gồm Bồ → cộng thêm lưu vực ngoài.
 
 ## 4. ✅ Kết luận đã chốt
 
@@ -115,15 +128,17 @@ Lưu lượng trung bình 120,7 m³/s · đỉnh 3 588 m³/s · cách đường 
 
 Đã ghi vào `src/config.py:RIVER_POINTS`, kèm `REJECTED_POINTS` để giải trình.
 
-**Sông Bồ: GloFAS không tách được thành dòng riêng.** Mọi ô ứng viên đều lệch
-≥ 84 % so với diện tích lưu vực 938 km². ⇒ **Thu hẹp còn một trạm (Kim Long)**,
-đúng như phương án (a) đề xuất ở Phần 1 §4.
+**Sông Bồ: GloFAS không tách được thành dòng riêng.** Mọi ô thuộc cụm sông Hương
+đều lệch ≥ 81 % so với diện tích lưu vực 938 km² (bản 15/09 ghi ≥ 84 % theo dòng
+chảy đơn vị cũ). Ô duy nhất khớp diện tích, (16.75 · 107.15), thuộc cụm B phía bắc —
+lưu vực khác. ⇒ **Thu hẹp còn một trạm (Kim Long)**, đúng như phương án (a) đề xuất
+ở Phần 1 §4.
 
 ## 5. Phải nêu trong Limitations
 
 - Ở độ phân giải ~5 km, GloFAS **không phân giải được sông Bồ (938 km²)** thành dòng riêng ⇒ nghiên cứu giới hạn ở lưu vực sông Hương.
 - Ô lưới cách trạm Kim Long ~2,9 km theo đường tim sông; mạng sông mô phỏng lệch khỏi vị trí thật.
-- Diện tích lưu vực là **suy ra từ dòng chảy đơn vị giả định**, không phải đo đạc. Sai số ±10 % của dòng chảy đơn vị kéo theo ±10 % diện tích. Dù vậy ba ô xếp đúng thứ tự và biên độ, nên kết luận **tương đối** (ô nào lớn hơn ô nào) vững hơn con số tuyệt đối.
+- Diện tích lưu vực của ô GloFAS là **suy ra từ dòng chảy đơn vị** (UNESCO, trung bình cả hệ thống), không đọc trực tiếp từ GloFAS. Dòng chảy đơn vị thay đổi 0,060–0,080 kéo theo ±14 % diện tích. Dù vậy ba ô xếp đúng thứ tự và biên độ, nên kết luận **tương đối** (ô nào lớn hơn ô nào) vững hơn con số tuyệt đối.
 
 ## 6. Ba cách đều có thể sai ở đâu
 

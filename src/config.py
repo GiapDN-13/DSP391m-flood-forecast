@@ -41,13 +41,25 @@ SEED = 42
 # ---------- Điểm lưới GloFAS ----------
 # CHỐT 15/09/2026 bằng src/features/river_id.py (xem docs/FINDINGS_GRID.md).
 # Căn cứ mạnh nhất là suy ngược diện tích lưu vực từ lưu lượng trung bình
-# nhiều năm: Q_tb ≈ diện tích × dòng chảy đơn vị (~0,046 m³/s/km² ở vùng Huế).
+# nhiều năm: Q_tb ≈ diện tích × dòng chảy đơn vị.
 #
-#   (16.45, 107.50)  120,7 m³/s  → 2 366–2 943 km²  ≈ sông Hương 2 830 km²  (lệch 7 %)
-#   (16.55, 107.50)  194,5 m³/s  → 3 814–4 745 km²  ≈ Hương + Bồ 3 768 km²  (lệch 12 %)
-#   (16.60, 107.55)  313,3 m³/s  → 6 144–7 643 km²  vượt xa cả hai → đã gộp lưu vực khác
+# SỬA 20/10/2026 — hai số tham chiếu cũ đều sai:
+#   * 2 830 km² là CẢ HỆ THỐNG sông Hương, đã GỒM sông Bồ 938 km² (UNESCO-IHP
+#     Catalogue of Rivers Vol. V, Viet Nam-8). Kim Long ở thượng lưu ngã ba Sình
+#     ⇒ lưu vực tới Kim Long ~1 540 km² (DEM GLO-30, src/features/basins.py; ĐH
+#     Thuỷ lợi ghi 1 490). Bản cũ cộng 2 830 + 938 = 3 768 là đếm trùng sông Bồ.
+#   * Dòng chảy đơn vị đo được là 0,071 m³/s/km² (UNESCO: 198 m³/s / 2 830 km²),
+#     vùng núi 0,060–0,080 — không phải 0,046 như bản cũ giả định.
+# Chạy lại với số đúng, KẾT LUẬN KHÔNG ĐỔI, và hai ô nối tiếp còn khớp hơn trước:
+#
+#   (16.45, 107.50)  120,7 m³/s  → 1 508–2 011 km²  ≈ tới Kim Long 1 540 km²     (lệch 10 %)
+#   (16.55, 107.50)  194,5 m³/s  → 2 432–3 242 km²  ≈ hệ thống gồm Bồ 2 830 km² (lệch 3 %;
+#                                                     UNESCO đo Q_tb 198 m³/s)
+#   (16.60, 107.55)  313,3 m³/s  → 3 917–5 222 km²  vượt cả hệ thống → đã gộp lưu vực khác
 #
 # Toạ độ kế hoạch gốc (16.46, 107.59) chỉ cho 5,7 m³/s — không nằm trên dòng chính.
+KIM_LONG_AREA_KM2 = 1540        # lưu vực sông Hương tới trạm Kim Long
+HUONG_SYSTEM_AREA_KM2 = 2830    # cả hệ thống sông Hương, gồm sông Bồ
 RIVER_POINTS = {
     "huong_kim_long": (16.45, 107.50),   # đại diện lưu vực sông Hương
 }
@@ -60,11 +72,16 @@ REJECTED_POINTS = {
 }
 
 # Sông Bồ: GloFAS ở độ phân giải ~5 km KHÔNG tách được thành dòng riêng trong
-# vùng này — mọi ô ứng viên đều lệch ≥ 84 % so với diện tích lưu vực 938 km².
+# vùng này — mọi ô thuộc cụm sông Hương đều lệch ≥ 81 % so với diện tích lưu vực
+# 938 km² (ô duy nhất khớp, 16.75/107.15, thuộc cụm phía bắc — lưu vực khác).
 # ⇒ Phạm vi thu hẹp còn MỘT trạm (Kim Long / sông Hương). Nêu rõ ở Limitations.
 
 BBOX = {"lat_min": 16.0, "lat_max": 16.9, "lon_min": 107.0, "lon_max": 108.0}
 GRID_STEP_DEG = 0.05  # ~5 km
+
+# Report 3–4: mưa mịn hơn 5 km, theo giờ (PERSIANN-CCS ~4 km, IMERG 30 phút).
+# Khung rộng hơn BBOX về phía nam vì thượng nguồn Tả Trạch/Hữu Trạch xuống tới ~16,0°N.
+FINE_BBOX = {"lat_min": 15.8, "lat_max": 16.8, "lon_min": 107.0, "lon_max": 108.0}
 
 # ---------- API ----------
 FLOOD_API = "https://flood-api.open-meteo.com/v1/flood"
