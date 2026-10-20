@@ -27,7 +27,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import requests
 
 from src import config as cfg
@@ -65,7 +65,9 @@ FC_START = "2022-07-01"            # mưa dự báo lưu trữ, phục vụ kị
 # Probe chỉ cần 1 năm: đủ để biết ô có dòng chảy hay không, rẻ hơn 6 lần.
 PROBE_START, PROBE_END = "2023-01-01", "2023-12-31"
 FULL_MIN_QMEAN = 1.0   # m³/s — dưới ngưỡng này coi như không phải sông
-MAX_FULL_CELLS = 40    # trần số ô xin chuỗi 42 năm, tránh đốt sạch quota
+MAX_FULL_CELLS = 40    # trần số ô xin chuỗi 42 năm MỖI LƯỢT, tránh đốt sạch quota
+# Hiện có 83 ô đầy đủ: 45 ô từ lượt crawl đầu (quét phía nam) + ≤ 40 ô của lượt
+# sau. Ô đã có file thì bỏ qua, nên trần này áp cho phần tải MỚI của mỗi lượt.
 
 # Quota Open-Meteo tính theo KHỐI LƯỢNG chứ không theo số request.
 # Xấp xỉ: weight ≈ ceil(số ngày / 14) × ceil(số biến / 10).
@@ -227,12 +229,12 @@ def river_cells() -> list[tuple[float, float, float]]:
     rows = []
     for f in (RAW / "discharge_probe").glob("qp_*.parquet"):
         try:
-            d = pd.read_parquet(f, columns=["river_discharge", "lat", "lon"])
+            d = pl.read_parquet(f, columns=["river_discharge", "lat", "lon"])
         except Exception:
             continue
-        qm = d["river_discharge"].mean()
-        if pd.notna(qm) and qm >= FULL_MIN_QMEAN:
-            rows.append((float(d["lat"].iloc[0]), float(d["lon"].iloc[0]), float(qm)))
+        qm = d["river_discharge"].mean()      # None nếu cả năm toàn ô trống
+        if qm is not None and qm >= FULL_MIN_QMEAN:
+            rows.append((float(d["lat"][0]), float(d["lon"][0]), float(qm)))
     return sorted(rows, key=lambda r: -r[2])
 
 
@@ -340,23 +342,26 @@ def run_task(t: dict, budget: Budget) -> str:
         budget.on_fail()
         return "fail"
 
-    df = pd.DataFrame(block)
     tcol = "time"
-    if tcol in df.columns:
-        df[tcol] = pd.to_datetime(df[tcol])
-    df["lat"], df["lon"] = t["lat"], t["lon"]
+    times = block.pop(tcol, None)
+    # Ép mọi cột số về Float64: một cột toàn null (ô khô) sẽ thành kiểu Null nếu
+    # để Polars tự đoán, và file Parquet đó lệch schema với các ô khác.
+    df = pl.DataFrame({k: pl.Series(k, v, dtype=pl.Float64) for k, v in block.items()})
+    if times is not None:
+        df = df.insert_column(0, pl.Series(tcol, times).str.to_datetime())
+    df = df.with_columns(lat=pl.lit(t["lat"]), lon=pl.lit(t["lon"]))
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_suffix(".tmp")
-    df.to_parquet(tmp, index=False)
+    df.write_parquet(tmp)
     tmp.replace(dest)           # ghi nguyên tử: không để lại file nửa vời
 
     budget.on_success(nbytes)
 
     value_col = [c for c in df.columns if c not in (tcol, "lat", "lon")]
-    has_data = bool(value_col) and bool(df[value_col[0]].notna().any())
+    has_data = bool(value_col) and bool(df[value_col[0]].is_not_null().any())
     _log({"kind": t["kind"], "lat": t["lat"], "lon": t["lon"],
-          "year": t.get("year"), "rows": len(df), "bytes": nbytes,
+          "year": t.get("year"), "rows": df.height, "bytes": nbytes,
           "has_data": has_data, "sleep": round(budget.sleep, 2),
           "ok": budget.ok, "fail": budget.fail, "rl": budget.rate_limited,
           "total_bytes": budget.bytes, "weight": budget.weight})

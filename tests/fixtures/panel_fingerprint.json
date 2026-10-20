@@ -1,0 +1,359 @@
+{
+ "shape": [
+  6087,
+  71
+ ],
+ "columns": [
+  "date",
+  "discharge",
+  "rain_thuong",
+  "rain_trung",
+  "rain_ha",
+  "rain_basin",
+  "discharge_lag1",
+  "discharge_lag2",
+  "discharge_lag3",
+  "discharge_lag4",
+  "discharge_lag5",
+  "discharge_lag6",
+  "discharge_lag7",
+  "discharge_lag8",
+  "discharge_lag9",
+  "discharge_lag10",
+  "discharge_lag11",
+  "discharge_lag12",
+  "discharge_lag13",
+  "discharge_lag14",
+  "rain_thuong_lag1",
+  "rain_thuong_lag2",
+  "rain_thuong_lag3",
+  "rain_thuong_lag4",
+  "rain_thuong_lag5",
+  "rain_thuong_lag6",
+  "rain_thuong_lag7",
+  "rain_thuong_roll3",
+  "rain_thuong_roll5",
+  "rain_thuong_roll7",
+  "rain_trung_lag1",
+  "rain_trung_lag2",
+  "rain_trung_lag3",
+  "rain_trung_lag4",
+  "rain_trung_lag5",
+  "rain_trung_lag6",
+  "rain_trung_lag7",
+  "rain_trung_roll3",
+  "rain_trung_roll5",
+  "rain_trung_roll7",
+  "rain_ha_lag1",
+  "rain_ha_lag2",
+  "rain_ha_lag3",
+  "rain_ha_lag4",
+  "rain_ha_lag5",
+  "rain_ha_lag6",
+  "rain_ha_lag7",
+  "rain_ha_roll3",
+  "rain_ha_roll5",
+  "rain_ha_roll7",
+  "rain_basin_lag1",
+  "rain_basin_lag2",
+  "rain_basin_lag3",
+  "rain_basin_lag4",
+  "rain_basin_lag5",
+  "rain_basin_lag6",
+  "rain_basin_lag7",
+  "rain_basin_roll3",
+  "rain_basin_roll5",
+  "rain_basin_roll7",
+  "api",
+  "q_diff1",
+  "q_diff3",
+  "doy_sin",
+  "doy_cos",
+  "month",
+  "mua_lu",
+  "target_h1",
+  "target_h2",
+  "target_h3",
+  "alert_level"
+ ],
+ "cols": {
+  "discharge": {
+   "sum": 732291.9500000001,
+   "nulls": 0
+  },
+  "rain_thuong": {
+   "sum": 50859.45416666667,
+   "nulls": 0
+  },
+  "rain_trung": {
+   "sum": 51183.99999999999,
+   "nulls": 0
+  },
+  "rain_ha": {
+   "sum": 40421.7125,
+   "nulls": 0
+  },
+  "rain_basin": {
+   "sum": 47488.38888888888,
+   "nulls": 0
+  },
+  "discharge_lag1": {
+   "sum": 732262.12,
+   "nulls": 1
+  },
+  "discharge_lag2": {
+   "sum": 732231.57,
+   "nulls": 2
+  },
+  "discharge_lag3": {
+   "sum": 732199.3,
+   "nulls": 3
+  },
+  "discharge_lag4": {
+   "sum": 732164.6499999999,
+   "nulls": 4
+  },
+  "discharge_lag5": {
+   "sum": 732126.66,
+   "nulls": 5
+  },
+  "discharge_lag6": {
+   "sum": 732084.01,
+   "nulls": 6
+  },
+  "discharge_lag7": {
+   "sum": 732034.31,
+   "nulls": 7
+  },
+  "discharge_lag8": {
+   "sum": 731972.94,
+   "nulls": 8
+  },
+  "discharge_lag9": {
+   "sum": 731889.0199999999,
+   "nulls": 9
+  },
+  "discharge_lag10": {
+   "sum": 731669.7300000001,
+   "nulls": 10
+  },
+  "discharge_lag11": {
+   "sum": 731485.3799999999,
+   "nulls": 11
+  },
+  "discharge_lag12": {
+   "sum": 731339.49,
+   "nulls": 12
+  },
+  "discharge_lag13": {
+   "sum": 731296.33,
+   "nulls": 13
+  },
+  "discharge_lag14": {
+   "sum": 731267.61,
+   "nulls": 14
+  },
+  "rain_thuong_lag1": {
+   "sum": 50848.40416666667,
+   "nulls": 1
+  },
+  "rain_thuong_lag2": {
+   "sum": 50846.35833333334,
+   "nulls": 2
+  },
+  "rain_thuong_lag3": {
+   "sum": 50845.025,
+   "nulls": 3
+  },
+  "rain_thuong_lag4": {
+   "sum": 50844.35833333334,
+   "nulls": 4
+  },
+  "rain_thuong_lag5": {
+   "sum": 50843.73333333333,
+   "nulls": 5
+  },
+  "rain_thuong_lag6": {
+   "sum": 50843.066666666666,
+   "nulls": 6
+  },
+  "rain_thuong_lag7": {
+   "sum": 50842.01666666666,
+   "nulls": 7
+  },
+  "rain_thuong_roll3": {
+   "sum": 152553.86666666728,
+   "nulls": 2
+  },
+  "rain_thuong_roll5": {
+   "sum": 254234.32499999987,
+   "nulls": 4
+  },
+  "rain_thuong_roll7": {
+   "sum": 355910.64166666643,
+   "nulls": 6
+  },
+  "rain_trung_lag1": {
+   "sum": 51175.69375,
+   "nulls": 1
+  },
+  "rain_trung_lag2": {
+   "sum": 51174.49375,
+   "nulls": 2
+  },
+  "rain_trung_lag3": {
+   "sum": 51174.1,
+   "nulls": 3
+  },
+  "rain_trung_lag4": {
+   "sum": 51173.43749999999,
+   "nulls": 4
+  },
+  "rain_trung_lag5": {
+   "sum": 51172.862499999996,
+   "nulls": 5
+  },
+  "rain_trung_lag6": {
+   "sum": 51172.525,
+   "nulls": 6
+  },
+  "rain_trung_lag7": {
+   "sum": 51172.19375,
+   "nulls": 7
+  },
+  "rain_trung_roll3": {
+   "sum": 153533.7999999999,
+   "nulls": 2
+  },
+  "rain_trung_roll5": {
+   "sum": 255874.67499999946,
+   "nulls": 4
+  },
+  "rain_trung_roll7": {
+   "sum": 358211.68749999965,
+   "nulls": 6
+  },
+  "rain_ha_lag1": {
+   "sum": 40416.98333333333,
+   "nulls": 1
+  },
+  "rain_ha_lag2": {
+   "sum": 40412.941666666666,
+   "nulls": 2
+  },
+  "rain_ha_lag3": {
+   "sum": 40412.88333333334,
+   "nulls": 3
+  },
+  "rain_ha_lag4": {
+   "sum": 40412.29583333333,
+   "nulls": 4
+  },
+  "rain_ha_lag5": {
+   "sum": 40412.02916666667,
+   "nulls": 5
+  },
+  "rain_ha_lag6": {
+   "sum": 40411.791666666664,
+   "nulls": 6
+  },
+  "rain_ha_lag7": {
+   "sum": 40411.26666666666,
+   "nulls": 7
+  },
+  "rain_ha_roll3": {
+   "sum": 121251.38333333339,
+   "nulls": 2
+  },
+  "rain_ha_roll5": {
+   "sum": 202070.608333334,
+   "nulls": 4
+  },
+  "rain_ha_roll7": {
+   "sum": 282886.8500000004,
+   "nulls": 6
+  },
+  "rain_basin_lag1": {
+   "sum": 47480.36041666667,
+   "nulls": 1
+  },
+  "rain_basin_lag2": {
+   "sum": 47477.931249999994,
+   "nulls": 2
+  },
+  "rain_basin_lag3": {
+   "sum": 47477.33611111111,
+   "nulls": 3
+  },
+  "rain_basin_lag4": {
+   "sum": 47476.69722222222,
+   "nulls": 4
+  },
+  "rain_basin_lag5": {
+   "sum": 47476.208333333336,
+   "nulls": 5
+  },
+  "rain_basin_lag6": {
+   "sum": 47475.794444444444,
+   "nulls": 6
+  },
+  "rain_basin_lag7": {
+   "sum": 47475.15902777777,
+   "nulls": 7
+  },
+  "rain_basin_roll3": {
+   "sum": 142446.35000000006,
+   "nulls": 2
+  },
+  "rain_basin_roll5": {
+   "sum": 237393.2027777775,
+   "nulls": 4
+  },
+  "rain_basin_roll7": {
+   "sum": 332336.3930555556,
+   "nulls": 6
+  },
+  "api": {
+   "sum": 329509.6746211845,
+   "nulls": 0
+  },
+  "q_diff1": {
+   "sum": -2.2799999999990064,
+   "nulls": 1
+  },
+  "q_diff3": {
+   "sum": -1.3699999999992087,
+   "nulls": 3
+  },
+  "doy_sin": {
+   "sum": 87.22174137573265,
+   "nulls": 0
+  },
+  "doy_cos": {
+   "sum": -50.84413642604538,
+   "nulls": 0
+  },
+  "month": {
+   "sum": 39220.0,
+   "nulls": 0
+  },
+  "mua_lu": {
+   "sum": 1952.0,
+   "nulls": 0
+  },
+  "target_h1": {
+   "sum": 732259.8400000001,
+   "nulls": 1
+  },
+  "target_h2": {
+   "sum": 732228.7,
+   "nulls": 2
+  },
+  "target_h3": {
+   "sum": 732197.9299999999,
+   "nulls": 3
+  }
+ },
+ "date_min": "2010-01-01",
+ "date_max": "2026-08-31"
+}
