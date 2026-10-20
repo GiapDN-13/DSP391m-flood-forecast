@@ -345,7 +345,8 @@ def load_gee(source: str, months: list[str] | None = None, years: list[int] | No
                                 f"hoặc `python -m src.ingest.gsmap_nrt`")
     lf = (pl.scan_parquet(files)
             .select("time", pl.col("lat").round(4), pl.col("lon").round(4),
-                    pl.col(col).cast(pl.Float64).alias("precip")))
+                    # NaN (ô thiếu của JAXA) → null để basin_mean chia lại trọng số
+                    pl.col(col).cast(pl.Float64).fill_nan(None).alias("precip")))
     if cells is not None:
         lf = lf.join(cells.lazy().select(pl.col("lat").round(4), pl.col("lon").round(4)).unique(),
                      on=["lat", "lon"], how="semi")
