@@ -37,9 +37,13 @@ train+valid, trung bình ± sd 3 seed; NSE h1 / h2 / h3):
     LSTM chọn theo valid (L=14, đủ cột panel)    0,709±0,018 / 0,404±0,002 / 0,171±0,017
     MLP trên cột lag, loss nhấn đỉnh             0,713±0,029 / 0,490±0,003 / 0,220±0,067
 
-→ h=1: LightGBM vẫn tốt nhất. h=2–3: đa số cấu hình DL nhỉnh hơn 0,02–0,07 NSE,
-cỡ 1–2 sd giữa các seed, và mọi mô hình vẫn < 0,5 ở h=2–3. Loss nhấn đỉnh giảm
-cắt ngọn (peak_bias h2 −0,59 so với −0,73) và tăng POD nhưng tăng cả FAR.
+Trên MỘT lần chia này DL nhỉnh hơn ở h=2–3, nhưng **walk-forward 13 fold
+(2013–2025, `src/eval/walk_forward_dl.py`) bác bỏ điều đó**: không cấu hình DL nào
+hơn LightGBM một cách vững ở horizon nào. LSTM L30 MSE ngang LightGBM (ΔNSE
++0,021 / −0,025 / −0,026, CI chứa 0); loss nhấn đỉnh thua rõ ở h=3 (−0,229,
+p = 0,033). Ưu thế h=2–3 chỉ xuất hiện ở 2022–2025 — đúng giai đoạn test của lần
+chia đơn. Mặt được của DL: gộp sự kiện mức 1 (h=1, 106 ngày) CSI 0,49–0,50 so với
+0,44 của LightGBM, và ít cắt ngọn hơn. ⇒ Giữ LightGBM làm mô hình chính.
 
 Chạy được trong Spark TorchDistributor
 --------------------------------------
@@ -61,9 +65,10 @@ Trên một máy: ``python -m src.models.dl_lstm --ddp 2`` (tự spawn 2 tiến 
 TorchDistributor KHÔNG chạy trên Windows (torchrun cần libuv, bản torch Windows
 không có) — trên Windows dùng ``python -m src.distributed.spark_dl --engine barrier``.
 
-Kết quả phụ thuộc số luồng torch (thứ tự cộng số thực đổi → early stopping dừng ở
-epoch khác, dao động ngang độ lệch giữa seed). Muốn tái lập đúng
-``reports/dl_results.csv`` phải chạy ``--threads 2``.
+Số luồng torch có thể đổi thứ tự cộng số thực → early stopping dừng ở epoch khác.
+Walk-forward đo lại (fold 2020, 2024): ảnh hưởng NHỎ — LSTM trùng hệt ở 1/2/4
+luồng, MLP lệch tối đa 0,028 — nhỏ hơn độ lệch giữa seed. Vẫn chạy ``--threads 2``
+để tái lập đúng từng chữ số ``reports/dl_results.csv``.
 
 Mở rộng sang đầu vào theo giờ (chưa cài đặt)
 ------------------------------------------
@@ -139,6 +144,10 @@ DEFAULTS: dict = {
     "train_end": cfg.TRAIN_END,
     "valid_end": cfg.VALID_END,
     "test_start": cfg.GLOFAS_REGIME_BREAK,
+    # Mốc tuỳ chọn cho walk-forward (src/eval/walk_forward_dl.py). None = như cũ:
+    # valid bắt đầu ngay sau train_end, test không có mốc cuối.
+    "valid_start": None,
+    "test_end": None,
 }
 
 # Lưới thí nghiệm. Mỗi cấu hình chạy với 3 seed.
@@ -177,11 +186,18 @@ def log_transform(X: np.ndarray, cols: list[str]) -> np.ndarray:
 
 
 def split_masks(dates: np.ndarray, conf: dict) -> tuple[np.ndarray, ...]:
-    """train / valid / test theo mốc trong config (mặc định = regime_split)."""
+    """train / valid / test theo mốc trong config (mặc định = regime_split).
+
+    `valid_start` (có gap với train) và `test_end` là tuỳ chọn; None → như cũ.
+    """
     d = dates.astype("datetime64[D]")
     tr = d <= np.datetime64(conf["train_end"])
-    va = (d > np.datetime64(conf["train_end"])) & (d <= np.datetime64(conf["valid_end"]))
+    va_lo = (d >= np.datetime64(conf["valid_start"])) if conf.get("valid_start") \
+        else (d > np.datetime64(conf["train_end"]))
+    va = va_lo & (d <= np.datetime64(conf["valid_end"]))
     te = d >= np.datetime64(conf["test_start"])
+    if conf.get("test_end"):
+        te &= d <= np.datetime64(conf["test_end"])
     return tr, va, te
 
 
@@ -230,6 +246,9 @@ def prepare(df: pl.DataFrame, conf: dict) -> dict:
     Y = df.select(hz).cast(pl.Float64).to_numpy()            # null → nan
 
     tr, va, te = split_masks(dates, conf)
+    # Tập học lại = mọi ngày ≤ valid_end (= tr | va khi không có gap; có gap thì
+    # gồm cả mấy ngày gap giữa train và valid).
+    fit = dates.astype("datetime64[D]") <= np.datetime64(conf["valid_end"])
     mu, sd = fit_scaler(X[tr])
     Xs = ((X - mu) / sd).astype(np.float32)
     y_mu, y_sd = float(mu[q_idx]), float(sd[q_idx])         # cùng thang với đầu vào Q
@@ -244,12 +263,12 @@ def prepare(df: pl.DataFrame, conf: dict) -> dict:
     y_ok = np.isfinite(Ys[end]).all(axis=1)
     sets = {}
     for name, m, need_y in (("train", tr, True), ("valid", va, True),
-                            ("trval", tr | va, True), ("test", te, False)):
+                            ("trval", fit, True), ("test", te, False)):
         k = m[end] & (y_ok if need_y else True)
         sets[name] = {"X": win[k], "Y": Ys[end[k]], "W": Wt[end[k]],
                       "Yraw": Y[end[k]], "date": dates[end[k]]}
     return {"sets": sets, "cols": cols, "q_idx": q_idx, "y_mu": y_mu, "y_sd": y_sd,
-            "thr": risk_threshold(q, dates, tr | va), "mu": mu, "sd": sd}
+            "thr": risk_threshold(q, dates, fit), "mu": mu, "sd": sd}
 
 
 # ----------------------------------------------------------------- mô hình

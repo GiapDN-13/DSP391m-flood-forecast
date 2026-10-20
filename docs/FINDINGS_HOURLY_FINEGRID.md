@@ -146,6 +146,8 @@ Chạy thẳng trên Windows thì Spark không đọc parquet được vì thi�
 
 ## 6. Deep Learning so với LightGBM
 
+> **Cập nhật 20/10:** bảng dưới là MỘT lần chia. Walk-forward 13 fold (§12.2) cho thấy DL **không** hơn LightGBM một cách vững ở horizon nào; mục 3 bên dưới ("phụ thuộc số luồng") cũng đã được đo lại và **bác bỏ**.
+
 Panel ngày, split chính (train ≤ 2015, valid tới 06/2022, test từ 07/2022), học trên train+valid, tính trên tập test. Số là trung bình ± độ lệch chuẩn qua 3 seed (`reports/dl_results.csv`).
 
 | Mô hình | NSE h1 | NSE h2 | NSE h3 | peak_bias h2 | KGE h2 | CSI mức 1, h1 |
@@ -271,6 +273,8 @@ python -m pytest -q && python -m ruff check src tests
 
 ## 11. Mưa vệ tinh IMERG / GSMaP 1998–2026 trên split chính (bổ sung 20/10)
 
+> **Cập nhật:** kết luận cuối dựa trên walk-forward ở §12.1 — một lần chia dưới đây **đánh giá IMERG quá cao**.
+
 Nguồn: Earth Engine (`src/ingest/gee_precip.py`), 10×10 ô 0,1° phủ **100 %** lưu vực
 Kim Long (ERA5 chỉ 92,5 %). Đặc trưng giống hệt §4 (`hourly_features --source
 imerg|gsmap|gsmap_gc`); IMERG nửa giờ được gộp về giờ kết thúc. Ranh giới ngày và
@@ -318,3 +322,63 @@ GSMaP gốc không ổn định (mùa lũ 2018 chỉ bằng 14 % ERA5).
    hoặc GSMaP NRT, và nên chạy lại ablation với đúng sản phẩm đó.
 
 Tái lập: `make hourly` (hoặc 5 lệnh cuối của target `hourly` trong Makefile).
+
+---
+
+## 12. Walk-forward 13 fold — kết luận cuối (20/10)
+
+Fold theo năm, cửa sổ train mở rộng, test từng năm 2013 … 2025, gap 3 ngày giữa
+train và test; ngưỡng mức 1 của mỗi fold tính chỉ từ train của fold đó; 3 seed.
+Thống kê qua fold: ΔNSE trung bình [CI 95 % bootstrap theo fold], số fold thắng/thua,
+Wilcoxon hai phía. Năm 2022 (GloFAS đổi chế độ) và 2026 (01–08) báo riêng.
+
+### 12.1 Mưa vệ tinh (`src/eval/walk_forward_sat.py`, `reports/wf_sat_*.csv`)
+
+| Cấu hình | ΔNSE h1 | ΔNSE h2 | ΔNSE h3 | CSI mức 1 h1 (gộp ~105 ngày) |
+|---|---|---|---|---|
+| E0 (cấu hình E, NSE TB 0,761 / 0,398 / 0,170) | — | — | — | 0,450 |
+| **E0 + GSMaP-GC** (9 cột) | −0,001 · 8/5 | +0,017 [−0,002; +0,036] · 8/5 · p 0,22 | **+0,016 [+0,007; +0,024] · 11/2 · p 0,005** | **0,484** |
+| E0 + IMERG | +0,001 · 8/5 | +0,010 [−0,002; +0,021] · p 0,09 | +0,008 [+0,001; +0,016] · p 0,08 | 0,446 |
+| A0 (Report 2, NSE TB 0,744 / 0,336 / 0,121) | — | — | — | 0,423 |
+| A0 + GSMaP-GC | +0,006 · 9/4 | **+0,032 [+0,023; +0,041] · 13/0** | **+0,025 [+0,013; +0,038] · 12/1** | 0,480 |
+| A0 + IMERG | +0,012 · 11/2 | +0,019 · 12/1 | +0,012 · 9/4 | 0,452 |
+
+1. **Mức tăng là thật nhưng nhỏ**, và nhỏ hơn hẳn trên mốc mạnh E0 so với A0 (vệ tinh
+   bù phần R2 còn thiếu: độ ẩm đất, ngữ cảnh thời tiết, chuỗi train ngắn). Report 3
+   báo theo mốc **E0**.
+2. **Chọn GSMaP-GC toàn lưu vực (9 cột)** cho cấu hình chính: tăng đều ở h3 (11/13
+   fold, CI loại 0), giảm báo động nhầm mức 1 (FA 24 → 19, CSI 0,450 → 0,484). Ở h2
+   dương nhưng dao động lớn giữa năm — ghi là **chưa có ý nghĩa thống kê**.
+3. **IMERG bị lần chia đơn đánh giá quá cao** (+0,018 / +0,017 → +0,010 / +0,008 qua
+   fold, CI chạm 0) — chỉ nêu là phép thử phụ.
+4. **Lưu vực con không đáng**: 45 cột ≈ 9 cột toàn lưu vực.
+5. Giai đoạn GloFAS forecast archive (2023–2025) mới 3 fold — chưa kiểm định được
+   (p hai phía nhỏ nhất có thể là 0,25). Chưa kiểm độ trễ phát hành GSMaP-GC/IMERG
+   trên Earth Engine — mức tăng mới chắc cho phân tích lại quá khứ.
+
+### 12.2 Deep Learning (`src/eval/walk_forward_dl.py`, `reports/wf_dl_*.csv`)
+
+Panel Report 2, so với LightGBM (NSE TB qua fold 0,743 / 0,334 / 0,118); DL: early
+stopping trên 365 ngày cuối của train rồi học lại trên toàn bộ train; `--threads 2`.
+
+| Mô hình | ΔNSE h1 | ΔNSE h2 | ΔNSE h3 | CSI mức 1 h1 (gộp 106 ngày) |
+|---|---|---|---|---|
+| LightGBM | — | — | — | 0,44 |
+| LSTM L30, MSE | +0,021 [−0,014; +0,058] · 8/5 | −0,025 · 7/6 | −0,026 · 7/6 | **0,50** |
+| LSTM L30, loss nhấn đỉnh | −0,007 | −0,107 · 5/8 | **−0,229 · p 0,033** | 0,50 |
+| MLP lag, loss nhấn đỉnh | 0,000 | −0,065 | −0,118 | 0,49 |
+
+1. **Không cấu hình DL nào hơn LightGBM một cách vững.** Ưu thế h2–h3 ở lần chia đơn
+   chỉ có ở 2022–2025 — đúng giai đoạn test cũ; 2013–2021 DL thua.
+2. Mặt được: ở h1 DL bắt sự kiện tốt hơn (POD 0,59–0,63 so với 0,51; CSI 0,49–0,50 so
+   với 0,44) và ít cắt ngọn hơn (peak_bias h1 −0,21…−0,26 so với −0,38).
+3. Số luồng torch ảnh hưởng **nhỏ** (LSTM trùng hệt ở 1/2/4 luồng, MLP lệch ≤ 0,028)
+   — nhỏ hơn độ lệch giữa seed (sd 0,03–0,20 với DL, 0,01 với LightGBM).
+4. ⇒ **Giữ LightGBM làm mô hình chính**; Report 4 trình bày walk-forward là so sánh
+   chính, lần chia đơn chỉ là một trường hợp.
+
+Tái lập:
+
+    python -m src.eval.walk_forward_sat     # ~15–26 phút (882 lần fit)
+    python -m src.eval.walk_forward_dl      # ~13 phút (6 tiến trình × 2 luồng)
+    # --plot-only / --resume: dựng lại bảng + hình từ kết quả đã lưu
