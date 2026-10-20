@@ -1,0 +1,11 @@
+variable,pearson_vs_Q_t1,spearman_vs_Q_t1,diff
+Q (today),0.778,0.907,0.129
+Rain (today),0.789,0.75,-0.039
+Rain (t-1),0.608,0.727,0.119
+Rain 3-day,0.753,0.836,0.083
+Rain 7-day,0.6,0.772,0.172
+Wetness API,0.479,0.679,0.2
+Rain upper,0.789,0.729,-0.06
+Rain middle,0.765,0.739,-0.026
+Rain lower,0.729,0.726,-0.003
+Q change 1d,0.444,0.181,-0.263
