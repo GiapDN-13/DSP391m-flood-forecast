@@ -17,7 +17,7 @@ tenacity==9.0.0
 earthengine-api==1.7.49
 # Đọc HDF5/NetCDF của IMERG (src/ingest/imerg.py)
 h5py==3.14.0
-scipy==1.17.1
+scipy==1.14.1
 
 # --- Mô hình ---
 scikit-learn==1.6.0
@@ -36,10 +36,10 @@ plotly==5.24.1
 streamlit==1.41.1
 folium==0.19.2
 geopandas==1.0.1
-# Lưu vực con từ DEM 30 m (src/features/basins.py)
-shapely==2.2.0
-pyproj==3.8.0
-rasterio==1.5.2
+# Lưu vực con từ DEM 30 m (src/features/basins.py) — bản có wheel cho Python 3.11 (CI)
+shapely==2.0.6
+pyproj==3.7.1
+rasterio==1.4.3
 pysheds==0.5
 
 # --- Công cụ ---
