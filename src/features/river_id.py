@@ -31,8 +31,12 @@ OSM_CACHE = cfg.DATA_EXTERNAL / "osm_rivers.json"
 OVERPASS = "https://overpass-api.de/api/interpreter"
 BBOX = (16.05, 107.05, 16.95, 107.95)      # nam, tây, bắc, đông
 
-# Diện tích lưu vực tham khảo (km²) — dùng để kiểm tra tỉ lệ lưu lượng có hợp lý
-BASIN_KM2 = {"Sông Hương": 2830, "Sông Bồ": 938}
+# Diện tích lưu vực tham khảo (km²) — dùng để kiểm tra tỉ lệ lưu lượng có hợp lý.
+# SỬA 20/10/2026: 2 830 km² là của CẢ HỆ THỐNG sông Hương, đã gồm sông Bồ 938 km²
+# (UNESCO-IHP Catalogue of Rivers Vol. V, Viet Nam-8). Kim Long nằm thượng lưu ngã
+# ba Sình nên không gồm sông Bồ: ~1 540 km² (DEM GLO-30, src/features/basins.py;
+# ĐH Thuỷ lợi ghi 1 490 km²).
+BASIN_KM2 = {"Sông Hương": 1540, "Sông Bồ": 938, "Hệ thống Hương": 2830}
 
 MIN_QMEAN = 5.0        # m³/s — dưới ngưỡng này bỏ qua, không phải dòng đáng kể
 MAX_DIST_KM = 8.0      # xa hơn ngưỡng này thì không gán cho sông nào
@@ -213,27 +217,30 @@ def verdict(rep: pd.DataFrame, series: dict) -> str:
     if cand.empty:
         return "Không chọn được ô nào — cần kiểm tra thủ công."
     best = cand.sort_values("lech").iloc[0]
-    tong = BASIN_KM2["Sông Hương"] + BASIN_KM2["Sông Bồ"]
+    tong = BASIN_KM2["Hệ thống Hương"]   # đã gồm sông Bồ, không cộng thêm
     big = rep.iloc[0]
     out = [
         "KẾT LUẬN TỰ ĐỘNG",
         f"  Ô cho sông Hương / trạm Kim Long:  ({best.lat}, {best.lon})",
         f"    lưu lượng trung bình         {best.q_mean:.1f} m³/s",
         f"    diện tích lưu vực suy ra     {best.dt_min:.0f}–{best.dt_max:.0f} km²",
-        f"    lưu vực sông Hương thực tế   {target} km² → lệch {best.lech*100:.0f} %",
+        f"    lưu vực tới Kim Long         {target} km² → lệch {best.lech*100:.0f} %",
         f"    cách đường tim sông Hương    {best._dH:.2f} km",
         "",
         f"  Ô ({big.lat}, {big.lon}) tuy lưu lượng lớn nhất nhưng diện tích suy ra",
-        f"  {big.dt_km2:.0f} km², vượt xa cả Hương + Bồ ({tong} km²) — đã gộp thêm",
+        f"  {big.dt_km2:.0f} km², vượt xa cả hệ thống Hương gồm Bồ ({tong} km²) — đã gộp thêm",
         "  lưu vực khác. KHÔNG dùng ô này để ánh xạ sang mực nước một trạm.",
     ]
     return chr(10).join(out)
 
 
-# Dòng chảy đơn vị vùng Huế: mưa ~2.800–3.200 mm/năm, hệ số dòng chảy ~0,45–0,50
-# ⇒ lớp dòng chảy ~1.300–1.600 mm/năm ⇒ ~0,041–0,051 m³/s trên mỗi km².
-SPECIFIC_Q = 0.046          # m³/s/km², giá trị giữa
-SPECIFIC_Q_RANGE = (0.041, 0.051)
+# Dòng chảy đơn vị lưu vực sông Hương — SỐ ĐO, không còn giả định hệ số dòng chảy:
+# UNESCO-IHP Catalogue of Rivers Vol. V, Viet Nam-8: Q_tb 198 m³/s trên 2 830 km²
+# ⇒ 0,071 m³/s/km² (lớp dòng chảy 2 210 mm); "0,040 ở đồng bằng ven biển tới hơn
+# 0,080 ở vùng núi". Lưu vực tới Kim Long gần như toàn núi ⇒ lấy khoảng 0,060–0,080.
+# (Bản cũ dùng 0,046 suy từ hệ số dòng chảy 0,45–0,50 — thấp hơn số đo ~35 %.)
+SPECIFIC_Q = 0.071          # m³/s/km²
+SPECIFIC_Q_RANGE = (0.060, 0.080)
 
 
 def check_basin_area(rep: pd.DataFrame) -> pd.DataFrame:
@@ -251,7 +258,8 @@ def check_basin_area(rep: pd.DataFrame) -> pd.DataFrame:
     rep["dt_min"] = rep["q_mean"] / hi
     rep["dt_max"] = rep["q_mean"] / lo
 
-    known = {"Sông Bồ": 938, "Sông Hương": 2830, "Hương + Bồ": 3768}
+    known = {"Sông Bồ": 938, "Hương tới Kim Long": BASIN_KM2["Sông Hương"],
+             "Hệ thống Hương gồm Bồ": BASIN_KM2["Hệ thống Hương"]}
     print("   Diện tích lưu vực đã biết: "
           + " · ".join(f"{k} {v:,} km²".replace(",", " ") for k, v in known.items()))
     print()

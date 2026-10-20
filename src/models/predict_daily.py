@@ -154,6 +154,17 @@ def main() -> int:
         # (Gặp thật trong bản phát 2026-09-22 của job theo lịch.)
         df = df[df["horizon_days"] >= 0].copy()
         df["alert_glofas"] = df["glofas_discharge"].apply(alert_level)
+        # Hồ thượng nguồn đang xả theo lệnh của tỉnh: lưu lượng Kim Long không
+        # thể thấp hơn lượng xả đó (src/features/reservoirs.py). Cột GloFAS thô
+        # giữ nguyên; thêm cột đã nâng sàn bên cạnh.
+        try:
+            from src.features import reservoirs
+            rel = df["target_date"].dt.date.apply(reservoirs.active_orders)
+            df["q_release_upstream"] = rel
+            df["glofas_san_ho"] = [reservoirs.release_floor(q, r)
+                                   for q, r in zip(df["glofas_discharge"], rel)]
+        except Exception as e:
+            print(f"  ! {name}: không đọc được lệnh xả hồ — {e}", flush=True)
         rows.append(df)
         print(f"  {name}: {len(df)} ngày, đỉnh dự báo "
               f"{df['glofas_discharge'].max():.1f} m³/s", flush=True)

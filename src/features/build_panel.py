@@ -15,7 +15,8 @@ giả, và chỉ lộ ra khi bị hỏi lúc vấn đáp. Xem `tests/test_no_lea
 Bảng đầu ra được kiểm **trùng khớp với bản pandas cũ** trước khi thay thế
 (`tests/test_build_panel_equivalence.py`).
 
-    python -m src.features.build_panel
+    python -m src.features.build_panel          # panel Report 2 (từ 2010)
+    python -m src.features.build_panel --ext    # panel Report 3 (từ 1997 + đất + hồ)
 """
 
 from __future__ import annotations
@@ -112,18 +113,91 @@ def aggregate_rain(rain: pl.DataFrame) -> pl.DataFrame:
     return out.with_columns(pl.mean_horizontal(rain_cols).alias("rain_basin"))
 
 
+# ------------------------------------------------- feature mở rộng (Report 3)
+
+# Mùa lũ vận hành hồ chứa sông Hương bắt đầu 01/09 (QĐ 1606/QĐ-TTg, Điều 2):
+# "năm thuỷ văn" tính từ 01/09.
+HYDRO_YEAR_START_MONTH = 9
+
+
+def ext_features() -> list[pl.Expr]:
+    """Feature chỉ có ở panel mở rộng.
+
+    Hồ chứa thượng nguồn (Tả Trạch, Bình Điền) cắt lũ khi còn chỗ trống và
+    buộc phải xả khi đã đầy. Không có số liệu mực nước hồ công khai theo ngày,
+    nên dùng hai đại lượng **đại diện cho mức đầy của hồ**, đều chỉ nhìn quá khứ:
+
+    * tổng mưa 15 / 30 ngày — mưa kéo dài làm đầy hồ;
+    * mưa tích luỹ từ 01/09 — đầu mùa hồ còn trống, cuối mùa hồ đầy và mọi trận
+      mưa đi thẳng xuống hạ du.
+    """
+    hy = (pl.col("date").dt.year()
+          + (pl.col("date").dt.month() >= HYDRO_YEAR_START_MONTH).cast(pl.Int32))
+    return [
+        _window_sum("rain_basin", 15).alias("rain_basin_roll15"),
+        _window_sum("rain_basin", 30).alias("rain_basin_roll30"),
+        pl.col("rain_basin").cum_sum().over(hy).alias("rain_season_cum"),
+    ]
+
+
+STORM_FAR_KM = 2000.0      # ngày không có bão trong bán kính 1 500 km
+
+
+def join_context(df: pl.DataFrame) -> pl.DataFrame:
+    """Ghép các yếu tố khí tượng quy mô lớn — mỗi nhóm là một cơ chế gây lũ khác nhau.
+
+    * **Bão / ATNĐ** (IBTrACS): khoảng cách tới Huế, sức gió, đang tiến lại hay ra xa.
+    * **Không khí lạnh + gió đông**: chênh khí áp Hà Nội − Huế (tăng vọt khi khối
+      lạnh tràn về), gió đông bắc tại Huế, gió đông ngoài khơi.
+    * **ENSO** (ONI): trễ 3 tháng — mùa ONI giữa tháng M−3 kết thúc tháng M−2,
+      đã được công bố trước tháng M. Dùng số chưa công bố là rò rỉ.
+    """
+    met = clean.load_met_daily()
+    storm = clean.load_storm_daily()
+    oni = clean.load_oni()
+    deg = math.pi / 180
+    df = (df.join(met, on="date", how="left")
+            .join(storm, on="date", how="left")
+            .with_columns(pl.col("storm_dist_km").fill_null(STORM_FAR_KM),
+                          pl.col("storm_wind_kt").fill_null(0.0)))
+    # dt.year() ra Int32 còn cột year của ONI là Int64 — ép cùng kiểu trước khi join
+    m_lag = (pl.col("date").dt.year().cast(pl.Int64) * 12
+             + pl.col("date").dt.month().cast(pl.Int64) - 1 - 3)
+    df = (df.with_columns(_ym=m_lag)
+            .join(oni.with_columns(_ym=(pl.col("year") * 12 + pl.col("month") - 1)
+                                   .cast(pl.Int64))
+                     .select("_ym", pl.col("oni").alias("oni_lag3")),
+                  on="_ym", how="left")
+            .drop("_ym"))
+    return df.with_columns(
+        (pl.col("mslp_north") - pl.col("mslp_hue")).alias("mslp_grad_north"),
+        pl.col("mslp_hue").diff(1).alias("mslp_hue_d1"),
+        # thành phần gió THỔI TỪ hướng đông bắc (45°) / đông (90°), dương = đúng hướng
+        (pl.col("wind_speed_hue") * ((pl.col("wind_dir_hue") - 45) * deg).cos())
+            .alias("wind_ne_hue"),
+        (pl.col("wind_speed_sea") * ((pl.col("wind_dir_sea") - 90) * deg).cos())
+            .alias("wind_e_sea"),
+        pl.col("storm_dist_km").diff(1).alias("storm_approach_km"),
+    ).drop("wind_dir_hue", "wind_dir_north", "wind_dir_sea")
+
+
 # ------------------------------------------------------------ dựng bảng
 
-def build() -> pl.DataFrame:
+def build(ext: bool = False) -> pl.DataFrame:
+    """`ext=True`: panel Report 3 — mưa từ 1997, thêm độ ẩm đất và feature hồ chứa."""
     lat, lon = cfg.RIVER_POINTS["huong_kim_long"]
     print(f"Ô lưới lưu lượng: ({lat}, {lon})")
 
     q = clean.load_discharge(lat, lon)
-    rain = clean.load_rain_daily()
+    folders = ("rain_daily_ext", "rain_daily") if ext else ("rain_daily",)
+    rain = clean.load_rain_daily(folders)
     print("Gộp mưa theo tiểu lưu vực:")
     rain_agg = aggregate_rain(rain)
 
     df = q.join(rain_agg, on="date", how="inner").sort("date")
+    if ext:
+        df = df.join(clean.load_soil_daily(), on="date", how="left")
+        df = join_context(df)
     print(f"\nGiao nhau: {df.height} ngày, {df['date'].min():%Y-%m-%d} → "
           f"{df['date'].max():%Y-%m-%d}")
 
@@ -147,6 +221,9 @@ def build() -> pl.DataFrame:
         pl.col("date").dt.month().is_in(cfg.FLOOD_SEASON_MONTHS).cast(pl.Int64).alias("mua_lu"),
     )
 
+    if ext:
+        df = df.with_columns(ext_features())
+
     # --- biến mục tiêu ---
     for h in cfg.HORIZONS:
         df = make_target(df, h)
@@ -169,10 +246,11 @@ def build() -> pl.DataFrame:
 
 
 def main() -> int:
-    df = build()
+    ext = "--ext" in sys.argv[1:]
+    df = build(ext=ext)
     clean.validate_daily_index(df, require_continuous=True)
 
-    dest = cfg.DATA_PROCESSED / "daily_panel.parquet"
+    dest = cfg.DATA_PROCESSED / ("daily_panel_ext.parquet" if ext else "daily_panel.parquet")
     dest.parent.mkdir(parents=True, exist_ok=True)
     df.write_parquet(dest)
 
