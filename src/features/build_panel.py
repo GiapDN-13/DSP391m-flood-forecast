@@ -160,9 +160,12 @@ def join_context(df: pl.DataFrame) -> pl.DataFrame:
             .join(storm, on="date", how="left")
             .with_columns(pl.col("storm_dist_km").fill_null(STORM_FAR_KM),
                           pl.col("storm_wind_kt").fill_null(0.0)))
-    m_lag = pl.col("date").dt.year() * 12 + pl.col("date").dt.month() - 1 - 3
+    # dt.year() ra Int32 còn cột year của ONI là Int64 — ép cùng kiểu trước khi join
+    m_lag = (pl.col("date").dt.year().cast(pl.Int64) * 12
+             + pl.col("date").dt.month().cast(pl.Int64) - 1 - 3)
     df = (df.with_columns(_ym=m_lag)
-            .join(oni.with_columns(_ym=pl.col("year") * 12 + pl.col("month") - 1)
+            .join(oni.with_columns(_ym=(pl.col("year") * 12 + pl.col("month") - 1)
+                                   .cast(pl.Int64))
                      .select("_ym", pl.col("oni").alias("oni_lag3")),
                   on="_ym", how="left")
             .drop("_ym"))

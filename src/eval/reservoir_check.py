@@ -44,7 +44,7 @@ OUT_ERA = cfg.ROOT / "reports" / "reservoir_dam_era.csv"
 OUT_TEST = cfg.ROOT / "reports" / "reservoir_dam_era_test.csv"
 OUT_REL = cfg.ROOT / "reports" / "reservoir_release_check.csv"
 
-AREA_KM2 = 2830            # lưu vực sông Hương tới Kim Long (config.RIVER_POINTS)
+AREA_KM2 = cfg.KIM_LONG_AREA_KM2   # lưu vực sông Hương tới Kim Long (~1 540 km²)
 # Năm thuỷ văn đánh số theo năm KẾT THÚC: 2008 = 09/2007 → 08/2008.
 PRE = (1998, 2008)         # trước Bình Điền (2009) và Tả Trạch
 POST = (2014, 2026)        # cả hai hồ đã vận hành
@@ -161,7 +161,7 @@ def release_check(d: pl.DataFrame) -> pl.DataFrame | None:
 
     * `below_release` — GloFAS < tổng xả NHỎ NHẤT trong ngày của hai hồ.
     * `below_inflow`  — GloFAS < tổng nước đổ VÀO hai hồ. Hai hồ chỉ chiếm
-      1 232 / 2 830 km² lưu vực, nên dòng chảy tự nhiên tại Kim Long còn lớn hơn.
+      1 232 / ~1 540 km² lưu vực, nên dòng chảy tự nhiên tại Kim Long còn lớn hơn.
       Sai ở đây là GloFAS mô phỏng thiếu chính trận lũ, không phải do hồ.
     """
     if not reservoirs.RELEASES.exists():

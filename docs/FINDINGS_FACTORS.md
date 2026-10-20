@@ -89,7 +89,7 @@ Hai cận dưới, đều bảo thủ:
 
 * **Lượng xả** của hai hồ thượng nguồn, lấy giá trị **nhỏ nhất** mỗi hồ được báo trong
   ngày (báo đưa tin ở những giờ khác nhau, cộng hai đỉnh không cùng lúc là thổi phồng).
-* **Lượng nước đổ vào** hai hồ: hai hồ chỉ chiếm 1 232 / 2 830 km² lưu vực, nên dòng
+* **Lượng nước đổ vào** hai hồ: hai hồ chiếm 1 232 / ~1 540 km² lưu vực tới Kim Long, nên dòng
   chảy tự nhiên tại Kim Long còn lớn hơn con số này.
 
 So với GloFAS ngày t hoặc t+1, lấy giá trị lớn hơn:
@@ -144,8 +144,51 @@ Feature "mưa tích luỹ từ 01/09" dùng đúng mốc này.
 
 ## 4. R1 — GloFAS có mô phỏng hồ không?
 
-_(điền sau khi có panel mở rộng)_
+So chuỗi GloFAS **trước khi có hồ** (1998–2008) với **sau khi cả hai hồ vận hành**
+(2014–2026), panel mở rộng 1997–2026. Nếu GloFAS có mô phỏng hồ thì dòng kiệt phải
+tăng (hồ xả bù mùa khô), độ "giật" (flashiness) và phản ứng với mưa bão phải giảm.
+
+| Chỉ số | Trước (trung vị) | Sau (trung vị) | Thay đổi | p (Mann–Whitney) | Nếu có mô phỏng hồ |
+|---|---|---|---|---|---|
+| Dòng kiệt 30 ngày (m³/s) | 29,7 | 26,5 | −10,7 % | 0,42 | phải **tăng** |
+| Hệ số dòng chảy (lưu vực 1 540 km²) | 0,857 | 0,875 | +2,2 % | 0,91 | gần như không đổi |
+| Flashiness (Richards–Baker) | 0,435 | 0,441 | +1,3 % | 0,64 | phải **giảm** |
+| Phản ứng với mưa bão | 5,80 | 5,98 | +3,2 % | 0,64 | phải **giảm** |
+
+(n = 11 năm trước / 13 năm sau; phản ứng bão: 25 / 37 sự kiện.)
+
+**Kết luận R1:** không chỉ số nào đổi có ý nghĩa thống kê, và cả ba chỉ số nhạy với hồ
+đều đổi **ngược** chiều hoặc không đổi. Không thấy dấu vết hồ Tả Trạch / Bình Điền
+trong GloFAS v4 tại ô này ⇒ GloFAS mô phỏng sông như chưa có hồ. Đây là lý do cần
+luật nâng sàn khi có lệnh xả (§3) thay vì trông vào biến mục tiêu.
+
+Giới hạn: chỉ 11 và 13 năm; mưa hai giai đoạn khác nhau cũng làm đổi các chỉ số
+(hệ số dòng chảy đã chia cho mưa nên đỡ hơn). Hình: `reports/figures/report/res1_dam_era_en.png`.
 
 ## 5. Thêm dữ liệu có giúp mô hình không? (A → E)
 
-_(điền sau khi chạy `ablation_ext`)_
+LightGBM, cùng tham số, test từ 2022-07-01, trung bình 3 seed (42, 7, 2026), mỗi cấu
+hình cộng dồn lên cấu hình trước (`reports/ablation_ext.csv`):
+
+| Cấu hình | Thêm gì | NSE h1 | NSE h2 | NSE h3 |
+|---|---|---|---|---|
+| A | Report 2 (train từ 2010) | 0,745 | 0,420 | 0,172 |
+| B | Mưa 1997–2009 → train gấp đôi (9 298 ngày) | **0,766** | 0,428 | 0,176 |
+| C | + độ ẩm đất ERA5-Land | 0,757 | 0,430 | 0,181 |
+| D | + đại diện cho mức nước hồ: mưa 15 và 30 ngày, mưa tích luỹ từ 01/09 (QĐ 1606) | 0,756 | 0,428 | 0,186 |
+| E | + bão, không khí lạnh, ENSO | 0,747 | **0,483** | **0,199** |
+
+Độ lệch chuẩn giữa 3 seed ≤ 0,009, nên các chênh lệch ≥ 0,02 là thật với lần chia này.
+
+**Kết luận:**
+
+1. **Chuỗi dài hơn giúp h1** (+0,021): mưa từ 1997 cho mô hình thấy thêm nhiều trận lũ.
+2. **Yếu tố thời tiết quy mô lớn giúp h2–h3** (+0,055 / +0,023 so với D): bão và không
+   khí lạnh báo trước mưa lớn 1–3 ngày — đúng thứ mà mưa đã quan trắc không biết.
+3. Độ ẩm đất và đặc trưng hồ không thêm được gì rõ — thông tin đó đã nằm sẵn trong
+   lưu lượng trễ và API.
+4. Không cấu hình nào gỡ được cắt ngọn lũ (peak_bias vẫn −0,42 → −0,88): giới hạn nằm
+   ở chính GloFAS (§2), không phải ở thiếu đặc trưng.
+
+Cột POD1/FAR1 trong file csv là lấy ngưỡng trên lưu lượng **hồi quy**, không so trực
+tiếp với bộ phân loại riêng (POD 0,645).
