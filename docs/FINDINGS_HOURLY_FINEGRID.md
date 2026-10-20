@@ -353,8 +353,33 @@ Wilcoxon hai phía. Năm 2022 (GloFAS đổi chế độ) và 2026 (01–08) bá
    fold, CI chạm 0) — chỉ nêu là phép thử phụ.
 4. **Lưu vực con không đáng**: 45 cột ≈ 9 cột toàn lưu vực.
 5. Giai đoạn GloFAS forecast archive (2023–2025) mới 3 fold — chưa kiểm định được
-   (p hai phía nhỏ nhất có thể là 0,25). Chưa kiểm độ trễ phát hành GSMaP-GC/IMERG
-   trên Earth Engine — mức tăng mới chắc cho phân tích lại quá khứ.
+   (p hai phía nhỏ nhất có thể là 0,25).
+
+### 12.3 Độ trễ khi chạy thật — mức tăng MẤT khi dùng qua Earth Engine (21/10)
+
+Kiểm trực tiếp trên Earth Engine lúc 15:53 UTC ngày 20/10/2026:
+
+| Bộ | Ảnh mới nhất (UTC) | Trễ | `status` |
+|---|---|---|---|
+| GSMaP v8 operational | 19/10 13:00 | **~27 giờ** | `provisional` 3 ngày gần nhất, trước đó `permanent`; cùng thuật toán 3GSMAPH5 / bản 05C |
+| IMERG V07 | 19/10 01:30 | ~38 giờ | `permanent` (Final) tới 30/09/2025, sau đó `provisional` ⇒ chuỗi IMERG trộn Final + bản sớm |
+
+Job dự báo chạy ~05h giờ VN ⇒ ngày t (hôm qua) chưa đủ giờ, chỉ có mưa vệ tinh tới
+ngày t−1. Walk-forward lại nhóm EXT với đặc trưng GSMaP-GC **trễ 1 ngày**
+(`python -m src.eval.walk_forward_sat --lag-test`, `reports/wf_sat_lag1.csv`):
+
+| Cấu hình | ΔNSE h1 | ΔNSE h2 | ΔNSE h3 |
+|---|---|---|---|
+| E0 + GSMaP-GC (đủ ngày t) | +0,004 · 10/3 | +0,016 · 8/5 | +0,012 [+0,002; +0,023] · 10/3 · p 0,033 |
+| E0 + GSMaP-GC **trễ 1 ngày** | +0,001 · 8/5 | −0,003 · 4/9 | −0,002 [−0,009; +0,004] · 6/7 · p 0,69 |
+
+(Dòng đầu lệch nhẹ so với §12.1 vì thêm cột trễ làm đổi vài ngày bị loại do thiếu số.)
+
+⇒ **Toàn bộ lợi ích nằm ở mưa của chính ngày t.** Qua Earth Engine thì chạy thật
+không còn lợi gì. Report 3 phải ghi: mức tăng ở §12.1 là **phân tích lại quá khứ**;
+muốn dùng khi vận hành cần nguồn trễ ít — GSMaP_NRT tải thẳng từ JAXA (công bố trễ
+khoảng 4 giờ, cần đăng ký miễn phí; chưa kiểm có đúng cùng sản phẩm với bản trên Earth
+Engine không) và dời job sang sau 07h.
 
 ### 12.2 Deep Learning (`src/eval/walk_forward_dl.py`, `reports/wf_dl_*.csv`)
 

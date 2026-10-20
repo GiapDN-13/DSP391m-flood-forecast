@@ -57,6 +57,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 OUT_FOLDS = cfg.ROOT / "reports" / "wf_sat_folds.csv"
 OUT_SUMMARY = cfg.ROOT / "reports" / "wf_sat_summary.csv"
 OUT_FIG = cfg.FIGURES / "report" / "wf_sat_en.png"
+OUT_LAG = cfg.ROOT / "reports" / "wf_sat_lag1.csv"   # phép thử độ trễ khi chạy thật
 SPLIT_CSV = sa.OUT                          # kết quả một-lần-chia để đối chiếu
 
 GAP = walk_forward.GAP_DAYS                 # 3 = horizon lớn nhất
@@ -107,8 +108,24 @@ def score(y: np.ndarray, yhat: np.ndarray, flood: np.ndarray, thr1: float) -> di
 
 # ================================================================ chạy
 
-def run_group(group: str, years: list[int]) -> list[dict]:
+def load_ext_lag1(group: str = "ext") -> tuple[pl.DataFrame, dict[str, list[str]], dict]:
+    """Nhóm EXT + cấu hình GSMaP-GC TRỄ 1 NGÀY — đúng điều kiện chạy thật.
+
+    Earth Engine đưa ảnh GSMaP lên chậm ~27 giờ (kiểm 20/10/2026: ảnh mới nhất
+    13:00 UTC ngày 19/10 lúc 15:53 UTC ngày 20/10). Job dự báo chạy ~05h giờ VN
+    nên ngày t (hôm qua) chưa đủ giờ; chỉ có đặc trưng vệ tinh của ngày t−1.
+    """
     panel, cfgs, split = sa.load_group(group)
+    base = next(iter(cfgs.values()))
+    gc = [c for c in cfgs["E0+gsmap_gc"] if c not in base]
+    panel = panel.sort("date").with_columns([pl.col(c).shift(1).alias(f"{c}_lag1") for c in gc])
+    new = {next(iter(cfgs)): base, "E0+gsmap_gc": cfgs["E0+gsmap_gc"],
+           "E0+gsmap_gc_lag1": base + [f"{c}_lag1" for c in gc]}
+    return panel, new, split
+
+
+def run_group(group: str, years: list[int], loader=None) -> list[dict]:
+    panel, cfgs, split = (loader or sa.load_group)(group)
     start, names = split["train"][0], list(cfgs)
     base = names[0]
     union = sorted({c for f in cfgs.values() for c in f})
@@ -351,7 +368,23 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--n-jobs", type=int, default=8, help="số luồng LightGBM mỗi lần fit")
     ap.add_argument("--out-dir", default=None, help="ghi 3 file đầu ra vào thư mục khác (chạy thử)")
     ap.add_argument("--plot-only", action="store_true")
+    ap.add_argument("--lag-test", action="store_true",
+                    help="chỉ chạy phép thử GSMaP-GC trễ 1 ngày → reports/wf_sat_lag1.csv")
     a = ap.parse_args(argv)
+
+    if a.lag_test:
+        lgbm.PARAMS["n_jobs"] = a.n_jobs
+        folds = pl.from_dicts(run_group("ext", list(YEARS), loader=load_ext_lag1),
+                              infer_schema_length=None)
+        folds.write_csv(OUT_LAG, float_precision=5)
+        for name in ("E0+gsmap_gc", "E0+gsmap_gc_lag1"):
+            for h in cfg.HORIZONS:
+                d = folds.filter((pl.col("config") == name) & (pl.col("horizon") == h))["dNSE"].to_numpy()
+                lo, hi = boot_mean_ci(d)
+                print(f"{name:<18} h{h}: ΔNSE {d.mean():+.3f} [{lo:+.3f}; {hi:+.3f}] "
+                      f"thắng/thua {(d > 0).sum()}/{(d < 0).sum()} p {wilcoxon_p(d):.3f}")
+        print(f"→ {OUT_LAG}")
+        return 0
 
     od = Path(a.out_dir) if a.out_dir else None
     f_folds = od / OUT_FOLDS.name if od else OUT_FOLDS
