@@ -3,8 +3,10 @@
 Mô hình: LightGBM cấu hình **E** của `ablation_ext` (feature Report 2 + độ ẩm
 đất + đại diện hồ chứa + bão/khí áp/gió/ENSO), học trên train+valid (1997 →
 2022-06-30), giải thích trên **tập test** (từ 2022-07-01). Cùng panel, cùng
-tham số, cùng mặt nạ dòng như `ablation_ext` ⇒ NSE phải khớp `ablation_ext.csv`
-theo từng seed — đó là phép kiểm đầu tiên trước khi đọc SHAP.
+tham số (`lgbm.params_for(h)`: L1 ở h=1, L2 ở h=2–3 — mô hình chính từ
+21/10/2026; bản L1 cũ ở `reports/l1_ref/shap_importance.csv`), cùng mặt nạ dòng
+như `ablation_ext` ⇒ NSE phải khớp `ablation_ext.csv` theo từng seed — đó là
+phép kiểm đầu tiên trước khi đọc SHAP.
 
 Ba câu hỏi:
 
@@ -157,7 +159,7 @@ def split_rows(panel: pl.DataFrame, h: int, feats: list[str]) -> tuple[pl.DataFr
 def fit(tr: pl.DataFrame, h: int, feats: list[str], seed: int):
     from lightgbm import LGBMRegressor
 
-    model = LGBMRegressor(**{**lgbm.PARAMS, "random_state": seed})
+    model = LGBMRegressor(**lgbm.params_for(h, random_state=seed))
     model.fit(tr.select(feats).to_pandas(), np.log1p(tr[f"target_h{h}"].to_numpy()))
     return model
 

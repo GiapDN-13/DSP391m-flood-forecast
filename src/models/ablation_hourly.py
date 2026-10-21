@@ -88,8 +88,11 @@ def masks(panel: pl.DataFrame, feats: list[str], h: int,
 
 
 def fit_predict(X: np.ndarray, feats: list[str], y: np.ndarray, tr: np.ndarray,
-                ev: np.ndarray, seed: int):
+                ev: np.ndarray, seed: int, params: dict | None = None):
     """LightGBM trên log1p(Q), tham số của lgbm.py, chỉ đổi seed.
+
+    ``params`` mặc định ``lgbm.PARAMS``; mô hình chính (cấu hình E) truyền
+    ``lgbm.params_for(h)``. ``random_state`` luôn lấy từ ``seed``.
 
     Bắt buộc bọc pandas: LightGBM 4.5 gọi ``check_X_y(force_all_finite=...)`` với
     mảng numpy, tham số này đã bị bỏ ở scikit-learn 1.9 → TypeError. Đầu vào
@@ -98,7 +101,7 @@ def fit_predict(X: np.ndarray, feats: list[str], y: np.ndarray, tr: np.ndarray,
     import pandas as pd
     from lightgbm import LGBMRegressor
 
-    model = LGBMRegressor(**{**lgbm.PARAMS, "random_state": seed})
+    model = LGBMRegressor(**{**(lgbm.PARAMS if params is None else params), "random_state": seed})
     model.fit(pd.DataFrame(X[tr], columns=feats), np.log1p(y[tr]))
     yhat = model.predict(pd.DataFrame(X[ev], columns=feats))
     return np.clip(np.expm1(yhat), 0, None), model
