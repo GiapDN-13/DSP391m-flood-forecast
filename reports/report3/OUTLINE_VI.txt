@@ -51,7 +51,7 @@ IV. KẾT QUẢ
     IMERG bị lần chia đơn đánh giá quá cao (+0.018 → +0.010).
     ĐỘ TRỄ: Earth Engine trễ ~27 h → trễ 1 ngày thì h3 còn -0.002 (p 0.685) ⇒ CHỈ có lợi khi
     phân tích lại quá khứ, CHƯA có lợi khi chạy thật.
- G. GSMaP_NRT (JAXA, trễ ~4.7 h): CHỜ — reports/wf_sat_nrt.csv chưa có.
+ G. GSMaP_NRT (JAXA, trễ ~4.7 h): ĐÃ CÓ bảng số (tự tính lúc build) — CẦN viết câu kết luận.
  H. DL vs LightGBM walk-forward: KHÔNG thắng vững. LSTM MSE h1 +0.021 (CI chứa 0); LSTM nhấn đỉnh h3 -0.229
     (p 0.033). Lợi thế lần chia đơn chỉ ở 2022–2025. Mặt được: POD/CSI h1 cao hơn, ít cắt ngọn hơn.
  I. Hồ chứa: R1 — không chỉ số nào đổi có ý nghĩa (GloFAS như sông chưa có hồ). R2 — GloFAS thấp hơn
@@ -82,6 +82,54 @@ CÂU HỎI DỄ BỊ HỎI — trả lời ngắn
 DANH SÁCH SỐ DÙNG TRONG BÁO CÁO (sinh tự động lúc build)
 loại: csv = đã kiểm với file lúc build · claim = câu định tính đã kiểm · doc = chỉ có trong tài liệu
 ====================================================================================================
+csv    nrt_r2_A0+gsmap_gc_1_0                       +0.006                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_1_1                       [+0.000; +0.011]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_1_2                       9/4                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_1_3                       0.068                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_2_0                       +0.032                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_2_1                       [+0.023; +0.041]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_2_2                       13/0                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_2_3                       0.000                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_3_0                       +0.025                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_3_1                       [+0.013; +0.038]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_3_2                       12/1                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_3_3                       0.005                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_1_0                      +0.009                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_1_1                      [+0.003; +0.014]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_1_2                      10/3                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_1_3                      0.008                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_2_0                      +0.019                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_2_1                      [+0.008; +0.031]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_2_2                      11/2                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_2_3                      0.006                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_3_0                      +0.012                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_3_1                      [+0.005; +0.019]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_3_2                      12/1                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_3_3                      0.005                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_1_0                      -0.000                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_1_1                      [-0.011; +0.010]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_1_2                      8/5                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_1_3                      1.000                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_2_0                      +0.017                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_2_1                      [-0.002; +0.036]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_2_2                      8/5                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_2_3                      0.216                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_3_0                      +0.016                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_3_1                      [+0.007; +0.024]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_3_2                      11/2                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_3_3                      0.005                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_1_0                     -0.002                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_1_1                     [-0.007; +0.003]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_1_2                     4/9                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_1_3                     0.273                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_2_0                     +0.008                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_2_1                     [-0.004; +0.021]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_2_2                     9/4                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_2_3                     0.414                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_3_0                     +0.010                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_3_1                     [-0.001; +0.020]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_3_2                     9/4                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_3_3                     0.094                      reports/wf_sat_nrt.csv (tính lúc build)
 csv    pt_lat                                       16.45                      src/config.py RIVER_POINTS
 csv    pt_lon                                       107.50                     src/config.py RIVER_POINTS
 csv    area_cfg                                     1,540                      src/config.py KIM_LONG_AREA_KM2
@@ -555,4 +603,4 @@ doc    wf_q2000                                     2,000                      d
 doc    wf_ratio                                     0.56                       docs/FINDINGS_SHAP.md §4 (trung vị dự báo/thật, 31 ngày lũ, h1)  [không in trong PDF]
 
 CẢNH BÁO LẦN BUILD NÀY:
- - reports/wf_sat_nrt.csv chưa có → in khung [GSMaP_NRT operational test pending]
+ (không có)
