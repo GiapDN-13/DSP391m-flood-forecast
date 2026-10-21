@@ -11,6 +11,32 @@
 - ⇒ Dùng thẳng "Q̂ ≥ ngưỡng" làm luật cảnh báo **không ổn ở h ≥ 2**. Cần ngưỡng cảnh báo hiệu chỉnh riêng theo horizon (hoặc bộ phân loại / mục tiêu phân vị cao) — xem §6 và `FINDINGS_COST_THRESHOLD.md`.
 - **Đối chứng GloFAS thô (AC-3) chưa làm được:** nhật ký dự báo (16/09–20/10/2026) không có cặp nào trùng với lưu lượng quan trắc (panel dừng 31/08/2026) và không có dự báo LightGBM cho các ngày đó (§5).
 
+## 0b. Cập nhật 21/10/2026: cấu hình chính đổi sang L2 cho h2–h3
+
+Mô hình chính nay dùng `lgbm.params_for(h)`: L1 ở h1, **L2 trên log1p ở h2–h3** (chọn bằng
+walk-forward/valid, `FINDINGS_TUNING.md`). `event_eval.py` đã chạy lại (`reports/event_eval_*.csv`,
+hình `event_eval_en.png`); bản cũ ở `reports/l1_ref/event_eval_*.csv`. h1 trùng tuyệt đối (cùng tham
+số). Các mục §0–§4 bên dưới giữ số L1 cũ để đối chiếu; số mới:
+
+| Phạm vi | h | E bắt mới (cũ) | Tỷ số đỉnh trung vị [IQR] mới (cũ) | Đỉnh ≥ 1 275: E bắt mới (cũ) | Đợt nhầm E mới (cũ) | Persistence bắt |
+|---|---|---|---|---|---|---|
+| (a) test ≥ 2022-07, 13 đợt | 2 | **3/13** (1/13) | 0,36 [0,32–0,48] (0,38) | 2/7 (1/7) | 0 (0) | 3/13 |
+| | 3 | 0/13 (0/13) | 0,24 [0,16–0,34] (0,20) | 0/7 (0/7) | 0 (0) | 3/13 |
+| (b) walk-forward, 43 đợt | 2 | **10/43 = 23 %** (6/43 = 14 %) | 0,54 [0,36–0,63] (0,44) | 9/22 (5/22) | 1 (0) | 14/43 (33 %) |
+| | 3 | 0/43 (0/43) | 0,31 [0,24–0,39] (0,28) | 0/22 (0/22) | 0 (0) | 7/43 (16 %) |
+
+- **h2 bắt thêm đợt** (walk-forward 6 → 10/43; đỉnh ≥ mức 2: 5 → 9/22) với chỉ 1 đợt báo nhầm, báo
+  trước trung vị 1 ngày ở 6/10 đợt bắt được (cũ +0,5 ngày, 3/6). Vẫn **kém persistence** (14/43).
+- **h3 vẫn 0 đợt** ở cả hai phạm vi: tỷ số đỉnh nhích 0,28 → 0,31 nhưng còn xa ngưỡng. Kết luận
+  "Q̂ ≥ ngưỡng không dùng được làm luật cảnh báo ở h ≥ 2" **giữ nguyên**, nhất là h3.
+- Theo giai đoạn (h2, ngưỡng fold): 2013–2021 6/28 · 2022 2/5 · 2023–2025 2/10. Ngưỡng cố định
+  806: E h2 10/40 (cũ 5/40); persistence 14/40.
+- Trận khớp tin báo (walk-forward, 7 đợt): E h2 5/7 (cũ 4/7), h3 0/7; persistence 5/7, 4/7.
+- Học lại theo năm (9 đợt 2023–2025, ngưỡng 806): h1 không đổi 4/9 → 8/9; h2 2/9 (a) và 2/9 (b)
+  (cũ 1/9 và 2/9).
+- Kiểm tái lập (a): NSE từng seed trùng `ablation_ext.csv` mới (Δ = 0); 0,748 / 0,502 / 0,239
+  (TB 3 seed ensemble).
+
 ## 1. Định nghĩa
 
 | Khái niệm | Định nghĩa |
