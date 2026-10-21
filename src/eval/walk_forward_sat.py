@@ -14,8 +14,14 @@ cuối (28/12) là 31/12, không chạm năm test.
 Nhóm và cấu hình giữ nguyên ``ablation_sat.py`` (mỗi nhóm so với mốc của chính
 nó, trên tập hàng chung của nhóm): ``r2`` = A0, +imerg, +gsmap_gc, +gsmap_gc lưu
 vực con (panel từ 2010); ``ext`` = E0, +gsmap_gc, +imerg (train từ 1998-01-04).
-LightGBM tham số ``lgbm.py``, 3 seed; dự báo = trung bình 3 seed (NSE từng seed
-ghi thêm). Ngưỡng mức 1 MỖI fold = Q95 lưu lượng mùa lũ 9–12 CHỈ trong cửa sổ
+LightGBM 3 seed; dự báo = trung bình 3 seed (NSE từng seed ghi thêm). Tham số
+(``group_params``): nhóm ``r2`` giữ ``lgbm.PARAMS`` (L1 mọi horizon — mốc Report
+2); nhóm ``ext`` là mô hình chính nên dùng ``lgbm.params_for(h)`` (L1 ở h=1, L2 ở
+h=2–3, chọn bằng walk-forward/valid trong ``wf_tuning.py``) cho MỌI cấu hình
+trong nhóm, kể cả ``--lag-test`` và ``--nrt-test``. Cột ``objective`` ghi hàm mất
+mát đã dùng. Kết quả cũ (ext L1, trước 21/10/2026) ở ``reports/l1_ref/``.
+Chạy một phần nhóm (``--groups ext``) ghi vào file mặc định thì dòng của nhóm
+KHÔNG chạy lại được giữ nguyên từ file cũ (``merge_other_groups``). Ngưỡng mức 1 MỖI fold = Q95 lưu lượng mùa lũ 9–12 CHỈ trong cửa sổ
 train của fold (định nghĩa ``risk_levels.fit_thresholds``) — không rò rỉ; ngưỡng
 hai nhóm khác nhau vì cửa sổ train khác nhau. NSE mùa lũ: ngày phát dự báo t
 thuộc tháng 9–12.
@@ -139,6 +145,29 @@ def load_nrt(group: str) -> tuple[pl.DataFrame, dict[str, list[str]], dict]:
     return panel, new, split
 
 
+def group_params(group: str, h: int) -> dict:
+    """Tham số LightGBM của nhóm ở horizon ``h`` (đọc ``lgbm.PARAMS`` lúc gọi ⇒ giữ
+    ``n_jobs`` đã đặt): ``ext`` = mô hình chính ``lgbm.params_for(h)``; ``r2`` =
+    ``lgbm.PARAMS`` gốc (mốc Report 2)."""
+    return lgbm.params_for(h) if group == "ext" else dict(lgbm.PARAMS)
+
+
+def merge_other_groups(new: pl.DataFrame, path: Path) -> pl.DataFrame:
+    """Giữ dòng của các nhóm KHÔNG có trong ``new`` từ file cũ ``path`` (chạy lại một
+    phần nhóm mà không xoá kết quả nhóm kia). Dòng cũ thiếu cột ``objective`` là
+    ``lgbm.PARAMS`` (L1)."""
+    if not path.exists():
+        return new
+    old = pl.read_csv(path, infer_schema_length=None, try_parse_dates=True)
+    keep = old.filter(~pl.col("group").is_in(new["group"].unique().to_list()))
+    if keep.is_empty():
+        return new
+    if "objective" not in keep.columns:
+        keep = keep.with_columns(objective=pl.lit(lgbm.PARAMS["objective"]))
+    print(f"  giữ {keep.height} dòng nhóm {sorted(set(keep['group']))} từ {path.name} cũ")
+    return pl.concat([keep, new], how="diagonal_relaxed")
+
+
 def run_group(group: str, years: list[int], loader=None) -> list[dict]:
     panel, cfgs, split = (loader or sa.load_group)(group)
     start, names = split["train"][0], list(cfgs)
@@ -159,6 +188,7 @@ def run_group(group: str, years: list[int], loader=None) -> list[dict]:
             m = ab.masks(panel, union, h, fold)
             tr, te = m["train"], m["test"]
             y = panel[f"target_h{h}"].to_numpy().astype(float)
+            params = group_params(group, h)
             d_tr, d_te = d.filter(pl.Series(tr)), d.filter(pl.Series(te))
             fl = flood_all[te]
             meta = {"group": group, "fold": year, "fold_type": fold_type(year), "horizon": h,
@@ -166,12 +196,12 @@ def run_group(group: str, years: list[int], loader=None) -> list[dict]:
                     "test_start": d_te.min(), "test_end": d_te.max(),
                     "gap_days": (d_te.min() - d_tr.max()).days - 1,
                     "n_train": int(tr.sum()), "n_test": int(te.sum()), "n_flood": int(fl.sum()),
-                    "thr1": thr1}
+                    "thr1": thr1, "objective": params["objective"]}
             rows.append({**meta, "config": "persistence", "n_feat": 1,
                          **score(y[te], q0[te], fl, thr1)})
             out = {}
             for name, feats in cfgs.items():
-                ps = [ab.fit_predict(X[name], feats, y, tr, te, s)[0] for s in SEEDS]
+                ps = [ab.fit_predict(X[name], feats, y, tr, te, s, params)[0] for s in SEEDS]
                 out[name] = {**meta, "config": name, "n_feat": len(feats),
                              **score(y[te], np.mean(ps, axis=0), fl, thr1),
                              **{f"NSE_seed{s}": metrics.nse(y[te], p) for s, p in zip(SEEDS, ps)}}
@@ -229,6 +259,7 @@ def summarize(folds: pl.DataFrame) -> pl.DataFrame:
                 continue
             hits, miss, fa = (int(s[k].sum()) for k in ("hits1", "misses1", "false_alarms1"))
             r = {"group": g, "config": c, "horizon": h, "period": per, "n_folds": s.height,
+                 **({"objective": s["objective"][0]} if "objective" in s.columns else {}),
                  "fold_tu": s["fold"].min(), "fold_den": s["fold"].max(),
                  "NSE_mean": s["NSE"].mean(), "NSE_median": s["NSE"].median(),
                  "NSE_flood_mean": s["NSE_flood"].mean(), "peak_bias_mean": s["peak_bias"].mean(),
@@ -404,6 +435,8 @@ def main(argv: list[str] | None = None) -> int:
         for g in a.groups:
             rows += run_group(g, list(YEARS), loader=load_nrt)
         folds = pl.from_dicts(rows, infer_schema_length=None)
+        if set(a.groups) != set(sa.GROUPS):
+            folds = merge_other_groups(folds, OUT_NRT)
         folds.write_csv(OUT_NRT, float_precision=5)
         for name in folds["config"].unique(maintain_order=True):
             if name == "persistence" or folds.filter(pl.col("config") == name)["dNSE"].null_count() == \
@@ -450,13 +483,18 @@ def main(argv: list[str] | None = None) -> int:
         for g in a.groups:
             rows += run_group(g, a.years)
         folds = pl.from_dicts(rows, infer_schema_length=None)
+        partial = set(a.groups) != set(sa.GROUPS)
+        if partial:
+            folds = merge_other_groups(folds, f_folds)
         folds.write_csv(f_folds, float_precision=5)
         print(f"→ {f_folds} ({folds.height} dòng)")
 
     if a.plot_only and f_summ.exists():      # giữ tóm tắt tính từ số chưa làm tròn
         summ = pl.read_csv(f_summ, infer_schema_length=None)
     else:
-        summ = summarize(folds)
+        summ = summarize(folds.filter(pl.col("group").is_in(a.groups)))
+        if not a.plot_only and partial:     # tóm tắt nhóm không chạy lại: giữ bản cũ (số chưa làm tròn)
+            summ = merge_other_groups(summ, f_summ)
         summ.write_csv(f_summ, float_precision=5)
     report(summ)
     print(f"\n→ {f_summ} ({summ.height} dòng)")

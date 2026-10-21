@@ -37,7 +37,8 @@ Hai phạm vi:
     fold = ``fold_threshold`` (Q95 mùa lũ trong cửa sổ train của fold) — chế độ
     ``fold_q95`` (chính); chế độ ``fixed_806`` chấm lại CÙNG dự báo để đối chiếu.
 
-LightGBM: tham số ``lgbm.py``, dự báo = trung bình 3 seed (42, 7, 2026),
+LightGBM: tham số mô hình chính ``lgbm.params_for(h)`` (L1 ở h=1, L2 ở h=2–3,
+từ 21/10/2026; bản L1 cũ ở ``reports/l1_ref/``), dự báo = trung bình 3 seed (42, 7, 2026),
 ``n_jobs`` = 4. Đối chiếu ``data/external/flood_events.csv``: mỗi đợt GloFAS ghi
 các trận lũ báo chí có đỉnh trong [bắt đầu − 2, kết thúc + 2] ngày.
 
@@ -201,7 +202,7 @@ def _fit_block(panel: pl.DataFrame, feats: list[str], mask_feats: list[str],
         m = ab.masks(panel, mask_feats, h, split)
         tr, te = m["train"], m["test"]
         y = panel[f"target_h{h}"].to_numpy().astype(float)
-        ps = [ab.fit_predict(X, feats, y, tr, te, s)[0] for s in SEEDS]
+        ps = [ab.fit_predict(X, feats, y, tr, te, s, lgbm.params_for(h))[0] for s in SEEDS]
         issue = d.filter(pl.Series(te))
         p = np.mean(ps, axis=0)
         print(f"    h{h}: train {int(tr.sum())} · test {int(te.sum())} · NSE seed "

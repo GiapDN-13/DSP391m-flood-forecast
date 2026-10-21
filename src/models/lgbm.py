@@ -50,6 +50,23 @@ PARAMS = dict(
     verbose=-1,
 )
 
+# Mô hình CHÍNH (cấu hình E, Report 3): hàm mất mát theo horizon. h=1 giữ L1;
+# h=2, h=3 đổi sang L2 trên log1p sau khi chọn bằng walk-forward 13 fold
+# 2013–2025 (``src/eval/wf_tuning.py`` cấu hình "E L2": ΔNSE +0,039 / +0,036,
+# thắng 11/2 fold, p ≤ 0,003) và valid 2016–06/2022 — KHÔNG chọn theo test
+# (``docs/FINDINGS_TUNING.md``). ``PARAMS`` gốc giữ nguyên cho Report 2
+# (``lgbm_results.csv``), mốc A0/r2 và bộ phân loại.
+MAIN_OBJECTIVE = {1: "regression_l1", 2: "regression", 3: "regression"}
+
+
+def params_for(h: int, **override) -> dict:
+    """Tham số LightGBM của mô hình chính ở horizon ``h``: bản SAO của ``PARAMS``
+    (đọc lúc gọi, nên ``n_jobs`` đã đặt vào ``PARAMS`` vẫn có hiệu lực) với
+    ``objective = MAIN_OBJECTIVE[h]``, rồi tới ``override``. Không sửa ``PARAMS``."""
+    if h not in MAIN_OBJECTIVE:
+        raise ValueError(f"horizon ngoài {sorted(MAIN_OBJECTIVE)}: {h}")
+    return {**PARAMS, "objective": MAIN_OBJECTIVE[h], **override}
+
 
 def feature_cols(panel: pd.DataFrame) -> list[str]:
     """Mọi cột dùng được làm feature.
@@ -64,15 +81,17 @@ def feature_cols(panel: pd.DataFrame) -> list[str]:
 
 
 def fit_predict(panel: pd.DataFrame, h: int, feats: list[str],
-                tr: pd.Series, te: pd.Series):
-    """Huấn luyện một mô hình cho một horizon, trả về (y thật, y dự báo, model)."""
+                tr: pd.Series, te: pd.Series, params: dict | None = None):
+    """Huấn luyện một mô hình cho một horizon, trả về (y thật, y dự báo, model).
+
+    ``params`` mặc định ``PARAMS`` (Report 2); mô hình chính truyền ``params_for(h)``."""
     from lightgbm import LGBMRegressor
 
     y = panel[f"target_h{h}"]
     ok_tr = tr & y.notna() & panel[feats].notna().all(axis=1)
     ok_te = te & y.notna() & panel[feats].notna().all(axis=1)
 
-    model = LGBMRegressor(**PARAMS)
+    model = LGBMRegressor(**(PARAMS if params is None else params))
     model.fit(panel.loc[ok_tr, feats], np.log1p(y[ok_tr]))
 
     yhat = np.expm1(model.predict(panel.loc[ok_te, feats]))
