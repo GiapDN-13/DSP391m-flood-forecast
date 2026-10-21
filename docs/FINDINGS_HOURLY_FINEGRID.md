@@ -334,6 +334,11 @@ Wilcoxon hai phía. Năm 2022 (GloFAS đổi chế độ) và 2026 (01–08) bá
 
 ### 12.1 Mưa vệ tinh (`src/eval/walk_forward_sat.py`, `reports/wf_sat_*.csv`)
 
+> **Cập nhật 21/10/2026: cấu hình chính đổi sang L2 cho h2–h3** — nhóm `ext` (E0 và mọi cấu hình
+> vệ tinh trên E0, kể cả `--lag-test` và `--nrt-test`) chạy lại với `lgbm.params_for(h)`; nhóm `r2`
+> giữ `lgbm.PARAMS` (mốc Report 2). Số mới ở **§12.5**; bảng §12.1/§12.3/§12.4 dưới đây giữ số L1
+> cũ để đối chiếu (file cũ `reports/l1_ref/wf_sat_*.csv`).
+
 | Cấu hình | ΔNSE h1 | ΔNSE h2 | ΔNSE h3 | CSI mức 1 h1 (gộp ~105 ngày) |
 |---|---|---|---|---|
 | E0 (cấu hình E, NSE TB 0,761 / 0,398 / 0,170) | — | — | — | 0,450 |
@@ -431,3 +436,60 @@ Tài khoản FTP JAXA (`hokusai.eorc.jaxa.jp`, đăng ký miễn phí), tải b�
 * **Nhóm cấu hình E (mốc mạnh)**: chạy tự động khi tải xong 1998–2009 →
   `python -m src.eval.walk_forward_sat --nrt-test` → `reports/wf_sat_nrt.csv`. Đây là phép thử
   quyết định có đưa NRT vào job dự báo hằng ngày hay không.
+
+### 12.5 Cập nhật 21/10/2026 — nhóm EXT với mô hình chính L2 ở h2–h3
+
+Quyết định trưởng nhóm: mô hình chính = cấu hình E, **L1 ở h1, L2 (log1p) ở h2–h3**
+(`lgbm.MAIN_OBJECTIVE`), chọn bằng walk-forward/valid trong `wf_tuning.py` (`FINDINGS_TUNING.md`),
+không theo test. Chạy lại `python -m src.eval.walk_forward_sat --groups ext` (dòng nhóm `r2` giữ
+nguyên từ file cũ), `--lag-test`, `--nrt-test --groups ext`; ~17 phút mỗi lệnh với `--n-jobs 3`.
+Cột `objective` trong các file fold.
+
+**Kiểm khớp `wf_tuning` "E L2":** E0 mới trùng "E L2" của `reports/wf_tuning_folds.csv` ở h2–h3 trên
+cả 26 cặp fold × h: |ΔNSE| ≤ 5·10⁻⁶ (cả ensemble lẫn từng seed 42/7/2026 — chỉ do CSV làm tròn 5
+chữ số), hits/FA/n_pos và ngưỡng fold trùng tuyệt đối. Không có sai khác thật vì hai bên cùng train
+từ 1998-01-04, cùng 3 seed, cùng ensemble trung bình, và mặt nạ hàng thêm cột vệ tinh không loại
+thêm ngày nào trong 1998–2025. h1 khác "E L2" có chủ đích (mô hình chính giữ L1 ở h1): E0 h1 vẫn
+trùng E (L1) cũ.
+
+**E0 (NSE TB 13 fold 2013–2025):** h1 0,761 (không đổi) · h2 **0,437** (cũ 0,398) · h3 **0,206**
+(cũ 0,170). Trung vị 0,795 / 0,394 / 0,212. peak_bias TB −0,273 / −0,652 / −0,820 (cũ −0,273 /
+−0,705 / −0,846). Mức 1 gộp h2: hits 21, FA 8, CSI 0,186 (cũ hits 11, FA 2, CSI 0,103); h3 vẫn 0 hit.
+Giai đoạn GloFAS forecast 2023–2025: 0,772 / 0,522 / 0,223.
+
+**AC-1 (h1 ≥ 0,70; h2 ≥ 0,40; h3 ≥ 0,25), walk-forward:** h1 ✅ · h2 ✅ (0,437 — trước đây trượt
+với 0,398) · h3 ❌ (0,206). Một lần chia (test ≥ 2022-07, `ablation_ext.csv`): 0,747 ✅ / 0,499 ✅ /
+0,236 ❌.
+
+**Mưa vệ tinh trên E0 (13 fold):**
+
+| Cấu hình | ΔNSE h1 | ΔNSE h2 mới (cũ) | ΔNSE h3 mới (cũ) | CSI mức 1 h1 |
+|---|---|---|---|---|
+| E0 + GSMaP-GC | −0,001 · 8/5 (không đổi) | +0,012 [−0,008; +0,031] · 8/5 · p 0,38 (+0,017 · p 0,22) | **+0,018 [+0,008; +0,028] · 11/2 · p 0,008** (+0,016 · p 0,005) | 0,484 (không đổi) |
+| E0 + IMERG | +0,001 · 8/5 | +0,013 [−0,001; +0,027] · 8/5 · p 0,19 (+0,010 · p 0,09) | +0,008 [−0,001; +0,017] · 8/5 · p 0,17 (+0,008 · p 0,08) | 0,446 |
+
+Kết luận §12.1 giữ nguyên: GSMaP-GC là nguồn duy nhất tăng đều ở h3 (11/13 fold, CI loại 0); h2
+không có ý nghĩa; IMERG không có ý nghĩa. Một lần chia (`ablation_hourly_sat.csv`, nhóm ext chạy lại
+cùng quy tắc): E0 0,752 / 0,501 / 0,240; IMERG +0,017 / +0,007 (cũ +0,018 / +0,017); GSMaP-GC
+−0,001 / +0,019 (cũ +0,000 / +0,016).
+
+**Độ trễ (`--lag-test`, `wf_sat_lag1.csv`):**
+
+| Cấu hình | ΔNSE h1 | ΔNSE h2 mới (cũ) | ΔNSE h3 mới (cũ) |
+|---|---|---|---|
+| E0 + GSMaP-GC (đủ ngày t) | +0,004 · 10/3 | +0,018 · 9/4 (+0,016) | **+0,026 [+0,015; +0,036] · 11/2 · p 0,002** (+0,012 · p 0,033) |
+| E0 + GSMaP-GC trễ 1 ngày | +0,001 · 8/5 | +0,004 · 7/6 (−0,003) | −0,001 [−0,007; +0,005] · 8/5 · p 0,84 (−0,002 · p 0,69) |
+
+⇒ Kết luận §12.3 giữ nguyên, rõ hơn: trễ 1 ngày thì mất toàn bộ lợi ích.
+
+**GSMaP_NRT trên E0 (`--nrt-test`, `wf_sat_nrt.csv`, nhóm ext — nhóm r2 không đổi):**
+
+| Cấu hình | ΔNSE h1 | ΔNSE h2 mới (cũ L1) | ΔNSE h3 mới (cũ L1) |
+|---|---|---|---|
+| E0 + GSMaP bản chuẩn | −0,000 · 8/5 | +0,012 · 8/5 · p 0,38 (+0,017 · p 0,22) | +0,018 [+0,008; +0,028] · 11/2 · p 0,008 (+0,016 · p 0,005) |
+| E0 + GSMaP_NRT | −0,002 · 4/9 · p 0,27 | +0,003 [−0,009; +0,017] · 6/7 · p 0,74 (+0,008 · 9/4 · p 0,41) | **−0,001 [−0,009; +0,008] · 5/8 · p 0,54** (+0,010 · 9/4 · p 0,09) |
+
+⚠️ **Với mô hình chính mới, GSMaP_NRT không còn giúp ở h nào** (trên mốc A0 nó vẫn giúp, §12.4).
+Bản L1 cũ đã chỉ là xu hướng (p 0,09 ở h3); với L2 xu hướng biến mất. ⇒ Nhóm cần xem lại quyết
+định đưa NRT vào job dự báo hằng ngày: hiện **không có bằng chứng** NRT cải thiện cấu hình E.
+

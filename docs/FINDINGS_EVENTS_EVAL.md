@@ -34,8 +34,9 @@ số). Các mục §0–§4 bên dưới giữ số L1 cũ để đối chiếu;
 - Trận khớp tin báo (walk-forward, 7 đợt): E h2 5/7 (cũ 4/7), h3 0/7; persistence 5/7, 4/7.
 - Học lại theo năm (9 đợt 2023–2025, ngưỡng 806): h1 không đổi 4/9 → 8/9; h2 2/9 (a) và 2/9 (b)
   (cũ 1/9 và 2/9).
-- Kiểm tái lập (a): NSE từng seed trùng `ablation_ext.csv` mới (Δ = 0); 0,748 / 0,502 / 0,239
-  (TB 3 seed ensemble).
+- Kiểm tái lập: (a) NSE từng seed trùng `ablation_ext.csv` mới (Δ = 0); ensemble 3 seed 0,748 /
+  0,502 / 0,239. (b) 39 cặp fold×h lệch |ΔNSE| tối đa 4,8·10⁻⁶ so với `wf_sat_folds.csv` mới,
+  n_test khớp 39/39.
 
 ## 1. Định nghĩa
 
