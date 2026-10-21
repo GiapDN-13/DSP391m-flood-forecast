@@ -365,13 +365,22 @@ def story() -> list:
             "tested on top of E (called E0 in the walk-forward runs) and of A (A0)."),
 
           h2("C", "Models"),
-          p("The main model is LightGBM trained on log(1 + Q) with an L1 objective "
+          p("The main model is LightGBM trained on log(1 + Q) "
             f"({V('lgb_trees')} trees, learning rate {V('lgb_lr')}, {V('lgb_leaves')} leaves), "
             "one model per horizon; results are for seed 42 or, where stated, the mean of "
-            "seeds 42, 7 and 2026. L1 was fixed before "
-            "any test result because it is robust to extremes; L2 and Huber variants gave a "
-            "similar negative peak bias, so under-predicting peaks is a property of central "
-            "regression on a skewed target, not of the loss. Risk levels are predicted by "
+            "seeds 42, 7 and 2026. Report 2 fixed an L1 objective before any test result "
+            "because it is robust to extremes, and the Report 2 model keeps it. For the main "
+            "model the objective is L1 at h = 1 and L2 at h = 2 and 3. The switch was "
+            "selected with the yearly walk-forward of Section III-E and the validation period, "
+            f"never with the test set: L2 raised the mean NSE by {V('tun2_m')} {V('tun2_ci')} at "
+            f"h = 2 and {V('tun3_m')} {V('tun3_ci')} at h = 3 (folds won/lost {V('tun2_wl')} at "
+            f"both horizons, Wilcoxon p = {V('tun2_p')} and {V('tun3_p')}), and by "
+            f"{V('tunv2')} and {V('tunv3')} on validation; at h = 1 "
+            f"the fold gain ({V('tun1_m')}, p = {V('tun1_p')}) was not significant and the "
+            f"validation change was negative ({V('tunv1')}), so L1 was kept. Configurations "
+            "A&#8211;E all use this per-horizon rule, so the ablation compares predictors "
+            "only. Neither loss removes the negative peak bias, so under-predicting peaks is "
+            "a property of central regression on a skewed target. Risk levels are predicted by "
             "separate binary LightGBM classifiers per level and horizon, with class weights "
             "equal to the negative-to-positive ratio instead of resampling, which would break "
             f"the temporal structure, and a decision threshold of {V('clf_thr')}; a threshold "
@@ -471,8 +480,8 @@ def story() -> list:
                  ["LightGBM, config. E"] + [V(f"abE{h}") for h in (1, 2, 3)] + ["n/r"] * 3],
               [0.86 * inch] + [0.42 * inch] * 3 + [0.52 * inch] + [0.4 * inch] * 2, "base",
               "BASELINES AND LIGHTGBM, TEST PERIOD JULY 2022 &#8211; AUGUST 2026. RAW GLOFAS "
-              "FORECASTS ARE NOT ARCHIVED (III-D); CONFIG. A: SEED 42; CONFIG. E: MEAN OF THREE "
-              "SEEDS, RMSE NOT RECORDED (N/R)", small=True, bold_rows=(6, 7)),
+              "FORECASTS ARE NOT ARCHIVED (III-D); CONFIG. A: REPORT 2 MODEL, L1, SEED 42; CONFIG. E: "
+              "MAIN MODEL (L1 AT H = 1, L2 AT H = 2&#8211;3), MEAN OF THREE SEEDS, RMSE NOT RECORDED (N/R)", small=True, bold_rows=(6, 7)),
 
           h2("B", "Risk-level detection"),
           p(f"The level-1 classifier detects {V('c1h1_hits')} of the {V('npos1')} level-1 days "
@@ -503,13 +512,15 @@ def story() -> list:
             "rain that has not yet fallen, which caps skill at h = 2&#8211;3."),
 
           h2("D", "Does more data help? (configurations A&#8211;E)"),
-          p(f"A longer record (B) is the only change that helps at h = 1 ({V('abBA1')}; "
-            f"Table {T['abl']}). Soil moisture (C) and storage proxies (D) add nothing "
-            "measurable: that information is already carried by discharge lags and the API. "
-            f"Storm, cold-surge and ENSO predictors (E) give the largest gain at h = 2 "
-            f"({V('abED2')} over D, from {V('abA2')} for A to {V('abE2')}) and {V('abED3')} at "
-            "h = 3: these drivers announce heavy rain one to three days ahead, which observed "
-            f"rainfall cannot. The seed standard deviation is at most {V('ab_sd')}. No "
+          p("All five configurations use the per-horizon objective of Section III-C. "
+            f"A longer record (B) is the only change that helps at h = 1 ({V('abBA1')}; "
+            f"Table {T['abl']}), and it also helps at h = 2 and 3. Soil moisture (C) and "
+            "storage proxies (D) give small changes of mixed sign, within about two seed "
+            "standard deviations: that information is largely carried by discharge lags and "
+            "the API. Storm, cold-surge and ENSO predictors (E) give the largest gain at h = 2 "
+            f"and 3 ({V('abED2')} and {V('abED3')} over D; at h = 2 from {V('abA2')} for A to "
+            f"{V('abE2')}): these drivers announce heavy rain one to three days ahead, which "
+            f"observed rainfall cannot. The seed standard deviation is at most {V('ab_sd')}. No "
             f"configuration removes the peak bias ({V('ab_pbmax')} to {V('ab_pbmin')}), which "
             "points to the target itself (Section IV-I)."),
           tbl([["Config.", "Added", "NSE h=1", "h=2", "h=3"],
@@ -520,7 +531,8 @@ def story() -> list:
                ["D", "+ reservoir-storage proxies", V("abD1"), V("abD2"), V("abD3")],
                ["E", "+ storms, cold surges, ENSO", V("abE1"), V("abE2"), V("abE3")]],
               [0.42 * inch, 1.65 * inch] + [0.47 * inch] * 3, "abl",
-              "CUMULATIVE ABLATION, SINGLE SPLIT, MEAN OF THREE SEEDS", small=True),
+              "CUMULATIVE ABLATION, SINGLE SPLIT, MEAN OF THREE SEEDS; L1 AT H = 1, L2 AT "
+              "H = 2&#8211;3 FOR EVERY CONFIGURATION", small=True),
 
           h2("E", "Hourly rainfall (ERA5)"),
           p("Hourly ERA5 exists only from 2015, so this test uses its own split (train "
@@ -535,9 +547,9 @@ def story() -> list:
             f"({V('hrC1')}, {V('hrC2')}, {V('hrC3')}): ERA5 is too coarse to separate them."),
 
           h2("F", "Satellite rainfall under walk-forward"),
-          p(f"On the single split, IMERG appeared to lift E0 at h = 2 and 3 ({V('ss_im2')}, "
-            f"{V('ss_im3')}). Across {V('wf_nfold')} yearly folds the effect shrinks to "
-            f"{V('im2_m')} and {V('im3_m')} with intervals touching zero (Table {T['sat']}, "
+          p(f"On the single split, IMERG appeared to lift E0 at h = 2 ({V('ss_im2')}; "
+            f"{V('ss_im3')} at h = 3). Across {V('wf_nfold')} yearly folds the gains are "
+            f"{V('im2_m')} and {V('im3_m')}, with intervals that include zero (Table {T['sat']}, "
             f"Fig. {F['sat']}). Gauge-calibrated GSMaP is the only source with a consistent "
             f"gain on the strong baseline: {V('gc3_m')} at h = 3, positive in {won('gc3_wl')} "
             f"folds (p = {V('gc3_p')}), and fewer level-1 false alarms at h = 1 ({V('fa_e0')} to "
@@ -720,12 +732,13 @@ def story() -> list:
               p(f"Today's discharge dominates at h = 1 ({V('sf_discharge_1')}% of mean |SHAP|), "
                 f"followed by upper-basin ({V('sf_rain_thuong_1')}%) and basin-mean rainfall "
                 f"({V('sf_rain_basin_1')}%). With lead time the weight moves from lagged "
-                f"discharge ({V('sg_flow_1')}% to {V('sg_flow_3')}% by group) to rainfall and "
-                "to large-scale drivers: the pressure, wind and humidity group grows from "
+                f"discharge ({V('sg_flow_1')}% to {V('sg_flow_3')}% by group) to rainfall, which "
+                f"peaks at h = 2 ({V('sg_rain_2')}%; basin rainfall is the first feature), and "
+                "then to large-scale drivers: the pressure, wind and humidity group grows from "
                 f"{V('sg_synoptic_1')}% to {V('sg_synoptic_3')}%, and the north&#8211;south "
                 "pressure gradient that marks cold surges becomes the third feature at h = 3 "
-                f"({V('sf_mslp_grad_north_3')}%), behind basin rainfall "
-                f"({V('sf_rain_basin_3')}%) and discharge ({V('sf_discharge_3')}%). This is the "
+                f"({V('sf_mslp_grad_north_3')}%), behind discharge ({V('sf_discharge_3')}%) and "
+                f"basin rainfall ({V('sf_rain_basin_3')}%). This is the "
                 f"mechanism behind the {V('abED2')} gain of configuration E at h = 2. The "
                 "direction is physically right for the core inputs: the Spearman correlation "
                 f"between a feature and its own SHAP value is {V('rho_discharge_1')} for "
@@ -746,8 +759,8 @@ def story() -> list:
                   f"{V('rho_rain_season_cum_2')} and {V('rho_rain_season_cum_3')}, consistent "
                   "with R1: the target contains no reservoir.",
                   f"<b>Climatology at h = 3.</b> The calendar group carries {V('sg_season_3')}% "
-                  "at h = 3: when the dynamical signal is weak the model partly falls back on "
-                  "the season.",
+                  f"at h = 3, almost as much as the pressure and wind group ({V('sg_synoptic_3')}%): when the "
+                  "dynamical signal is weak the model partly falls back on the season.",
               ]),
               h2("D", "Why peaks are cut"),
               p(f"For the forecast issued on 15 October 2022 (Fig. {F['shap']}), discharge and "
@@ -756,13 +769,14 @@ def story() -> list:
                 f"{V('r2_2022-10-15_glofas_best')} {M3S}. The limit is structural rather than "
                 f"a missing feature: only {V('wf_n_above')} of the {V('ntrE')} training days "
                 f"exceed that peak, each leaf must hold at least {V('lgb_mcs')} training days, "
-                "and the L1 loss on log discharge targets the conditional median. Moreover, "
+                "and the L1 loss used at h = 1 targets the conditional median of log "
+                "discharge. Moreover, "
                 f"every training day with discharge above {V('wf_q2000')} {M3S} receded the "
                 "next day, so the model predicts recession even while the river is still "
                 f"rising: on 30 October 2025 it gave {V('wf_fc_2025')} {M3S} against "
-                f"{V('q_max_test')} {M3S}, the largest flow of the test period. The remedy is "
-                "quantile regression or a smaller minimum leaf size, chosen on validation, not "
-                "more predictors."),
+                f"{V('q_max_test')} {M3S}, the largest flow of the test period. More predictors "
+                "will not fix this; in the yearly walk-forward a smaller minimum leaf size did "
+                "not help and an upper-quantile objective traded NSE for detection."),
               col_fig("shap_waterfall_20221016_h1_en.png", "shap",
                       "SHAP waterfall (log(1 + Q) units) for the forecast issued on 15 October "
                       "2022 for the GloFAS peak of the next day: discharge and rainfall push "
@@ -774,8 +788,9 @@ def story() -> list:
               "<b>The target is simulated.</b> Every score measures agreement with GloFAS, "
               "not with the river. LightGBM cuts peaks relative to GloFAS, and GloFAS itself "
               "under-simulates the largest floods (Section IV-I), so true peaks are "
-              "under-estimated further. The quantile regression announced in Report 2 has "
-              "not yet been run.",
+              "under-estimated further. An upper-quantile objective tested in the yearly "
+              "walk-forward detected more level-1 days but lowered NSE and still fell below "
+              "most peaks at h = 2&#8211;3, so it was not adopted.",
               "<b>Regime change in July 2022.</b> The test period consists of archived "
               "forecasts. Report 2 found no systematic shift in the rainfall response "
               f"(Mann&#8211;Whitney p = {V('mw_p')} in the heavy-rain tail), but that test "
@@ -1021,7 +1036,9 @@ def build() -> int:
             "upstream dams, and reported natural inflows exceed the simulated discharge on "
             f"{of('r2_inf')} days, so reservoir orders enter as a raise-only floor rule. "
             f"Storm, cold-surge and ENSO predictors raise NSE at two days from {V('abA2')} to "
-            f"{V('abE2')}. In a {V('wf_nfold')}-fold yearly walk-forward, gauge-calibrated "
+            f"{V('abE2')} in the main model, which uses an L1 loss at one day and an L2 loss at "
+            "two and three days, a choice made on the yearly walk-forward and the validation "
+            f"period, not on the test set. In a {V('wf_nfold')}-fold yearly walk-forward, gauge-calibrated "
             f"GSMaP rainfall adds {V('gc3_m')} NSE at three days (positive in {won('gc3_wl')} "
             "folds), but "
             f"the gain vanishes ({V('lag1_3_m')}) once the one-day delivery delay of the "
@@ -1131,7 +1148,9 @@ II. CẬP NHẬT DỮ LIỆU
 
 III. PHƯƠNG PHÁP
  - Mục tiêu Q(t+h), h = 1..3; feature chỉ dùng thông tin tới hết ngày t; test tự động chống rò rỉ.
- - Cấu hình A→E ({o['nfA']} → {o['nfE']} feature). LightGBM log1p, L1, {o['lgb_trees']} cây, lr {o['lgb_lr']}, 3 seed.
+ - Cấu hình A→E ({o['nfA']} → {o['nfE']} feature). LightGBM log1p, {o['lgb_trees']} cây, lr {o['lgb_lr']}, 3 seed. Hàm mất mát mô hình chính: L1 ở h1,
+   L2 ở h2–h3 — CHỌN bằng walk-forward 13 fold ({o['tun2_m']} / {o['tun3_m']}, {o['tun2_wl']} fold, p {o['tun2_p']} / {o['tun3_p']})
+   và valid ({o['tunv2']} / {o['tunv3']}), KHÔNG theo test; h1 giữ L1 (valid {o['tunv1']}). A–E cùng quy tắc; Report 2 (bảng A) giữ L1.
    MÔ HÌNH CHÍNH từ Report 3 = cấu hình E (NSE {o['abE1']} / {o['abE2']} / {o['abE3']}); A chỉ là mốc cho tiêu chí AC.
  - Bộ phân loại nhị phân từng mức, trọng số lớp, ngưỡng {o['clf_thr']}. DL: LSTM (cửa sổ 14/30 ngày), MLP.
  - Baseline: persistence, climatology, seasonal naive, ARIMA. GloFAS thô KHÔNG dựng lại được quá khứ

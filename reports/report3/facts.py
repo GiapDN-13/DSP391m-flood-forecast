@@ -241,19 +241,21 @@ def load(cfg) -> Registry:
     ab = _csv("ablation_ext.csv")
     mean = ab.groupby(["config", "horizon"], sort=False).NSE.mean().unstack()
     cfgs = list(mean.index)
-    exp_ab = {"A": ("0.745", "0.420", "0.172"), "B": ("0.766", "0.428", "0.176"),
-              "C": ("0.757", "0.430", "0.181"), "D": ("0.756", "0.428", "0.186"),
-              "E": ("0.747", "0.483", "0.199")}
+    # L1 ở h1, L2 ở h2–h3 cho mọi cấu hình (lgbm.params_for, từ 21/10/2026; bản L1 cũ:
+    # reports/l1_ref/ablation_ext.csv — A 0.420/0.172 … E 0.483/0.199)
+    exp_ab = {"A": ("0.745", "0.432", "0.166"), "B": ("0.766", "0.447", "0.192"),
+              "C": ("0.757", "0.454", "0.208"), "D": ("0.756", "0.461", "0.199"),
+              "E": ("0.747", "0.499", "0.236")}
     for c in cfgs:
         L = c.split()[0]
         for h in (1, 2, 3):
             R.csv(f"ab{L}{h}", f(mean.loc[c, h]), exp_ab[L][h - 1], "reports/ablation_ext.csv (mean 3 seeds)")
     A, B, D, E = (next(c for c in cfgs if c.startswith(x)) for x in "ABDE")
     R.csv("abBA1", sg(mean.loc[B, 1] - mean.loc[A, 1]), "+0.021", "reports/ablation_ext.csv")
-    R.csv("abED2", sg(mean.loc[E, 2] - mean.loc[D, 2]), "+0.055", "reports/ablation_ext.csv")
-    R.csv("abED3", sg(mean.loc[E, 3] - mean.loc[D, 3]), "+0.014", "reports/ablation_ext.csv")
-    R.csv("abEA2", sg(mean.loc[E, 2] - mean.loc[A, 2]), "+0.063", "reports/ablation_ext.csv")
-    R.csv("ab_sd", f(ab.groupby(["config", "horizon"]).NSE.std().max()), "0.009", "reports/ablation_ext.csv")
+    R.csv("abED2", sg(mean.loc[E, 2] - mean.loc[D, 2]), "+0.038", "reports/ablation_ext.csv")
+    R.csv("abED3", sg(mean.loc[E, 3] - mean.loc[D, 3]), "+0.037", "reports/ablation_ext.csv")
+    R.csv("abEA2", sg(mean.loc[E, 2] - mean.loc[A, 2]), "+0.067", "reports/ablation_ext.csv")
+    R.csv("ab_sd", f(ab.groupby(["config", "horizon"]).NSE.std().max()), "0.012", "reports/ablation_ext.csv")
     ntr = ab.groupby("config", sort=False).n_train.first()
     R.csv("ntrA", n(ntr[A]), "4,550", "reports/ablation_ext.csv")
     R.csv("ntrB", n(ntr[B]), "9,298", "reports/ablation_ext.csv")
@@ -265,7 +267,29 @@ def load(cfg) -> Registry:
         R.csv(f"nf{L}", n(nf[next(c for c in cfgs if c.startswith(L))]), e, "reports/ablation_ext.csv")
     pbm = ab.groupby(["config", "horizon"]).peak_bias.mean()
     R.csv("ab_pbmax", f(pbm.max(), 2), "-0.42", "reports/ablation_ext.csv")
-    R.csv("ab_pbmin", f(pbm.min(), 2), "-0.88", "reports/ablation_ext.csv")
+    R.csv("ab_pbmin", f(pbm.min(), 2), "-0.89", "reports/ablation_ext.csv")
+
+    # ------------------------------------------------ hàm mất mát mô hình chính (wf_tuning "E L2")
+    main_obj = next(ast.literal_eval(node.value) for node in tree.body
+                    if isinstance(node, ast.Assign)
+                    and getattr(node.targets[0], "id", "") == "MAIN_OBJECTIVE")
+    R.claim("main_obj", main_obj == {1: "regression_l1", 2: "regression", 3: "regression"},
+            "main model: L1 at h = 1, L2 at h = 2 and 3", "src/models/lgbm.py MAIN_OBJECTIVE")
+    R.claim("abl_obj", bool((ab.objective == ab.horizon.map(main_obj)).all()),
+            "every ablation configuration uses the per-horizon main objective", "reports/ablation_ext.csv")
+    tu = _csv("wf_tuning_summary.csv")
+    tu = tu[tu.config == "E L2"].set_index(["period", "horizon"])
+    TS = "reports/wf_tuning_summary.csv (E L2 vs E)"
+    for h, (em, eci, ewl, ep) in {1: ("+0.018", "[-0.003; +0.042]", "8/5", "0.22"),
+                                  2: ("+0.039", "[+0.020; +0.057]", "11/2", "0.003"),
+                                  3: ("+0.036", "[+0.020; +0.051]", "11/2", "0.002")}.items():
+        r = tu.loc[("chinh_2013_2025", h)]
+        R.csv(f"tun{h}_m", sg(r["dNSE_mean"]), em, TS)
+        R.csv(f"tun{h}_ci", ci(r["dNSE_ci_lo"], r["dNSE_ci_hi"]), eci, TS)
+        R.csv(f"tun{h}_wl", f"{int(r['n_win'])}/{int(r['n_loss'])}", ewl, TS)
+        R.csv(f"tun{h}_p", f(r["p_wilcoxon"], 3 if h > 1 else 2), ep, TS + " Wilcoxon")
+    for h, e in zip((1, 2, 3), ("-0.011", "+0.059", "+0.053")):
+        R.csv(f"tunv{h}", sg(tu.loc[("valid_2016_2022_06", h), "dNSE_mean"]), e, TS + " valid 2016-06/2022")
 
     # ------------------------------------------------ đặc trưng mưa giờ ERA5 (split riêng)
     ah = _csv("ablation_hourly.csv")
@@ -301,14 +325,14 @@ def load(cfg) -> Registry:
     # ------------------------------------------------ mưa vệ tinh: một lần chia
     hs = _csv("ablation_hourly_sat.csv")
     hs = hs[(hs.phase == "test") & (hs.seed == "mean3")].set_index(["config", "horizon"])
-    R.csv("ss_im2", sg(hs.loc[("E0+imerg", 2), "dNSE"]), "+0.018", "reports/ablation_hourly_sat.csv")
-    R.csv("ss_im3", sg(hs.loc[("E0+imerg", 3), "dNSE"]), "+0.017", "reports/ablation_hourly_sat.csv")
+    R.csv("ss_im2", sg(hs.loc[("E0+imerg", 2), "dNSE"]), "+0.017", "reports/ablation_hourly_sat.csv")
+    R.csv("ss_im3", sg(hs.loc[("E0+imerg", 3), "dNSE"]), "+0.007", "reports/ablation_hourly_sat.csv")
 
     # ------------------------------------------------ mưa vệ tinh: walk-forward 13 fold
     ws = _csv("wf_sat_summary.csv")
     ws = ws[ws.period == "chinh_2013_2025"].set_index(["group", "config", "horizon"])
     E0 = "E0 (=E ablation_ext)"
-    for h, e in zip((1, 2, 3), ("0.761", "0.398", "0.170")):
+    for h, e in zip((1, 2, 3), ("0.761", "0.437", "0.206")):
         R.csv(f"wfE0_{h}", f(ws.loc[("ext", E0, h), "NSE_mean"]), e, "reports/wf_sat_summary.csv")
     for h, e in zip((1, 2, 3), ("0.744", "0.336", "0.121")):
         R.csv(f"wfA0_{h}", f(ws.loc[("r2", "A0 panel goc", h), "NSE_mean"]), e, "reports/wf_sat_summary.csv")
@@ -325,11 +349,11 @@ def load(cfg) -> Registry:
             R.csv(f"{key}_p", f(r["p_wilcoxon"], pnd), e_p, "reports/wf_sat_summary.csv")
 
     wrow("gc1", "ext", "E0+gsmap_gc", 1, "-0.001", "[-0.011; +0.010]", "8/5", "1.00")
-    wrow("gc2", "ext", "E0+gsmap_gc", 2, "+0.017", "[-0.002; +0.036]", "8/5", "0.22")
-    wrow("gc3", "ext", "E0+gsmap_gc", 3, "+0.016", "[+0.007; +0.024]", "11/2", "0.005", 3)
+    wrow("gc2", "ext", "E0+gsmap_gc", 2, "+0.012", "[-0.008; +0.031]", "8/5", "0.38")
+    wrow("gc3", "ext", "E0+gsmap_gc", 3, "+0.018", "[+0.008; +0.028]", "11/2", "0.008", 3)
     wrow("im1", "ext", "E0+imerg", 1, "+0.001", "[-0.005; +0.008]", "8/5", "0.68")
-    wrow("im2", "ext", "E0+imerg", 2, "+0.010", "[-0.002; +0.021]", "9/4", "0.09")
-    wrow("im3", "ext", "E0+imerg", 3, "+0.008", "[+0.001; +0.016]", "8/5", "0.08")
+    wrow("im2", "ext", "E0+imerg", 2, "+0.013", "[-0.001; +0.027]", "8/5", "0.19")
+    wrow("im3", "ext", "E0+imerg", 3, "+0.008", "[-0.001; +0.017]", "8/5", "0.17")
     wrow("agc1", "r2", "A0+gsmap_gc", 1, "+0.006", "[+0.000; +0.011]", "9/4", "0.07")
     wrow("agc2", "r2", "A0+gsmap_gc", 2, "+0.032", "[+0.023; +0.041]", "13/0", "0.0002", 4)
     wrow("agc3", "r2", "A0+gsmap_gc", 3, "+0.025", "[+0.013; +0.038]", "12/1", "0.005", 3)
@@ -347,11 +371,11 @@ def load(cfg) -> Registry:
     # ------------------------------------------------ phép thử độ trễ (tính lại từ fold)
     lag = _csv("wf_sat_lag1.csv")
     exp_lag = {("E0+gsmap_gc", 1): ("+0.004", "[-0.002; +0.010]", "10/3", "0.127"),
-               ("E0+gsmap_gc", 2): ("+0.016", "[-0.001; +0.034]", "8/5", "0.146"),
-               ("E0+gsmap_gc", 3): ("+0.012", "[+0.002; +0.023]", "10/3", "0.033"),
+               ("E0+gsmap_gc", 2): ("+0.018", "[-0.001; +0.038]", "9/4", "0.127"),
+               ("E0+gsmap_gc", 3): ("+0.026", "[+0.015; +0.036]", "11/2", "0.002"),
                ("E0+gsmap_gc_lag1", 1): ("+0.001", "[-0.007; +0.008]", "8/5", "0.542"),
-               ("E0+gsmap_gc_lag1", 2): ("-0.003", "[-0.007; +0.002]", "4/9", "0.244"),
-               ("E0+gsmap_gc_lag1", 3): ("-0.002", "[-0.009; +0.004]", "6/7", "0.685")}
+               ("E0+gsmap_gc_lag1", 2): ("+0.004", "[-0.005; +0.014]", "7/6", "0.542"),
+               ("E0+gsmap_gc_lag1", 3): ("-0.001", "[-0.007; +0.005]", "8/5", "0.839")}
     for (c, h), (em, eci, ewl, ep) in exp_lag.items():
         d = lag[(lag.config == c) & (lag.horizon == h)].sort_values("fold").dNSE.to_numpy(float)
         tag = f"lag{'1' if c.endswith('lag1') else '0'}_{h}"
@@ -572,42 +596,45 @@ def load_shap() -> bool:
     m = d.drop_duplicates(["horizon", "seed"]).set_index(["horizon", "seed"]).nse_test
     R.claim("shap_repro", bool(np.allclose(m.values, ab.reindex(m.index).values, atol=1e-6)),
             "SHAP model reproduces the ablation NSE exactly", src + " vs ablation_ext.csv")
-    for h, e in zip((1, 2, 3), ("0.748", "0.485", "0.193")):
+    for h, e in zip((1, 2, 3), ("0.748", "0.503", "0.231")):
         R.csv(f"shap_nse{h}", f(m.loc[(h, 42)]), e, src)
     g = d[d.level == "group"]
     g42 = g[g.seed == 42].set_index(["name", "horizon"])
-    exp_all = {"flow": ("58.4", "28.4", "22.6"), "rain": ("33.3", "46.4", "33.3"),
-               "rain_long": ("2.2", "5.3", "7.6"), "soil_api": ("1.8", "3.0", "4.0"),
-               "storm": ("0.9", "2.4", "4.1"), "synoptic": ("2.3", "8.8", "14.2"),
-               "enso": ("0.5", "1.6", "5.0"), "season": ("0.7", "4.1", "9.2")}
-    exp_fl = {"flow": ("57.4", "21.9", "20.2"), "rain": ("35.0", "52.0", "34.5"),
-              "rain_long": ("1.5", "4.2", "6.8"), "soil_api": ("2.6", "3.9", "5.2"),
-              "storm": ("0.7", "2.8", "5.5"), "synoptic": ("1.8", "10.6", "15.1"),
-              "enso": ("0.3", "0.9", "3.6"), "season": ("0.7", "3.7", "9.1")}
+    exp_all = {"flow": ("58.4", "26.3", "22.8"), "rain": ("33.3", "36.5", "22.5"),
+               "rain_long": ("2.2", "5.1", "7.8"), "soil_api": ("1.8", "5.6", "4.7"),
+               "storm": ("0.9", "3.5", "4.4"), "synoptic": ("2.3", "12.7", "16.3"),
+               "enso": ("0.5", "3.0", "5.9"), "season": ("0.7", "7.2", "15.6")}
+    exp_fl = {"flow": ("57.4", "20.7", "21.7"), "rain": ("35.0", "44.5", "23.3"),
+              "rain_long": ("1.5", "3.5", "6.2"), "soil_api": ("2.6", "5.9", "3.8"),
+              "storm": ("0.7", "3.5", "6.0"), "synoptic": ("1.8", "14.1", "16.8"),
+              "enso": ("0.3", "1.9", "5.2"), "season": ("0.7", "6.0", "16.9")}
     for grp in SHAP_GROUPS:
         for h in (1, 2, 3):
             R.csv(f"sg_{grp}_{h}", f(g42.loc[(grp, h), "share_all_pct"], 1), exp_all[grp][h - 1], src)
             R.csv(f"sgf_{grp}_{h}", f(g42.loc[(grp, h), "share_flood_pct"], 1), exp_fl[grp][h - 1], src)
-    for h, e in zip((1, 2, 3), ("-0.06", "-0.09", "-0.07")):
+    for h, e in zip((1, 2, 3), ("-0.06", "-0.13", "-0.04")):
         R.csv(f"soil_signed{h}", f(g42.loc[("soil_api", h), "mean_signed_flood"], 2), e, src)
     spread = max(g.groupby(["name", "horizon"])[c].agg(lambda x: x.max() - x.min()).max()
                  for c in ("share_all_pct", "share_flood_pct"))
-    R.csv("shap_spread", f(spread, 1), "2.3", src + " (seeds 42/7/2026)")
+    R.csv("shap_spread", f(spread, 1), "3.6", src + " (seeds 42/7/2026)")
     ft = d[(d.level == "feature") & (d.seed == 42)].set_index(["name", "horizon"])
     for nm, h, e in (("discharge", 1, "37.4"), ("rain_thuong", 1, "11.2"), ("rain_basin", 1, "9.5"),
-                     ("rain_basin", 2, "20.0"), ("discharge", 2, "13.5"), ("rain_thuong", 2, "12.3"),
-                     ("rain_basin", 3, "16.0"), ("discharge", 3, "8.1"),
-                     ("mslp_grad_north", 3, "5.8")):
+                     ("rain_basin", 2, "15.0"), ("discharge", 2, "9.7"), ("rain_thuong", 2, "7.3"),
+                     ("rain_basin", 3, "6.1"), ("discharge", 3, "6.5"),
+                     ("mslp_grad_north", 3, "5.2")):
         R.csv(f"sf_{nm}_{h}", f(ft.loc[(nm, h), "share_all_pct"], 1), e, src)
     R.csv("rank_mslp3", n(ft.loc[("mslp_grad_north", 3), "rank_all"]), "3", src)
     R.claim("top1_h1", ft.xs(1, level="horizon").rank_all.idxmin() == "discharge",
             "discharge ranks first at h = 1", src)
-    R.claim("top1_h3", ft.xs(3, level="horizon").rank_all.idxmin() == "rain_basin",
-            "basin rainfall ranks first at h = 2 and h = 3", src)
-    for nm, e in (("discharge", ("+1.00", "+0.98", "+0.96")),
-                  ("mslp_grad_north", ("+0.89", "+0.93", "+0.93")),
-                  ("sm_7_28", ("-0.12", "-0.40", "-0.52")),
-                  ("rain_season_cum", ("-0.16", "-0.00", "-0.23"))):
+    R.claim("top1_h2", ft.xs(2, level="horizon").rank_all.idxmin() == "rain_basin",
+            "basin rainfall ranks first at h = 2", src)
+    R.claim("top12_h3", set(ft.xs(3, level="horizon").nsmallest(2, "rank_all").index)
+            == {"discharge", "rain_basin"},
+            "discharge and basin rainfall rank first and second at h = 3", src)
+    for nm, e in (("discharge", ("+1.00", "+0.97", "+0.97")),
+                  ("mslp_grad_north", ("+0.89", "+0.95", "+0.95")),
+                  ("sm_7_28", ("-0.12", "-0.25", "-0.27")),
+                  ("rain_season_cum", ("-0.16", "+0.02", "+0.02"))):
         for h in (1, 2, 3):
             R.csv(f"rho_{nm}_{h}", sg(ft.loc[(nm, h), "rho_value_shap"], 2), e[h - 1], src)
     # chỉ có trong tài liệu (FINDINGS_SHAP.md §4) — ca đỉnh lũ 16/10/2022 và 30/10/2025
