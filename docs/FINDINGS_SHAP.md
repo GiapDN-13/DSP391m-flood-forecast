@@ -7,6 +7,12 @@ Mục bắt buộc của Report 3 (`PLAN.md` W7: "SHAP; kiểm tra feature quan 
 thuỷ văn không"). Trả lời ba câu: mô hình dựa vào gì, chiều tác động có đúng vật lý
 không, và vì sao vẫn dự báo thấp đỉnh lũ.
 
+> **Cập nhật 21/10/2026: cấu hình chính đổi sang L2 cho h2–h3** (`lgbm.params_for(h)`: L1 ở h1,
+> L2 trên log1p ở h2–h3, chọn bằng walk-forward/valid — `FINDINGS_TUNING.md`). `shap_importance.csv`
+> và hình `shap_*_en.png` đã chạy lại với mô hình mới; số mới ở **§7**. §0–§6 dưới đây giữ nguyên
+> số của bản L1 (file cũ `reports/l1_ref/shap_importance.csv`) để đối chiếu. h1 không đổi (cùng
+> tham số) ⇒ §4 (hai ca đỉnh lũ h1) vẫn đúng nguyên văn.
+
 ---
 
 ## 0. Cách làm
@@ -221,6 +227,69 @@ mùa lũ.
   cho các biến đáng ngờ.
 * Chỉ 31 ngày lũ trong 4 mùa lũ test; bảng feature dùng một seed (bảng nhóm dùng 3 seed,
   chênh ≤ 2,3 điểm %).
+
+## 7. Cập nhật 21/10/2026 — mô hình chính L2 ở h2–h3
+
+Chạy lại `python -m src.eval.shap_analysis` với `lgbm.params_for(h)`. Kiểm tái lập: NSE khớp
+`ablation_ext.csv` mới tuyệt đối ở cả 9 lần chạy; seed 42 **0,748 / 0,503 / 0,231** (cũ 0,748 /
+0,485 / 0,193); TB 3 seed 0,747 / 0,499 / 0,236. |base + ΣSHAP − f(x)| ≤ 7,5·10⁻¹⁴. Tỉ trọng
+nhóm giữa 3 seed chênh tối đa **3,6** điểm % (cũ 2,3).
+
+**Top 10 theo mean |SHAP| (seed 42), mới — h1 không đổi:**
+
+| Hạng | h = 2 mới | h = 2 cũ | h = 3 mới | h = 3 cũ |
+|---|---|---|---|---|
+| 1 | `rain_basin` 15,0 % | `rain_basin` 20,0 % | **`discharge` 6,5 %** | `rain_basin` 16,0 % |
+| 2 | `discharge` 9,7 % | `discharge` 13,5 % | `rain_basin` 6,1 % | `discharge` 8,1 % |
+| 3 | `rain_thuong` 7,3 % | `rain_thuong` 12,3 % | `mslp_grad_north` 5,2 % | `mslp_grad_north` 5,8 % |
+| 4 | `mslp_grad_north` 5,2 % | `mslp_grad_north` 4,0 % | `mslp_sea` 4,7 % | `rain_thuong` 5,1 % |
+| 5 | `mslp_sea` 4,1 % | `rain_basin_roll30` 3,1 % | `rain_ha` 4,7 % | `mslp_sea` 4,8 % |
+| 6 | `rain_basin_roll30` 2,7 % | `mslp_sea` 2,9 % | `month` 4,3 % | `rain_basin_roll30` 3,7 % |
+| 7 | `discharge_lag2` 2,1 % | `rain_trung` 2,7 % | `rain_basin_roll30` 3,2 % | `month` 3,5 % |
+| 8 | `month` 2,1 % | `discharge_lag2` 1,7 % | `oni_lag3` 2,9 % | `oni_lag3` 3,0 % |
+| 9 | `q_diff1` 1,9 % | `q_diff1` 1,6 % | `rain_thuong` 2,9 % | `wind_e_sea` 2,8 % |
+| 10 | `oni_lag3` 1,7 % | `month` 1,6 % | `wind_e_sea` 2,5 % | `cloud_hue` 2,2 % |
+
+**Tỉ trọng nhóm (% mean |Σ SHAP nhóm|, seed 42), h2 / h3 mới (cũ):**
+
+| Nhóm | Toàn test h2 | h3 | Ngày lũ h2 | h3 |
+|---|---|---|---|---|
+| Lưu lượng trễ | 26,3 (28,4) | 22,8 (22,6) | 20,7 (21,9) | 21,7 (20,2) |
+| Mưa ≤ 7 ngày | 36,5 (46,4) | **22,5 (33,3)** | 44,5 (52,0) | 23,3 (34,5) |
+| Mưa dài / đại diện hồ | 5,1 (5,3) | 7,8 (7,6) | 3,5 (4,2) | 6,2 (6,8) |
+| Độ ẩm đất & API | 5,6 (3,0) | 4,7 (4,0) | 5,9 (3,9) | 3,8 (5,2) |
+| Bão / ATNĐ | 3,5 (2,4) | 4,4 (4,1) | 3,5 (2,8) | 6,0 (5,5) |
+| Khí áp, gió, ẩm | **12,7 (8,8)** | **16,3 (14,2)** | 14,1 (10,6) | 16,8 (15,1) |
+| ENSO | 3,0 (1,6) | 5,9 (5,0) | 1,9 (0,9) | 5,2 (3,6) |
+| Mùa (lịch) | 7,2 (4,1) | **15,6 (9,2)** | 6,0 (3,7) | **16,9 (9,1)** |
+
+h1 không đổi (58,4 / 33,3 / 2,2 / 1,8 / 0,9 / 2,3 / 0,5 / 0,7).
+
+**Kiểm chiều (ρ Spearman giá trị–SHAP, h1 / h2 / h3):** `discharge` +1,00 / +0,97 / +0,97;
+`rain_basin` +0,89 / +0,96 / +0,94; `mslp_grad_north` +0,89 / +0,95 / +0,95; `mslp_sea` −0,93 /
+−0,96 / −0,95; `oni_lag3` −0,83 / −0,78 / −0,78; `sm_7_28` −0,12 / **−0,25 / −0,27** (cũ −0,40 /
+−0,52 — vẫn ngược nhưng yếu hơn; mùa lũ −0,79 / −0,83 / −0,70); `rain_season_cum` −0,16 / +0,02 /
++0,02 (cũ −0,00 / −0,23 — vẫn không ủng hộ "hồ đầy"; ngày mưa ≥ 50 mm −0,73 / −0,45 / −0,45);
+`et0` +0,19 / +0,51 / +0,56 (ngược, hạng 15 ở h2). Mức nhóm: vẫn 6/7 nhóm đúng chiều, chỉ "Độ ẩm
+đất & API" ngược (ρ với `api` −0,10 / −0,55 / −0,38). SHAP có dấu nhóm độ ẩm đất & API trên ngày
+lũ: −0,06 / −0,13 / −0,04 (vẫn âm cả ba horizon).
+
+**Bão theo khoảng cách (SHAP TB nhóm bão, h2 / h3):** 0–300 km +0,049 / −0,008 · 300–800 km
+**+0,186 / +0,160** (cũ +0,136 / +0,180) · 800–1 500 km +0,020 / +0,050 · không bão −0,018 / −0,022.
+
+**Ngày lũ (31 ngày):** trung vị dự báo / thật **0,56 / 0,34 / 0,20** (cũ 0,56 / 0,33 / 0,15).
+
+**Đọc lại kết luận §5:**
+
+1. Cốt lõi vẫn hợp lý và chuyển trọng tâm đúng vật lý; với L2, mô hình ở h2–h3 dựa **ít hơn vào
+   mưa ≤ 7 ngày** và **nhiều hơn vào khí áp/gió (12,7 % / 16,3 %), ENSO và lịch**. Ở h3
+   `discharge` và `rain_basin` gần ngang nhau (6,5 % / 6,1 %) — thay cho câu cũ "`rain_basin` hạng 1
+   ở h2 và h3": nay **chỉ hạng 1 ở h2**.
+2. **Cảnh báo học khí hậu mạnh hơn ở h3:** nhóm lịch 9,2 % → **15,6 %** (16,9 % ngày lũ), xấp xỉ
+   nhóm khí áp/gió. L2 cải thiện NSE nhưng một phần là nhờ bám mùa — nhóm cần xem lại câu chữ.
+3. Độ ẩm đất vẫn ngược chiều (yếu hơn) và `rain_season_cum` vẫn không có cơ sở ⇒ hai kết luận
+   "không hợp lý" giữ nguyên.
+4. Cắt ngọn ở h1 không đổi (§4); h2–h3 dự báo/thật nhích lên nhưng vẫn rất thấp (0,34 / 0,20).
 
 ## Tái lập
 
