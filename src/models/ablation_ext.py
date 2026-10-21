@@ -8,6 +8,13 @@ Năm cấu hình, mỗi bước chỉ thêm MỘT nhóm để biết nhóm nào 
     D  + đại diện hồ chứa C + mưa 15/30 ngày + mưa tích luỹ từ 01/09
     E  + bão, KK lạnh, ENSO D + IBTrACS + khí áp/gió 3 điểm + ONI trễ 3 tháng
 
+Hàm mất mát: CẢ NĂM cấu hình dùng cùng quy tắc của mô hình chính
+``lgbm.params_for(h)`` — L1 ở h=1, L2 (``regression``) ở h=2 và h=3 (chọn bằng
+walk-forward/valid, ``docs/FINDINGS_TUNING.md``). Chỉ bộ cột khác nhau giữa
+các cấu hình nên phép so đặc trưng vẫn công bằng. Cột ``objective`` ghi hàm mất
+mát đã dùng. Bản cũ (L1 mọi horizon, trước 21/10/2026) giữ ở
+``reports/l1_ref/ablation_ext.csv``.
+
 Tập test GIỐNG HỆT nhau (từ 2022-07-01), ngưỡng nguy cơ giữ nguyên của
 Report 2 (`reports/risk_levels.csv`) để so sánh công bằng. Mỗi cấu hình chạy 3
 seed vì LightGBM dao động ±0,01 NSE giữa các seed — chênh nhỏ hơn mức đó
@@ -54,16 +61,16 @@ def run(name: str, panel, tr, te, feats, thr1: float) -> list[dict]:
     rows = []
     for h in cfg.HORIZONS:
         for seed in SEEDS:
-            lgbm.PARAMS["random_state"] = seed
-            y, yhat, _, n_tr = lgbm.fit_predict(panel, h, feats, tr, te)
+            params = lgbm.params_for(h, random_state=seed)
+            y, yhat, _, n_tr = lgbm.fit_predict(panel, h, feats, tr, te, params)
             rep = metrics.regression_report(y, yhat)
             ev = metrics.event_report(y >= thr1, yhat >= thr1)
             rows.append({"config": name, "horizon": h, "seed": seed,
+                         "objective": params["objective"],
                          "n_train": n_tr, "n_test": len(y), "n_feat": len(feats),
                          "NSE": rep["NSE"], "KGE": rep["KGE"],
                          "peak_bias": rep["peak_bias"],
                          "POD1": ev["POD"], "FAR1": ev["FAR"], "CSI1": ev["CSI"]})
-    lgbm.PARAMS["random_state"] = cfg.SEED
     return rows
 
 

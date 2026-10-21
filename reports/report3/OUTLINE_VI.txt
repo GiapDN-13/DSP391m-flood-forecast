@@ -1,0 +1,626 @@
+DÀN Ý REPORT 3 — MÔ HÌNH & ĐÁNH GIÁ (IEEE, 8 trang)
+File: reports/report3/DSP391m_Report3_Modelling_Evaluation_IEEE.pdf
+Build: python reports/report3/build_report.py   (mọi số được kiểm với CSV lúc build)
+
+Câu định vị (nói xuyên suốt): mô hình là LỚP HIỆU CHỈNH CỤC BỘ trên GloFAS, không thay GloFAS.
+Biến mục tiêu vẫn là lưu lượng GloFAS v4 theo ngày, ô ~5 km tại (16.45 N, 107.50 E).
+
+I. GIỚI THIỆU
+ - Nhắc lại bài toán: dự báo lưu lượng Kim Long 1–3 ngày + mức nguy cơ, chỉ dữ liệu mở.
+ - Góp ý của thầy ở Report 2: (1) xả hồ và các yếu tố khác, (2) ô mịn hơn 5 km, (3) theo giờ;
+   Report 4: Spark + DL. Bảng I: góp ý → đã làm gì → kết quả.
+ - Ràng buộc: đầu vào mịn/giờ KHÔNG làm biến mục tiêu mịn hơn.
+
+II. CẬP NHẬT DỮ LIỆU
+ A. Mưa ERA5 mở rộng về 1997 → train tăng 4,550 → 9,298 ngày. Thêm độ ẩm đất ERA5-Land,
+    bão IBTrACS (417 cơn trong 1,500 km), không khí lạnh (chênh áp Hà Nội–Huế, gió ĐB),
+    ENSO (ONI trễ 3 tháng).
+ B. ĐÍNH CHÍNH Report 2: diện tích lưu vực tới Kim Long ~1,540 km² (DEM 1,543 km²),
+    KHÔNG phải 2,830 km² (2,830 là cả hệ thống Hương gồm sông Bồ 938 km²).
+    Ô lưới đã chọn KHÔNG đổi: Q_tb 120.7 m³/s ⇒ 1,508–2,011 km².
+ C. 5 lưu vực con từ DEM 30 m (Hình 1): Tả Trạch 670, Bình Điền 507, dưới đập 88 + 185,
+    Tuần–Kim Long 93 km². ERA5 chỉ phủ 92.5 %, lưới vệ tinh phủ 100 %.
+ D. Mưa vệ tinh IMERG V07, GSMaP v8 (+ GC) 1998–10/2026 theo giờ qua Earth Engine. PERSIANN-CCS 0,04°
+    bị loại (tháng 11/2020 chỉ ghi được 0.073 lượng mưa ERA5). ERA5 tương quan với GloFAS cao
+    nhất vì GloFAS chạy bằng ERA5 — không có nghĩa ERA5 đúng hơn.
+ E. Số liệu hồ: 132 dòng, 57 ngày, có URL + trích nguyên văn — chỉ để kiểm chứng và luật,
+    không làm feature.
+
+III. PHƯƠNG PHÁP
+ - Mục tiêu Q(t+h), h = 1..3; feature chỉ dùng thông tin tới hết ngày t; test tự động chống rò rỉ.
+ - Cấu hình A→E (66 → 88 feature). LightGBM log1p, 600 cây, lr 0.05, 3 seed. Hàm mất mát mô hình chính: L1 ở h1,
+   L2 ở h2–h3 — CHỌN bằng walk-forward 13 fold (+0.039 / +0.036, 11/2 fold, p 0.003 / 0.002)
+   và valid (+0.059 / +0.053), KHÔNG theo test; h1 giữ L1 (valid -0.011). A–E cùng quy tắc; Report 2 (bảng A) giữ L1.
+   MÔ HÌNH CHÍNH từ Report 3 = cấu hình E (NSE 0.747 / 0.499 / 0.236); A chỉ là mốc cho tiêu chí AC.
+ - Bộ phân loại nhị phân từng mức, trọng số lớp, ngưỡng 0.5. DL: LSTM (cửa sổ 14/30 ngày), MLP.
+ - Baseline: persistence, climatology, seasonal naive, ARIMA. GloFAS thô KHÔNG dựng lại được quá khứ
+   (404) → nhật ký dự báo từ 15/09/2026, so sánh ở Report 4.
+ - Walk-forward 13 fold theo năm 2013–2025, train mở rộng, gap 3 ngày, ngưỡng tính lại trong mỗi fold,
+   CI bootstrap theo fold + Wilcoxon. Ngưỡng nhiễu NSE ±0.01.
+ - Vì sao không đổi sang mét: R² H–Q = 0.18 trên 12 đợt lũ; ánh xạ chệch -1.94 m ngoài mẫu.
+   ⇒ mức nguy cơ = phân vị 95/98/99,5 mùa lũ = 806 / 1,275 / 1,905 m³/s.
+ - Metric sự kiện: POD/FAR/CSI/F1/PR-AUC/Brier; cấm accuracy; quy tắc ≥ 30 ngày dương.
+ - Luật nâng sàn khi hồ xả: dự báo = max(mô hình, tổng lệnh xả Tả Trạch + Bình Điền), chỉ nâng.
+
+IV. KẾT QUẢ
+ A. LightGBM NSE 0.747 / 0.420 / 0.175 vs persistence 0.542 / 0.008 / -0.198.
+    AC-1 đạt h1 (RMSE tốt hơn 25.6 %) và h2, TRƯỢT h3. Cắt ngọn lũ: peak bias -0.45 / -0.76 / -0.89.
+ B. Mức 1, h1: POD 0.645, FAR 0.200, CSI 0.556 (20/31 ngày). Mức 2 chỉ 12 ngày → không kết luận.
+ C. Kịch bản B': mưa nhiễu sigma = 1 → NSE h1 0.742 → 0.683; mô hình dựa vào lag lưu lượng.
+ D. A→E: chuỗi dài giúp h1 (+0.021); bão/không khí lạnh/ENSO giúp h2 (0.432 → 0.499); độ ẩm đất, đại diện hồ: không.
+ E. Mưa giờ ERA5: giúp h3 đều 3 seed; h2 chủ yếu 1 seed; h1 không phải nhờ thông tin trong ngày.
+ F. Mưa vệ tinh walk-forward: GSMaP-GC + E0, h3 +0.018 [+0.008; +0.028], 11/2 fold, p 0.008; FA 24 → 19.
+    IMERG bị lần chia đơn đánh giá quá cao (+0.017 → +0.013).
+    ĐỘ TRỄ: Earth Engine trễ ~27 h → trễ 1 ngày thì h3 còn -0.001 (p 0.839) ⇒ CHỈ có lợi khi
+    phân tích lại quá khứ, CHƯA có lợi khi chạy thật.
+ G. GSMaP_NRT (JAXA, trễ ~4.7 h): ĐÃ CÓ bảng số (tự tính lúc build) — CẦN viết câu kết luận.
+ H. DL vs LightGBM walk-forward: KHÔNG thắng vững. LSTM MSE h1 +0.021 (CI chứa 0); LSTM nhấn đỉnh h3 -0.229
+    (p 0.033). Lợi thế lần chia đơn chỉ ở 2022–2025. Mặt được: POD/CSI h1 cao hơn, ít cắt ngọn hơn.
+ I. Hồ chứa: R1 — không chỉ số nào đổi có ý nghĩa (GloFAS như sông chưa có hồ). R2 — GloFAS thấp hơn
+    cận dưới lượng nước vào hồ 14/23 ngày; 15/10/2022: xả ≥ 3,672, vào 13,787, GloFAS 1,967 m³/s.
+    ⇒ vấn đề lớn là GloFAS mô phỏng thiếu lũ lớn, không phải hồ.
+
+V. GIẢI THÍCH MÔ HÌNH (SHAP): ĐÃ VIẾT từ shap_importance.csv + docs/FINDINGS_SHAP.md (số đã kiểm).
+ - Gain không đáng tin: doy_sin/doy_cos đứng đầu theo gain ở h2 nhưng bỏ đi NSE không giảm.
+ - SHAP trên cấu hình E (88 feature, seed 42), tái lập đúng NSE ablation (0.748 / 0.503 / 0.231).
+ - h1 → h3: nhóm lưu lượng trễ 58.4 % → 22.8 %; khí áp/gió/ẩm 2.3 % → 16.3 %; chênh áp Bắc–Huế (KK lạnh) hạng 3 ở h3.
+ - KHÔNG hợp lý: độ ẩm đất ngược chiều (rho -0.12 / -0.25 / -0.27); 'hồ đầy' (mưa từ 01/09) không được ủng hộ; h3 dựa 15.6 % vào lịch.
+ - Cắt ngọn lũ là giới hạn cấu trúc: 16/10/2022 dự báo 862 so với 1,967 m³/s; chỉ 12/9,283 ngày train vượt đỉnh đó; lá tối thiểu 30 ngày.
+
+VI. HẠN CHẾ: mục tiêu là mô phỏng; đổi chế độ 07/2022 + GloFAS v5 sẽ thêm hồ; độ trễ vệ tinh;
+    KHÔNG có mục tiêu theo giờ (nhóm quyết định không xin số liệu đo KTTV); sự kiện hiếm; nhiễu ±0.01.
+
+VII. KẾT LUẬN + REPORT 4: GSMaP_NRT; so với GloFAS thô từ nhật ký; SHAP; hồi quy phân vị; Spark trình bày
+    trung thực (ETL cụm 40.5–41.2 s so với Polars 3.4–3.7 s); walk-forward là so sánh chính.
+
+CÂU HỎI DỄ BỊ HỎI — trả lời ngắn
+ - "Sao không so với GloFAS?" → kho dự báo lưu lượng quá khứ không tồn tại (404); đang tích luỹ từ 15/09.
+ - "Sao không dùng mức BĐ I/II/III?" → R² H–Q = 0.18; mức nguy cơ là tương đối, không phải BĐ.
+ - "Mưa vệ tinh có giúp không?" → có ở h3 khi nhìn lại quá khứ; chạy thật qua Earth Engine thì không.
+ - "DL có tốt hơn không?" → không vững qua 13 năm; chỉ hơn ở 2022–2025.
+ - "Spark để làm gì?" → chứng minh pipeline đúng khi tách executor; ở 74 MB thì chậm hơn Polars.
+
+====================================================================================================
+DANH SÁCH SỐ DÙNG TRONG BÁO CÁO (sinh tự động lúc build)
+loại: csv = đã kiểm với file lúc build · claim = câu định tính đã kiểm · doc = chỉ có trong tài liệu
+====================================================================================================
+csv    nrt_r2_A0+gsmap_gc_1_0                       +0.006                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_1_1                       [+0.000; +0.011]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_1_2                       9/4                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_1_3                       0.068                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_2_0                       +0.032                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_2_1                       [+0.023; +0.041]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_2_2                       13/0                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_2_3                       0.000                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_3_0                       +0.025                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_3_1                       [+0.013; +0.038]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_3_2                       12/1                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_gc_3_3                       0.005                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_1_0                      +0.009                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_1_1                      [+0.003; +0.014]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_1_2                      10/3                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_1_3                      0.008                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_2_0                      +0.019                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_2_1                      [+0.008; +0.031]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_2_2                      11/2                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_2_3                      0.006                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_3_0                      +0.012                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_3_1                      [+0.005; +0.019]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_3_2                      12/1                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_r2_A0+gsmap_nrt_3_3                      0.005                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_1_0                      -0.000                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_1_1                      [-0.011; +0.010]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_1_2                      8/5                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_1_3                      1.000                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_2_0                      +0.012                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_2_1                      [-0.008; +0.031]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_2_2                      8/5                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_2_3                      0.376                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_3_0                      +0.018                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_3_1                      [+0.008; +0.028]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_3_2                      11/2                       reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_gc_3_3                      0.008                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_1_0                     -0.002                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_1_1                     [-0.007; +0.003]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_1_2                     4/9                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_1_3                     0.273                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_2_0                     +0.003                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_2_1                     [-0.009; +0.017]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_2_2                     6/7                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_2_3                     0.735                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_3_0                     -0.001                     reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_3_1                     [-0.009; +0.008]           reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_3_2                     5/8                        reports/wf_sat_nrt.csv (tính lúc build)
+csv    nrt_ext_E0+gsmap_nrt_3_3                     0.542                      reports/wf_sat_nrt.csv (tính lúc build)
+csv    pt_lat                                       16.45                      src/config.py RIVER_POINTS
+csv    pt_lon                                       107.50                     src/config.py RIVER_POINTS
+csv    area_cfg                                     1,540                      src/config.py KIM_LONG_AREA_KM2
+csv    bd1                                          1.0                        src/config.py ALERT_LEVELS_M
+csv    bd2                                          2.0                        src/config.py ALERT_LEVELS_M
+csv    bd3                                          3.5                        src/config.py ALERT_LEVELS_M
+csv    q_lv3                                        99.5                       src/config.py FALLBACK_QUANTILES
+claim  q_lv12                                       95th and 98th percentiles  src/config.py FALLBACK_QUANTILES
+csv    lgb_obj                                      regression_l1              src/models/lgbm.py PARAMS  [không in trong PDF]
+csv    lgb_trees                                    600                        src/models/lgbm.py PARAMS
+csv    lgb_lr                                       0.05                       src/models/lgbm.py PARAMS
+csv    lgb_leaves                                   31                         src/models/lgbm.py PARAMS
+csv    lgb_mcs                                      30                         src/models/lgbm.py PARAMS
+csv    clf_thr                                      0.5                        src/models/classifier.py
+csv    area_dem                                     1,543                      data/external/basins/huong_kim_long.geojson
+csv    a_tt                                         670                        data/external/basins/subbasins.geojson
+csv    a_bd                                         507                        data/external/basins/subbasins.geojson
+csv    a_ttb                                        88                         data/external/basins/subbasins.geojson
+csv    a_htb                                        185                        data/external/basins/subbasins.geojson
+csv    a_tkl                                        93                         data/external/basins/subbasins.geojson
+csv    ref_tt                                       717                        data/external/reservoir_info.csv (QD 1606)
+csv    ref_bd                                       515                        data/external/reservoir_info.csv (QD 1606)
+csv    cap_tt                                       646                        data/external/reservoir_info.csv
+csv    cap_bd                                       424                        data/external/reservoir_info.csv
+csv    dam_area                                     1,232                      reservoir_info.csv: 717 + 515
+csv    dtt_pct                                      -6.5                       subbasins.geojson / reservoir_info.csv
+csv    dbd_pct                                      -1.6                       subbasins.geojson / reservoir_info.csv
+csv    lgb_nse1                                     0.747                      reports/lgbm_results.csv
+csv    lgb_rmse1                                    116.3                      reports/lgbm_results.csv
+csv    lgb_pb1                                      -0.45                      reports/lgbm_results.csv
+csv    lgb_nse2                                     0.420                      reports/lgbm_results.csv
+csv    lgb_rmse2                                    176.1                      reports/lgbm_results.csv
+csv    lgb_pb2                                      -0.76                      reports/lgbm_results.csv
+csv    lgb_nse3                                     0.175                      reports/lgbm_results.csv
+csv    lgb_rmse3                                    210.0                      reports/lgbm_results.csv
+csv    lgb_pb3                                      -0.89                      reports/lgbm_results.csv
+csv    n_test1                                      1,522                      reports/lgbm_results.csv
+csv    persistence_nse1                             0.542                      reports/baseline_results.csv
+csv    persistence_rmse1                            156.4                      reports/baseline_results.csv
+csv    persistence_nse2                             0.008                      reports/baseline_results.csv
+csv    persistence_rmse2                            230.2                      reports/baseline_results.csv
+csv    persistence_nse3                             -0.198                     reports/baseline_results.csv
+csv    persistence_rmse3                            253.1                      reports/baseline_results.csv
+csv    climatology_nse1                             0.097                      reports/baseline_results.csv
+csv    climatology_rmse1                            219.6                      reports/baseline_results.csv
+csv    climatology_nse2                             0.097                      reports/baseline_results.csv
+csv    climatology_rmse2                            219.7                      reports/baseline_results.csv
+csv    climatology_nse3                             0.096                      reports/baseline_results.csv
+csv    climatology_rmse3                            219.8                      reports/baseline_results.csv
+csv    seasonal_naive_nse1                          -0.434                     reports/baseline_results.csv
+csv    seasonal_naive_rmse1                         276.8                      reports/baseline_results.csv
+csv    seasonal_naive_nse2                          -0.434                     reports/baseline_results.csv
+csv    seasonal_naive_rmse2                         276.8                      reports/baseline_results.csv
+csv    seasonal_naive_nse3                          -0.435                     reports/baseline_results.csv
+csv    seasonal_naive_rmse3                         276.9                      reports/baseline_results.csv
+csv    arima_nse1                                   -0.093                     reports/baseline_results.csv
+csv    arima_rmse1                                  241.6                      reports/baseline_results.csv
+csv    arima_nse2                                   -0.093                     reports/baseline_results.csv
+csv    arima_rmse2                                  241.7                      reports/baseline_results.csv
+csv    arima_nse3                                   -0.093                     reports/baseline_results.csv
+csv    arima_rmse3                                  241.8                      reports/baseline_results.csv
+csv    per_pb1                                      -0.36                      reports/baseline_results.csv
+csv    rmse_gain1                                   25.6                       lgbm_results.csv / baseline_results.csv
+csv    rmse_gain2                                   23.5                       lgbm_results.csv / baseline_results.csv  [không in trong PDF]
+csv    rmse_gain3                                   17.0                       lgbm_results.csv / baseline_results.csv  [không in trong PDF]
+csv    thr1                                         806                        reports/risk_levels.csv
+csv    thr2                                         1,275                      reports/risk_levels.csv
+csv    thr3                                         1,905                      reports/risk_levels.csv
+csv    npos1                                        31                         reports/risk_levels.csv
+csv    npos2                                        12                         reports/risk_levels.csv
+csv    npos3                                        7                          reports/risk_levels.csv
+csv    ntv3                                         9                          reports/risk_levels.csv
+csv    c1h1_pod                                     0.645                      reports/classifier_results.csv
+csv    c1h1_far                                     0.200                      reports/classifier_results.csv
+csv    c1h1_csi                                     0.556                      reports/classifier_results.csv
+csv    c1h1_pr_auc                                  0.671                      reports/classifier_results.csv
+csv    c1h2_pod                                     0.355                      reports/classifier_results.csv
+csv    c1h2_far                                     0.476                      reports/classifier_results.csv
+csv    c1h2_csi                                     0.268                      reports/classifier_results.csv
+csv    c1h2_pr_auc                                  0.354                      reports/classifier_results.csv
+csv    c1h3_pod                                     0.129                      reports/classifier_results.csv
+csv    c1h3_far                                     0.789                      reports/classifier_results.csv
+csv    c1h3_csi                                     0.087                      reports/classifier_results.csv
+csv    c1h3_pr_auc                                  0.153                      reports/classifier_results.csv
+csv    c2h1_pod                                     0.333                      reports/classifier_results.csv
+csv    c2h1_far                                     0.500                      reports/classifier_results.csv
+csv    c2h1_csi                                     0.250                      reports/classifier_results.csv
+csv    c2h1_pr_auc                                  0.419                      reports/classifier_results.csv
+csv    c2h2_pod                                     0.000                      reports/classifier_results.csv
+csv    c2h2_far                                     1.000                      reports/classifier_results.csv
+csv    c2h2_csi                                     0.000                      reports/classifier_results.csv
+csv    c2h2_pr_auc                                  0.082                      reports/classifier_results.csv
+csv    c2h3_pod                                     0.000                      reports/classifier_results.csv
+csv    c2h3_far                                     1.000                      reports/classifier_results.csv
+csv    c2h3_csi                                     0.000                      reports/classifier_results.csv
+csv    c2h3_pr_auc                                  0.035                      reports/classifier_results.csv
+csv    c1h1_f1                                      0.714                      reports/classifier_results.csv  [không in trong PDF]
+csv    c1h1_brier                                   0.0095                     reports/classifier_results.csv  [không in trong PDF]
+csv    c1h1_hits                                    20                         reports/classifier_results.csv
+csv    c1h1_miss                                    11                         reports/classifier_results.csv  [không in trong PDF]
+csv    c1h1_fa                                      5                          reports/classifier_results.csv
+csv    c1_ntrain                                    79                         reports/classifier_results.csv  [không in trong PDF]
+csv    sb0_h1                                       0.742                      reports/scenario_b_results.csv
+csv    sb1_h1                                       0.683                      reports/scenario_b_results.csv
+csv    sb0_h2                                       0.422                      reports/scenario_b_results.csv
+csv    sb1_h2                                       0.384                      reports/scenario_b_results.csv
+csv    sb0_h3                                       0.167                      reports/scenario_b_results.csv
+csv    sb1_h3                                       0.172                      reports/scenario_b_results.csv
+csv    sb_drop1                                     0.059                      reports/scenario_b_results.csv
+csv    abA1                                         0.745                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abA2                                         0.432                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abA3                                         0.166                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abB1                                         0.766                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abB2                                         0.447                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abB3                                         0.192                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abC1                                         0.757                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abC2                                         0.454                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abC3                                         0.208                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abD1                                         0.756                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abD2                                         0.461                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abD3                                         0.199                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abE1                                         0.747                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abE2                                         0.499                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abE3                                         0.236                      reports/ablation_ext.csv (mean 3 seeds)
+csv    abBA1                                        +0.021                     reports/ablation_ext.csv
+csv    abED2                                        +0.038                     reports/ablation_ext.csv
+csv    abED3                                        +0.037                     reports/ablation_ext.csv
+csv    abEA2                                        +0.067                     reports/ablation_ext.csv  [không in trong PDF]
+csv    ab_sd                                        0.012                      reports/ablation_ext.csv
+csv    ntrA                                         4,550                      reports/ablation_ext.csv
+csv    ntrB                                         9,298                      reports/ablation_ext.csv
+csv    ntrE                                         9,283                      reports/ablation_ext.csv
+csv    q_max_test                                   2,903                      reports/regime_check.csv
+csv    nfA                                          66                         reports/ablation_ext.csv
+csv    nfC                                          70                         reports/ablation_ext.csv
+csv    nfD                                          73                         reports/ablation_ext.csv
+csv    nfE                                          88                         reports/ablation_ext.csv
+csv    ab_pbmax                                     -0.42                      reports/ablation_ext.csv
+csv    ab_pbmin                                     -0.89                      reports/ablation_ext.csv
+claim  main_obj                                     main model: L1 at h = 1, L2 at h = 2 and 3 src/models/lgbm.py MAIN_OBJECTIVE
+claim  abl_obj                                      every ablation configuration uses the per-horizon main objective reports/ablation_ext.csv
+csv    tun1_m                                       +0.018                     reports/wf_tuning_summary.csv (E L2 vs E)
+csv    tun1_ci                                      [-0.003; +0.042]           reports/wf_tuning_summary.csv (E L2 vs E)  [không in trong PDF]
+csv    tun1_wl                                      8/5                        reports/wf_tuning_summary.csv (E L2 vs E)  [không in trong PDF]
+csv    tun1_p                                       0.22                       reports/wf_tuning_summary.csv (E L2 vs E) Wilcoxon
+csv    tun2_m                                       +0.039                     reports/wf_tuning_summary.csv (E L2 vs E)
+csv    tun2_ci                                      [+0.020; +0.057]           reports/wf_tuning_summary.csv (E L2 vs E)
+csv    tun2_wl                                      11/2                       reports/wf_tuning_summary.csv (E L2 vs E)
+csv    tun2_p                                       0.003                      reports/wf_tuning_summary.csv (E L2 vs E) Wilcoxon
+csv    tun3_m                                       +0.036                     reports/wf_tuning_summary.csv (E L2 vs E)
+csv    tun3_ci                                      [+0.020; +0.051]           reports/wf_tuning_summary.csv (E L2 vs E)
+csv    tun3_wl                                      11/2                       reports/wf_tuning_summary.csv (E L2 vs E)  [không in trong PDF]
+csv    tun3_p                                       0.002                      reports/wf_tuning_summary.csv (E L2 vs E) Wilcoxon
+csv    tunv1                                        -0.011                     reports/wf_tuning_summary.csv (E L2 vs E) valid 2016-06/2022
+csv    tunv2                                        +0.059                     reports/wf_tuning_summary.csv (E L2 vs E) valid 2016-06/2022
+csv    tunv3                                        +0.053                     reports/wf_tuning_summary.csv (E L2 vs E) valid 2016-06/2022
+csv    hrA1                                         0.715                      reports/ablation_hourly.csv  [không in trong PDF]
+csv    hrA2                                         0.416                      reports/ablation_hourly.csv
+csv    hrA3                                         0.168                      reports/ablation_hourly.csv
+csv    hrB01                                        0.726                      reports/ablation_hourly.csv
+csv    hrB02                                        0.421                      reports/ablation_hourly.csv  [không in trong PDF]
+csv    hrB03                                        0.167                      reports/ablation_hourly.csv  [không in trong PDF]
+csv    hrB1                                         0.723                      reports/ablation_hourly.csv
+csv    hrB2                                         0.431                      reports/ablation_hourly.csv
+csv    hrB3                                         0.183                      reports/ablation_hourly.csv
+csv    hrC1                                         0.722                      reports/ablation_hourly.csv
+csv    hrC2                                         0.429                      reports/ablation_hourly.csv
+csv    hrC3                                         0.184                      reports/ablation_hourly.csv
+csv    hrB3_s0                                      +0.016                     reports/ablation_hourly.csv (per seed)
+csv    hrB3_s1                                      +0.008                     reports/ablation_hourly.csv (per seed)
+csv    hrB3_s2                                      +0.022                     reports/ablation_hourly.csv (per seed)
+csv    hrB2_s0                                      +0.004                     reports/ablation_hourly.csv (per seed)
+csv    hrB2_s1                                      +0.041                     reports/ablation_hourly.csv (per seed)
+csv    hrB2_s2                                      +0.001                     reports/ablation_hourly.csv (per seed)
+csv    rr_imerg                                     0.90                       reports/rain_source_compare.csv
+csv    rr_gsmap                                     0.74                       reports/rain_source_compare.csv
+csv    rr_gc                                        1.14                       reports/rain_source_compare.csv
+csv    rq_era5                                      0.78                       reports/rain_source_compare.csv
+csv    rq_imerg                                     0.69                       reports/rain_source_compare.csv
+csv    rq_gc                                        0.69                       reports/rain_source_compare.csv  [không in trong PDF]
+csv    ss_im2                                       +0.017                     reports/ablation_hourly_sat.csv
+csv    ss_im3                                       +0.007                     reports/ablation_hourly_sat.csv
+csv    wfE0_1                                       0.761                      reports/wf_sat_summary.csv
+csv    wfE0_2                                       0.437                      reports/wf_sat_summary.csv
+csv    wfE0_3                                       0.206                      reports/wf_sat_summary.csv
+csv    wfA0_1                                       0.744                      reports/wf_sat_summary.csv
+csv    wfA0_2                                       0.336                      reports/wf_sat_summary.csv
+csv    wfA0_3                                       0.121                      reports/wf_sat_summary.csv
+csv    wf_nfold                                     13                         reports/wf_sat_summary.csv
+csv    gc1_m                                        -0.001                     reports/wf_sat_summary.csv
+csv    gc1_ci                                       [-0.011; +0.010]           reports/wf_sat_summary.csv  [không in trong PDF]
+csv    gc1_wl                                       8/5                        reports/wf_sat_summary.csv
+csv    gc1_p                                        1.00                       reports/wf_sat_summary.csv  [không in trong PDF]
+csv    gc2_m                                        +0.012                     reports/wf_sat_summary.csv
+csv    gc2_ci                                       [-0.008; +0.031]           reports/wf_sat_summary.csv
+csv    gc2_wl                                       8/5                        reports/wf_sat_summary.csv
+csv    gc2_p                                        0.38                       reports/wf_sat_summary.csv
+csv    gc3_m                                        +0.018                     reports/wf_sat_summary.csv
+csv    gc3_ci                                       [+0.008; +0.028]           reports/wf_sat_summary.csv
+csv    gc3_wl                                       11/2                       reports/wf_sat_summary.csv
+csv    gc3_p                                        0.008                      reports/wf_sat_summary.csv
+csv    im1_m                                        +0.001                     reports/wf_sat_summary.csv
+csv    im1_ci                                       [-0.005; +0.008]           reports/wf_sat_summary.csv  [không in trong PDF]
+csv    im1_wl                                       8/5                        reports/wf_sat_summary.csv
+csv    im1_p                                        0.68                       reports/wf_sat_summary.csv  [không in trong PDF]
+csv    im2_m                                        +0.013                     reports/wf_sat_summary.csv
+csv    im2_ci                                       [-0.001; +0.027]           reports/wf_sat_summary.csv
+csv    im2_wl                                       8/5                        reports/wf_sat_summary.csv
+csv    im2_p                                        0.19                       reports/wf_sat_summary.csv
+csv    im3_m                                        +0.008                     reports/wf_sat_summary.csv
+csv    im3_ci                                       [-0.001; +0.017]           reports/wf_sat_summary.csv
+csv    im3_wl                                       8/5                        reports/wf_sat_summary.csv
+csv    im3_p                                        0.17                       reports/wf_sat_summary.csv
+csv    agc1_m                                       +0.006                     reports/wf_sat_summary.csv
+csv    agc1_ci                                      [+0.000; +0.011]           reports/wf_sat_summary.csv  [không in trong PDF]
+csv    agc1_wl                                      9/4                        reports/wf_sat_summary.csv
+csv    agc1_p                                       0.07                       reports/wf_sat_summary.csv  [không in trong PDF]
+csv    agc2_m                                       +0.032                     reports/wf_sat_summary.csv
+csv    agc2_ci                                      [+0.023; +0.041]           reports/wf_sat_summary.csv
+csv    agc2_wl                                      13/0                       reports/wf_sat_summary.csv
+csv    agc2_p                                       0.0002                     reports/wf_sat_summary.csv  [không in trong PDF]
+csv    agc3_m                                       +0.025                     reports/wf_sat_summary.csv
+csv    agc3_ci                                      [+0.013; +0.038]           reports/wf_sat_summary.csv
+csv    agc3_wl                                      12/1                       reports/wf_sat_summary.csv
+csv    agc3_p                                       0.005                      reports/wf_sat_summary.csv  [không in trong PDF]
+csv    csi_e0                                       0.450                      reports/wf_sat_summary.csv
+csv    csi_gc                                       0.484                      reports/wf_sat_summary.csv
+csv    fa_e0                                        24                         reports/wf_sat_summary.csv
+csv    fa_gc                                        19                         reports/wf_sat_summary.csv
+csv    pos_wf                                       105                        reports/wf_sat_summary.csv
+csv    fc_nfold                                     3                          reports/wf_sat_summary.csv
+csv    fc_pmin                                      0.25                       reports/wf_sat_summary.csv
+csv    lag0_1_m                                     +0.004                     reports/wf_sat_lag1.csv (13 folds)
+csv    lag0_1_ci                                    [-0.002; +0.010]           reports/wf_sat_lag1.csv (bootstrap over folds)  [không in trong PDF]
+csv    lag0_1_wl                                    10/3                       reports/wf_sat_lag1.csv
+csv    lag0_1_p                                     0.127                      reports/wf_sat_lag1.csv (Wilcoxon)  [không in trong PDF]
+csv    lag0_2_m                                     +0.018                     reports/wf_sat_lag1.csv (13 folds)
+csv    lag0_2_ci                                    [-0.001; +0.038]           reports/wf_sat_lag1.csv (bootstrap over folds)  [không in trong PDF]
+csv    lag0_2_wl                                    9/4                        reports/wf_sat_lag1.csv
+csv    lag0_2_p                                     0.127                      reports/wf_sat_lag1.csv (Wilcoxon)  [không in trong PDF]
+csv    lag0_3_m                                     +0.026                     reports/wf_sat_lag1.csv (13 folds)
+csv    lag0_3_ci                                    [+0.015; +0.036]           reports/wf_sat_lag1.csv (bootstrap over folds)
+csv    lag0_3_wl                                    11/2                       reports/wf_sat_lag1.csv
+csv    lag0_3_p                                     0.002                      reports/wf_sat_lag1.csv (Wilcoxon)
+csv    lag1_1_m                                     +0.001                     reports/wf_sat_lag1.csv (13 folds)
+csv    lag1_1_ci                                    [-0.007; +0.008]           reports/wf_sat_lag1.csv (bootstrap over folds)  [không in trong PDF]
+csv    lag1_1_wl                                    8/5                        reports/wf_sat_lag1.csv
+csv    lag1_1_p                                     0.542                      reports/wf_sat_lag1.csv (Wilcoxon)  [không in trong PDF]
+csv    lag1_2_m                                     +0.004                     reports/wf_sat_lag1.csv (13 folds)
+csv    lag1_2_ci                                    [-0.005; +0.014]           reports/wf_sat_lag1.csv (bootstrap over folds)  [không in trong PDF]
+csv    lag1_2_wl                                    7/6                        reports/wf_sat_lag1.csv
+csv    lag1_2_p                                     0.542                      reports/wf_sat_lag1.csv (Wilcoxon)  [không in trong PDF]
+csv    lag1_3_m                                     -0.001                     reports/wf_sat_lag1.csv (13 folds)
+csv    lag1_3_ci                                    [-0.007; +0.005]           reports/wf_sat_lag1.csv (bootstrap over folds)
+csv    lag1_3_wl                                    8/5                        reports/wf_sat_lag1.csv
+csv    lag1_3_p                                     0.839                      reports/wf_sat_lag1.csv (Wilcoxon)
+csv    lag_nfold                                    13                         reports/wf_sat_lag1.csv  [không in trong PDF]
+csv    dl_lgb1                                      0.743                      reports/wf_dl_summary.csv
+csv    dl_lgb2                                      0.334                      reports/wf_dl_summary.csv
+csv    dl_lgb3                                      0.118                      reports/wf_dl_summary.csv
+csv    lstmM1_m                                     +0.021                     reports/wf_dl_summary.csv
+csv    lstmM1_ci                                    [-0.014; +0.058]           reports/wf_dl_summary.csv
+csv    lstmM1_wl                                    8/5                        reports/wf_dl_summary.csv
+csv    lstmM1_p                                     0.38                       reports/wf_dl_summary.csv  [không in trong PDF]
+csv    lstmM2_m                                     -0.025                     reports/wf_dl_summary.csv
+csv    lstmM2_ci                                    [-0.117; +0.032]           reports/wf_dl_summary.csv
+csv    lstmM2_wl                                    7/6                        reports/wf_dl_summary.csv
+csv    lstmM2_p                                     0.74                       reports/wf_dl_summary.csv  [không in trong PDF]
+csv    lstmM3_m                                     -0.026                     reports/wf_dl_summary.csv
+csv    lstmM3_ci                                    [-0.101; +0.021]           reports/wf_dl_summary.csv
+csv    lstmM3_wl                                    7/6                        reports/wf_dl_summary.csv
+csv    lstmM3_p                                     1.00                       reports/wf_dl_summary.csv  [không in trong PDF]
+csv    lstmP1_m                                     -0.007                     reports/wf_dl_summary.csv
+csv    lstmP1_ci                                    [-0.065; +0.037]           reports/wf_dl_summary.csv
+csv    lstmP1_wl                                    8/5                        reports/wf_dl_summary.csv
+csv    lstmP1_p                                     0.68                       reports/wf_dl_summary.csv  [không in trong PDF]
+csv    lstmP2_m                                     -0.107                     reports/wf_dl_summary.csv
+csv    lstmP2_ci                                    [-0.239; -0.008]           reports/wf_dl_summary.csv
+csv    lstmP2_wl                                    5/8                        reports/wf_dl_summary.csv
+csv    lstmP2_p                                     0.17                       reports/wf_dl_summary.csv  [không in trong PDF]
+csv    lstmP3_m                                     -0.229                     reports/wf_dl_summary.csv
+csv    lstmP3_ci                                    [-0.411; -0.073]           reports/wf_dl_summary.csv
+csv    lstmP3_wl                                    5/8                        reports/wf_dl_summary.csv
+csv    lstmP3_p                                     0.033                      reports/wf_dl_summary.csv
+csv    mlpP1_m                                      +0.000                     reports/wf_dl_summary.csv
+csv    mlpP1_ci                                     [-0.031; +0.037]           reports/wf_dl_summary.csv
+csv    mlpP1_wl                                     5/8                        reports/wf_dl_summary.csv
+csv    mlpP1_p                                      0.79                       reports/wf_dl_summary.csv  [không in trong PDF]
+csv    mlpP2_m                                      -0.065                     reports/wf_dl_summary.csv
+csv    mlpP2_ci                                     [-0.142; +0.002]           reports/wf_dl_summary.csv
+csv    mlpP2_wl                                     5/8                        reports/wf_dl_summary.csv
+csv    mlpP2_p                                      0.15                       reports/wf_dl_summary.csv  [không in trong PDF]
+csv    mlpP3_m                                      -0.118                     reports/wf_dl_summary.csv
+csv    mlpP3_ci                                     [-0.255; -0.015]           reports/wf_dl_summary.csv
+csv    mlpP3_wl                                     6/7                        reports/wf_dl_summary.csv
+csv    mlpP3_p                                      0.094                      reports/wf_dl_summary.csv  [không in trong PDF]
+csv    csi_lgb                                      0.44                       reports/wf_dl_summary.csv (pooled, h=1)
+csv    csi_lstmM                                    0.49                       reports/wf_dl_summary.csv (pooled, h=1)
+csv    csi_lstmP                                    0.49                       reports/wf_dl_summary.csv (pooled, h=1)
+csv    csi_mlpP                                     0.49                       reports/wf_dl_summary.csv (pooled, h=1)
+csv    pod_lgb                                      0.51                       reports/wf_dl_summary.csv (pooled, h=1)
+csv    pod_lstmM                                    0.59                       reports/wf_dl_summary.csv (pooled, h=1)
+csv    pod_mlpP                                     0.63                       reports/wf_dl_summary.csv (pooled, h=1)
+csv    pb_lgb                                       -0.38                      reports/wf_dl_summary.csv
+csv    pb_mlpP                                      -0.21                      reports/wf_dl_summary.csv
+csv    pb_lstmP                                     -0.26                      reports/wf_dl_summary.csv
+csv    sd_lgb                                       0.01                       reports/wf_dl_summary.csv
+csv    sd_dl_lo                                     0.03                       reports/wf_dl_summary.csv
+csv    sd_dl_hi                                     0.20                       reports/wf_dl_summary.csv
+csv    thr_rng                                      0.028                      reports/wf_dl_summary.csv (threads)
+claim  lstm_thr0                                    LSTM identical for 1, 2 and 4 threads reports/wf_dl_summary.csv (threads)
+claim  dl_early_neg                                 every DL model loses on average at h = 2 and h = 3 in 2013-2021 reports/wf_dl_summary.csv (period 2013-2021)
+claim  dl_late_pos                                  peak-weighted MLP ahead at h = 2 and h = 3 in 2023-2025 reports/wf_dl_summary.csv (period 2023-2025)
+claim  dl_sel_valid                                 LSTM L=14 on all panel columns is the configuration selected on validation reports/dl_results.csv
+csv    dlsel1                                       0.709                      reports/dl_results.csv
+csv    dlsel2                                       0.404                      reports/dl_results.csv
+csv    dlsel3                                       0.171                      reports/dl_results.csv
+claim  dl_sel_loses                                 selected LSTM below LightGBM at all horizons (single split) reports/dl_results.csv
+csv    dlmlp2                                       0.490                      reports/dl_results.csv
+csv    dl_lgbcsi                                    0.394                      reports/dl_results.csv
+csv    n_dlcfg                                      8                          reports/dl_results.csv (configurations)
+csv    sp_gbt1                                      0.699                      reports/spark_results.csv
+csv    sp_rf1                                       0.687                      reports/spark_results.csv
+csv    etl_c2_lo                                    40.5                       reports/spark/etl_benchmark.csv
+csv    etl_c2_hi                                    41.2                       reports/spark/etl_benchmark.csv
+csv    etl_pl_lo                                    3.4                        reports/spark/etl_benchmark.csv
+csv    etl_pl_hi                                    3.7                        reports/spark/etl_benchmark.csv
+csv    etl_rows_in                                  6,544,896                  reports/spark/etl_benchmark.csv
+csv    etl_rows_out                                 272,704                    reports/spark/etl_benchmark.csv
+csv    r1_low_flow_30d_pre                          29.7                       reports/reservoir_dam_era_test.csv
+csv    r1_low_flow_30d_post                         26.5                       reports/reservoir_dam_era_test.csv
+csv    r1_low_flow_30d_chg                          -10.7                      reports/reservoir_dam_era_test.csv
+csv    r1_low_flow_30d_p                            0.42                       reports/reservoir_dam_era_test.csv
+csv    r1_runoff_ratio_pre                          0.857                      reports/reservoir_dam_era_test.csv
+csv    r1_runoff_ratio_post                         0.875                      reports/reservoir_dam_era_test.csv
+csv    r1_runoff_ratio_chg                          +2.2                       reports/reservoir_dam_era_test.csv
+csv    r1_runoff_ratio_p                            0.91                       reports/reservoir_dam_era_test.csv
+csv    r1_flashiness_rb_pre                         0.435                      reports/reservoir_dam_era_test.csv
+csv    r1_flashiness_rb_post                        0.441                      reports/reservoir_dam_era_test.csv
+csv    r1_flashiness_rb_chg                         +1.3                       reports/reservoir_dam_era_test.csv
+csv    r1_flashiness_rb_p                           0.64                       reports/reservoir_dam_era_test.csv
+csv    r1_response_pre                              5.80                       reports/reservoir_dam_era_test.csv
+csv    r1_response_post                             5.98                       reports/reservoir_dam_era_test.csv
+csv    r1_response_chg                              +3.2                       reports/reservoir_dam_era_test.csv
+csv    r1_response_p                                0.64                       reports/reservoir_dam_era_test.csv
+csv    r1_npre                                      11                         reports/reservoir_dam_era_test.csv
+csv    r1_npost                                     13                         reports/reservoir_dam_era_test.csv
+csv    r1_ev_pre                                    25                         reports/reservoir_dam_era_test.csv
+csv    r1_ev_post                                   37                         reports/reservoir_dam_era_test.csv
+claim  r1_none_sig                                  no index changes significantly (all p > 0.05) reports/reservoir_dam_era_test.csv
+csv    rel_rows                                     132                        data/external/reservoir_releases.csv
+csv    rel_days                                     57                         data/external/reservoir_releases.csv
+csv    rel_y0                                       2016                       data/external/reservoir_releases.csv
+csv    r2_rel                                       11/24                      reports/reservoir_release_check.csv
+csv    r2_inf                                       14/23                      reports/reservoir_release_check.csv
+csv    r2_2022-10-15_q_release_upstream_min         3,672                      reports/reservoir_release_check.csv
+csv    r2_2022-10-15_q_inflow_upstream              13,787                     reports/reservoir_release_check.csv
+csv    r2_2022-10-15_glofas_best                    1,967                      reports/reservoir_release_check.csv
+csv    r2_2025-10-27_q_release_upstream_min         3,669                      reports/reservoir_release_check.csv
+csv    r2_2025-10-27_q_inflow_upstream              13,433                     reports/reservoir_release_check.csv
+csv    r2_2025-10-27_glofas_best                    2,022                      reports/reservoir_release_check.csv
+csv    r2_2023-11-15_q_release_upstream_min         3,650                      reports/reservoir_release_check.csv  [không in trong PDF]
+csv    r2_2023-11-15_glofas_best                    584                        reports/reservoir_release_check.csv  [không in trong PDF]
+claim  gain_doy                                     the two seasonal encodings rank first and second by split gain at h = 2 reports/lgbm_importance.csv
+csv    hq_r2fit                                     0.629                      data/processed/threshold_mapping.csv
+csv    hq_nfit                                      7                          data/processed/threshold_mapping.csv
+doc    area_sys                                     2,830                      docs/FINDINGS_GRID.md §3 (UNESCO-IHP Catalogue of Rivers Vol. V, Viet Nam-8)
+doc    area_bo                                      938                        docs/FINDINGS_GRID.md §3 (UNESCO-IHP)
+doc    area_dbl                                     3,768                      docs/FINDINGS_GRID.md §3 (2,830 + 938, đếm trùng sông Bồ)
+doc    q_cell                                       120.7                      docs/FINDINGS_GRID.md Phần 2 §3
+doc    spec_lo                                      0.060                      docs/FINDINGS_GRID.md Phần 2 §3
+doc    spec_hi                                      0.080                      docs/FINDINGS_GRID.md Phần 2 §3
+doc    imp_lo                                       1,508                      docs/FINDINGS_GRID.md Phần 2 §3
+doc    imp_hi                                       2,011                      docs/FINDINGS_GRID.md Phần 2 §3
+doc    cov_era5                                     92.5                       docs/FINDINGS_HOURLY_FINEGRID.md §3
+doc    pccs_nov                                     0.073                      docs/FINDINGS_HOURLY_FINEGRID.md §2 (PERSIANN-CCS 11/2020)
+doc    storms                                       417                        docs/FINDINGS_FACTORS.md §1 (IBTrACS)
+doc    storm_km                                     1,500                      docs/FINDINGS_FACTORS.md §1
+doc    hq_r2                                        0.18                       docs/FINDINGS_REGIME.md §4 (R² = 0,184, 12 đợt lũ)
+doc    hq_n                                         12                         docs/FINDINGS_REGIME.md §4
+doc    hq_bias                                      -1.94                      docs/FINDINGS_EVENTS.md §5 (5 đợt lũ sau 07/2022)
+doc    noise                                        0.01                       docs/FINDINGS_MODEL.md §6 (nhiễu 1e-13 đổi NSE ±0,01)
+doc    lat_gsmap                                    27                         docs/FINDINGS_HOURLY_FINEGRID.md §12.3 (kiểm 20/10/2026)
+doc    lat_imerg                                    38                         docs/FINDINGS_HOURLY_FINEGRID.md §12.3
+doc    lat_nrt                                      4.7                        src/ingest/gsmap_nrt.py docstring
+doc    nrt_r_lo                                     0.6                        src/ingest/gsmap_nrt.py docstring (tương quan giờ NRT/chuẩn)
+doc    nrt_r_hi                                     0.8                        src/ingest/gsmap_nrt.py docstring
+doc    travel_h                                     5-6                        docs/lit/paper_06.md; Report 2 §IV-C  [không in trong PDF]
+doc    travel_km                                    51                         docs/lit/paper_06.md  [không in trong PDF]
+doc    grid_glofas                                  0.05                       Report 2 §II-B (lưới quét GloFAS)  [không in trong PDF]
+doc    grid_sat                                     0.1                        docs/FINDINGS_HOURLY_FINEGRID.md §2
+doc    grid_pccs                                    0.04                       docs/FINDINGS_HOURLY_FINEGRID.md §2
+doc    n_hr_feat                                    54                         docs/FINDINGS_HOURLY_FINEGRID.md §4
+doc    n_cells_era5                                 64                         Report 2 §II-B
+doc    n_cells_sat                                  100                        docs/FINDINGS_HOURLY_FINEGRID.md §11
+doc    api_k                                        0.9                        Report 2 §III-C
+doc    leak_eps                                     0.98                       docs/SPEC.md AC-5  [không in trong PDF]
+doc    ac1_h1                                       0.70                       docs/SPEC.md AC-1
+doc    ac1_h2                                       0.40                       docs/SPEC.md AC-1
+doc    ac1_h3                                       0.25                       docs/SPEC.md AC-1
+doc    ac2_pod                                      0.7                        docs/SPEC.md AC-2
+doc    ac1_rmse                                     20                         docs/SPEC.md AC-1
+doc    mw_p                                         0.581                      docs/FINDINGS_REGIME.md §3e; Report 2 §IV-G
+claim  shap_repro                                   SHAP model reproduces the ablation NSE exactly reports/shap_importance.csv vs ablation_ext.csv
+csv    shap_nse1                                    0.748                      reports/shap_importance.csv
+csv    shap_nse2                                    0.503                      reports/shap_importance.csv
+csv    shap_nse3                                    0.231                      reports/shap_importance.csv
+csv    sg_flow_1                                    58.4                       reports/shap_importance.csv
+csv    sgf_flow_1                                   57.4                       reports/shap_importance.csv
+csv    sg_flow_2                                    26.3                       reports/shap_importance.csv
+csv    sgf_flow_2                                   20.7                       reports/shap_importance.csv
+csv    sg_flow_3                                    22.8                       reports/shap_importance.csv
+csv    sgf_flow_3                                   21.7                       reports/shap_importance.csv
+csv    sg_rain_1                                    33.3                       reports/shap_importance.csv
+csv    sgf_rain_1                                   35.0                       reports/shap_importance.csv
+csv    sg_rain_2                                    36.5                       reports/shap_importance.csv
+csv    sgf_rain_2                                   44.5                       reports/shap_importance.csv
+csv    sg_rain_3                                    22.5                       reports/shap_importance.csv
+csv    sgf_rain_3                                   23.3                       reports/shap_importance.csv
+csv    sg_rain_long_1                               2.2                        reports/shap_importance.csv
+csv    sgf_rain_long_1                              1.5                        reports/shap_importance.csv
+csv    sg_rain_long_2                               5.1                        reports/shap_importance.csv
+csv    sgf_rain_long_2                              3.5                        reports/shap_importance.csv
+csv    sg_rain_long_3                               7.8                        reports/shap_importance.csv
+csv    sgf_rain_long_3                              6.2                        reports/shap_importance.csv
+csv    sg_soil_api_1                                1.8                        reports/shap_importance.csv
+csv    sgf_soil_api_1                               2.6                        reports/shap_importance.csv
+csv    sg_soil_api_2                                5.6                        reports/shap_importance.csv
+csv    sgf_soil_api_2                               5.9                        reports/shap_importance.csv
+csv    sg_soil_api_3                                4.7                        reports/shap_importance.csv
+csv    sgf_soil_api_3                               3.8                        reports/shap_importance.csv
+csv    sg_storm_1                                   0.9                        reports/shap_importance.csv
+csv    sgf_storm_1                                  0.7                        reports/shap_importance.csv
+csv    sg_storm_2                                   3.5                        reports/shap_importance.csv
+csv    sgf_storm_2                                  3.5                        reports/shap_importance.csv
+csv    sg_storm_3                                   4.4                        reports/shap_importance.csv
+csv    sgf_storm_3                                  6.0                        reports/shap_importance.csv
+csv    sg_synoptic_1                                2.3                        reports/shap_importance.csv
+csv    sgf_synoptic_1                               1.8                        reports/shap_importance.csv
+csv    sg_synoptic_2                                12.7                       reports/shap_importance.csv
+csv    sgf_synoptic_2                               14.1                       reports/shap_importance.csv
+csv    sg_synoptic_3                                16.3                       reports/shap_importance.csv
+csv    sgf_synoptic_3                               16.8                       reports/shap_importance.csv
+csv    sg_enso_1                                    0.5                        reports/shap_importance.csv
+csv    sgf_enso_1                                   0.3                        reports/shap_importance.csv
+csv    sg_enso_2                                    3.0                        reports/shap_importance.csv
+csv    sgf_enso_2                                   1.9                        reports/shap_importance.csv
+csv    sg_enso_3                                    5.9                        reports/shap_importance.csv
+csv    sgf_enso_3                                   5.2                        reports/shap_importance.csv
+csv    sg_season_1                                  0.7                        reports/shap_importance.csv
+csv    sgf_season_1                                 0.7                        reports/shap_importance.csv
+csv    sg_season_2                                  7.2                        reports/shap_importance.csv
+csv    sgf_season_2                                 6.0                        reports/shap_importance.csv
+csv    sg_season_3                                  15.6                       reports/shap_importance.csv
+csv    sgf_season_3                                 16.9                       reports/shap_importance.csv
+csv    soil_signed1                                 -0.06                      reports/shap_importance.csv
+csv    soil_signed2                                 -0.13                      reports/shap_importance.csv
+csv    soil_signed3                                 -0.04                      reports/shap_importance.csv
+csv    shap_spread                                  3.6                        reports/shap_importance.csv (seeds 42/7/2026)
+csv    sf_discharge_1                               37.4                       reports/shap_importance.csv
+csv    sf_rain_thuong_1                             11.2                       reports/shap_importance.csv
+csv    sf_rain_basin_1                              9.5                        reports/shap_importance.csv
+csv    sf_rain_basin_2                              15.0                       reports/shap_importance.csv  [không in trong PDF]
+csv    sf_discharge_2                               9.7                        reports/shap_importance.csv  [không in trong PDF]
+csv    sf_rain_thuong_2                             7.3                        reports/shap_importance.csv  [không in trong PDF]
+csv    sf_rain_basin_3                              6.1                        reports/shap_importance.csv
+csv    sf_discharge_3                               6.5                        reports/shap_importance.csv
+csv    sf_mslp_grad_north_3                         5.2                        reports/shap_importance.csv
+csv    rank_mslp3                                   3                          reports/shap_importance.csv  [không in trong PDF]
+claim  top1_h1                                      discharge ranks first at h = 1 reports/shap_importance.csv
+claim  top1_h2                                      basin rainfall ranks first at h = 2 reports/shap_importance.csv
+claim  top12_h3                                     discharge and basin rainfall rank first and second at h = 3 reports/shap_importance.csv
+csv    rho_discharge_1                              +1.00                      reports/shap_importance.csv
+csv    rho_discharge_2                              +0.97                      reports/shap_importance.csv  [không in trong PDF]
+csv    rho_discharge_3                              +0.97                      reports/shap_importance.csv  [không in trong PDF]
+csv    rho_mslp_grad_north_1                        +0.89                      reports/shap_importance.csv
+csv    rho_mslp_grad_north_2                        +0.95                      reports/shap_importance.csv  [không in trong PDF]
+csv    rho_mslp_grad_north_3                        +0.95                      reports/shap_importance.csv
+csv    rho_sm_7_28_1                                -0.12                      reports/shap_importance.csv
+csv    rho_sm_7_28_2                                -0.25                      reports/shap_importance.csv
+csv    rho_sm_7_28_3                                -0.27                      reports/shap_importance.csv
+csv    rho_rain_season_cum_1                        -0.16                      reports/shap_importance.csv
+csv    rho_rain_season_cum_2                        +0.02                      reports/shap_importance.csv
+csv    rho_rain_season_cum_3                        +0.02                      reports/shap_importance.csv
+doc    wf_fc_2022                                   862                        docs/FINDINGS_SHAP.md §4; reports/figures/report/shap_waterfall_20221016_h1_en.png
+doc    wf_fc_2025                                   1,727                      docs/FINDINGS_SHAP.md §4
+doc    wf_n_above                                   12                         docs/FINDINGS_SHAP.md §4 (12/9 283 ngày train có Q(t+1) >= 1 967)
+doc    wf_q2000                                     2,000                      docs/FINDINGS_SHAP.md §4 (12/12 ngày train Q(t) >= 2 000 đều rút)
+doc    wf_ratio                                     0.56                       docs/FINDINGS_SHAP.md §4 (trung vị dự báo/thật, 31 ngày lũ, h1)  [không in trong PDF]
+
+CẢNH BÁO LẦN BUILD NÀY:
+ (không có)

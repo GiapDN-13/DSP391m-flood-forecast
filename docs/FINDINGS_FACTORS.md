@@ -183,7 +183,7 @@ hình cộng dồn lên cấu hình trước (`reports/ablation_ext.csv`):
 **Kết luận:**
 
 1. **Chuỗi dài hơn giúp h1** (+0,021): mưa từ 1997 cho mô hình thấy thêm nhiều trận lũ.
-2. **Yếu tố thời tiết quy mô lớn giúp h2–h3** (+0,055 / +0,023 so với D): bão và không
+2. **Yếu tố thời tiết quy mô lớn giúp h2–h3** (+0,055 / +0,014 so với D): bão và không
    khí lạnh báo trước mưa lớn 1–3 ngày — đúng thứ mà mưa đã quan trắc không biết.
 3. Độ ẩm đất và đặc trưng hồ không thêm được gì rõ — thông tin đó đã nằm sẵn trong
    lưu lượng trễ và API.
@@ -192,3 +192,40 @@ hình cộng dồn lên cấu hình trước (`reports/ablation_ext.csv`):
 
 Cột POD1/FAR1 trong file csv là lấy ngưỡng trên lưu lượng **hồi quy**, không so trực
 tiếp với bộ phân loại riêng (POD 0,645).
+
+### 5.1 Cập nhật 21/10/2026: cấu hình chính đổi sang L2 cho h2–h3
+
+Trưởng nhóm chốt: mô hình chính = LightGBM cấu hình E với hàm mất mát **L1 ở h1, L2
+(`regression`, vẫn trên log1p) ở h2–h3** (`lgbm.MAIN_OBJECTIVE`, `lgbm.params_for(h)`).
+Lựa chọn dựa trên walk-forward 13 fold + valid 2016–06/2022 (`docs/FINDINGS_TUNING.md`, cấu hình
+"E L2": ΔNSE h2 +0,039, h3 +0,036, thắng 11/2 fold, p 0,003 / 0,002; valid +0,059 / +0,053),
+**không** theo test. h1 giữ L1 vì walk-forward không có ý nghĩa (+0,018, p 0,22) và valid âm (−0,011).
+
+`ablation_ext.py` chạy lại với **cùng quy tắc cho cả A–E** (chỉ bộ cột khác nhau ⇒ phép so đặc
+trưng vẫn công bằng); cột `objective` trong `reports/ablation_ext.csv`. Bảng cũ (L1 mọi horizon) ở
+trên giữ nguyên để đối chiếu; file cũ: `reports/l1_ref/ablation_ext.csv`. h1 trùng tuyệt đối
+(cùng tham số).
+
+| Cấu hình | NSE h1 | NSE h2 mới (cũ) | NSE h3 mới (cũ) |
+|---|---|---|---|
+| A | 0,745 | 0,432 (0,420) | 0,166 (0,172) |
+| B | **0,766** | 0,447 (0,428) | 0,192 (0,176) |
+| C | 0,757 | 0,454 (0,430) | 0,208 (0,181) |
+| D | 0,756 | 0,461 (0,428) | 0,199 (0,186) |
+| E | 0,747 | **0,499** (0,483) | **0,236** (0,199) |
+
+Độ lệch chuẩn giữa 3 seed ≤ 0,012 (cũ 0,009). peak_bias −0,42 → −0,89 (cũ −0,42 → −0,88);
+E h2 −0,73 → −0,71, h3 −0,88 → −0,86 — L2 giảm cắt ngọn rất ít.
+
+Đọc lại kết luận:
+
+1. L2 giúp ở h2 với mọi cấu hình (+0,012 … +0,033) và ở h3 với B–E (+0,013 … +0,037); riêng
+   A h3 giảm nhẹ (−0,006, cỡ 1 sd).
+2. **E vẫn là cấu hình tốt nhất ở h2–h3**, chênh so với D nay +0,038 / +0,037 (cũ +0,055 / +0,014).
+3. Chuỗi dài (B) giờ giúp cả h2–h3 (+0,016 / +0,026 so với A), không chỉ h1.
+4. Độ ẩm đất (C) và đại diện hồ (D): thay đổi nhỏ, trái dấu (C − B: +0,007 / +0,016; D − C:
+   +0,007 / −0,009), trong khoảng ~2 sd seed ⇒ kết luận "không thêm gì rõ" giữ nguyên.
+5. **AC-1 (một lần chia, cấu hình E):** h1 0,747 ≥ 0,70 ✅ · h2 0,499 ≥ 0,40 ✅ · h3 0,236 < 0,25 ❌
+   (thiếu 0,014). Walk-forward 13 fold (`reports/wf_sat_summary.csv`, E0): xem
+   `FINDINGS_HOURLY_FINEGRID.md` §12.5.
+6. Mức 1 theo hồi quy ở h2: POD 0,054 → 0,118, FAR 0,000 → 0,067 (E, test, TB 3 seed); h3 vẫn 0.
