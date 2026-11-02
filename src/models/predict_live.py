@@ -8,7 +8,7 @@ Job ``predict_daily`` mới chỉ ghi GloFAS thô. File này thêm dự báo c�
    bản vào ``models/`` (+ ``lgbm_live_meta.json``: cột, seed, khoảng dữ liệu).
    Phát hành lên GitHub release để job trên Actions tải về (``models/`` bị gitignore).
    Kèm bộ phân loại mức nguy cơ 1 (h=1, tham số ``classifier.PARAMS``) và hàm hiệu chỉnh
-   isotonic fit trên xác suất ngoài mẫu ``reports/cost_oof_E_level1_h1.parquet``
+   isotonic fit trên xác suất ngoài mẫu ``reports/cost_oof_E_level1_h1.csv``
    (walk-forward 1999–2025 của ``cost_threshold --calibrate``, FR-M6) ⇒ cột ``p_level1``.
    Ngưỡng báo = 1/(1+R) = 1/11 trên xác suất đã hiệu chỉnh (chi phí 10:1, cùng chi phí
    với ngưỡng chọn hằng năm, ``FINDINGS_COST_THRESHOLD.md`` §8).
@@ -47,7 +47,7 @@ MODELS = cfg.ROOT / "models"
 META = MODELS / "lgbm_live_meta.json"
 CLF = MODELS / "lgbm_live_clf_level1_h1.txt"
 ISO = MODELS / "lgbm_live_iso_level1_h1.json"
-OOF = cfg.ROOT / "reports" / "cost_oof_E_level1_h1.parquet"
+OOF = cfg.ROOT / "reports" / "cost_oof_E_level1_h1.csv"
 SEEDS = (42, 7, 2026)
 LOOKBACK_DAYS = 130          # đủ mưa từ 01/09 (rain_season_cum) tới cuối tháng 12, roll30, lag14
 ARCHIVE_LAG_DAYS = 6         # ERA5 trên Archive API trễ ~5 ngày
@@ -115,7 +115,7 @@ def train_classifier(feats: list[str]) -> dict:
     m = LGBMClassifier(**{**clf.PARAMS, "random_state": cfg.SEED}, scale_pos_weight=w)
     m.fit(pd.DataFrame(panel.select(feats).to_numpy().astype(float)[tr], columns=feats), pd.Series(y))
     m.booster_.save_model(str(CLF))
-    oof = pl.read_parquet(OOF)
+    oof = pl.read_csv(OOF, try_parse_dates=True)
     iso = IsotonicRegression(out_of_bounds="clip", y_min=0, y_max=1, increasing=True)
     iso.fit(oof["p"].to_numpy(), oof["y"].cast(pl.Int8).to_numpy())
     knots = {"x": iso.X_thresholds_.tolist(), "y": iso.y_thresholds_.tolist(),
