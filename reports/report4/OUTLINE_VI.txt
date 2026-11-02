@@ -1,18 +1,22 @@
-DÀN Ý REPORT 4 — XỬ LÝ PHÂN TÁN (SPARK) & DEEP LEARNING (IEEE, 6 trang)
+DÀN Ý REPORT 4 — XỬ LÝ PHÂN TÁN (SPARK) & DEEP LEARNING (IEEE, 7 trang)
 File: reports/report4/DSP391m_Report4_Distributed_DL_IEEE.pdf
 Build: PYTHONIOENCODING=utf-8 python reports/report4/build_report.py   (mọi số kiểm với CSV/cấu hình lúc build)
+Cập nhật 02/11/2026: thêm II-D (toàn bộ lưu trữ vệ tinh trên cụm), IV-D (DL làm thành viên ensemble),
+IV-E (walk-forward song song theo tác vụ TRÊN SPARK — đã chạy, đã đối chiếu), kết luận + khuyến nghị mới.
 
 Câu định vị: thầy yêu cầu "dữ liệu phân tán, dùng Spark train ML, tốt hơn nữa là DL". Nhóm đã làm
-THẬT trên cụm Spark và đo THẬT; kết luận trung thực: ở quy mô này Spark chậm hơn Polars, DL không
-thắng LightGBM — nhưng pipeline phân tán cho kết quả TRÙNG bản một máy.
+THẬT trên cụm Spark và đo THẬT; kết luận trung thực: ở quy mô này Spark chậm hơn Polars cho ETL/đặc trưng
+(kể cả toàn bộ lưu trữ vệ tinh), DL không thắng LightGBM khi đứng một mình — nhưng pipeline phân tán cho
+kết quả TRÙNG bản một máy, và Spark NHANH THẬT ở một chỗ: walk-forward song song theo tác vụ.
 
 I. GIỚI THIỆU
  - Nhắc bài toán (GloFAS v4, Kim Long, 1–3 ngày). Mô hình chính Report 3: LightGBM cấu hình E
    NSE 0.747 / 0.499 / 0.236.
  - Quy mô thật (Bảng I): ERA5 giờ 6,544,896 dòng (64 ô, 2015–08/2026, 75 MB);
-   IMERG 50,477,000 + GSMaP 25,241,800 = 75.7 triệu dòng (100 ô, 1998–10/2026, 99 MB);
-   PERSIANN-CCS 915,000 dòng (2 tháng thử). Dữ liệu NHỎ tính theo byte → câu hỏi đúng là
-   "pipeline có đúng khi tách executor không" và "so với một máy tốt thì sao" (lập luận COST [4]).
+   IMERG 50,477,000 + GSMaP 25,241,800 + GSMaP_NRT 25,245,600 = 101.0 triệu dòng
+   (100 ô, 1998–10/2026, 125 MB); PERSIANN-CCS 915,000 dòng (2 tháng thử).
+   Dữ liệu NHỎ tính theo byte → câu hỏi đúng là "pipeline có đúng khi tách executor không", "so với một máy
+   tốt thì sao" (lập luận COST [4]) và "phần việc nào thật sự được lợi từ cụm".
 
 II. KIẾN TRÚC PHÂN TÁN
  A. Cụm Spark standalone trên Docker: 1 master + 2 worker × 4 lõi × 2 GB, Spark 4.1.3,
@@ -21,11 +25,22 @@ II. KIẾN TRÚC PHÂN TÁN
     Windows thiếu winutils → trên máy host đi đường vòng Arrow (chỉ cho test).
  B. ETL giờ → ngày: 768 file, 6,544,896 → 272,704 ô×ngày (4,261 ngày); lưu vực con 21,305 dòng.
     Trùng Polars (t2m lệch 0.001 °C do làm tròn). Lỗi thật đã sửa: peak_hour lưu vực con lệch 79/21,305 dòng
-    giữa Windows và cụm → làm tròn mưa trước khi tìm giờ đỉnh.
+    giữa Windows và cụm → làm tròn mưa trước khi tìm giờ đỉnh. Thời gian: Hình 2.
  C. 54 đặc trưng giờ: Spark = Polars TỪNG BIT (Bảng II; ERA5 613,584 ô giờ / 230,064 ô ngày).
     Ba mẹo: cộng tuần tự đúng thứ tự Polars; cộng 5 lưu vực con cùng cách đóng ngoặc; sin/cos giờ đỉnh lấy từ bảng Polars.
+ D. MỚI — Toàn bộ lưu trữ vệ tinh 01/1998–10/2026 trên cụm (Bảng III; nguồn reports/spark/full_scale_*.csv):
+    IMERG 50,477,000 dòng (346 file, 30 phút), GSMaP-GC 25,241,800, GSMaP_NRT 25,245,600
+    (364 file) = 101.0 triệu dòng, 125 MB; giữ 24 ô có trọng số lưu vực con.
+    0 giá trị lệch bit so với Polars (~1.5 triệu giá trị giờ + ~0.57 triệu giá trị ngày mỗi nguồn,
+    6,246,870 giá trị mỗi nền tảng) trên cụm 2 worker VÀ Windows local[8]; không phải sửa thêm gì ngoài 3 mẹo ERA5.
+    Thời gian (TRUNG VỊ 1–3 lần, như README): cụm 2 worker 42.6 / 31.6 / 30.9 s;
+    1 worker 40.3 / 31.3 / 29.4 s → 2 worker KHÔNG nhanh hơn 1; Polars cùng container
+    16.3 / 5.1 / 4.7 s → Polars nhanh hơn Spark 1.8–6.6 lần (IMERG gần nhất: 2.6 lần).
+    Lần chạy đầu trên cụm (cache lạnh + so khớp) tới 71.0 s.
+    Lỗi duy nhất: local[8] qua spark-submit hết heap driver (1 GB mặc định, 8 task chung heap) với IMERG
+    → spark-submit --driver-memory 4g chạy ổn 6/6 lần. Trên cụm không hết bộ nhớ.
 
-III. ML PHÂN TÁN (MLlib) — Bảng III
+III. ML PHÂN TÁN (MLlib) — Bảng IV
  - GBT/RF trên 66 cột panel Report 2, split thời gian như LightGBM; KHÔNG dùng CrossValidator
    (chia ngẫu nhiên → rò rỉ tương lai) → vòng lặp chọn tham số trên valid cố định (36 lần fit).
  - NSE h1: GBT 0.699, RF 0.687 vs LightGBM 0.747. h2/h3 RF nhỉnh (+0.034 / +0.039)
@@ -36,48 +51,81 @@ III. ML PHÂN TÁN (MLlib) — Bảng III
 IV. DEEP LEARNING
  A. LSTM (cửa sổ 14/30 ngày, 9 biến gốc, 3 đầu ra), tuỳ chọn dự báo phần dư, loss nhấn đỉnh; MLP trên cột lag.
     LSTM L30: 19,395 tham số, 2,162 cửa sổ train; 8 cấu hình × 3 seed.
- B. DDP (gloo) qua TorchDistributor (local + cụm) và barrier tự viết (Bảng IV). TorchDistributor HỎNG trên
+ B. DDP (gloo) qua TorchDistributor (local + cụm) và barrier tự viết (Bảng V). TorchDistributor HỎNG trên
     Windows (torch Windows không có libuv) → barrier. Kết quả:
     (1) 1 tiến trình tái lập đúng seed 42 (0.709 / 0.432 / 0.180);
     (2) cùng số rank + batch → cùng NSE bất kể cách phân tán (0.712 / 0.413 / 0.160); barrier = TD từng bit trên cụm;
     (3) DDP lệch +0.003 / -0.019 / -0.020 so với 1 tiến trình ≈ 1 sd giữa seed (0.016 / 0.018 / 0.021);
     (4) CHẬM hơn: train() 9.9–10.1 s vs 9.0–9.5 s; TorchDistributor tốn thêm 12.7–13.1 s khởi động.
  C. DL vs LightGBM: một lần chia có cấu hình hơn ở h2–h3 (MLP nhấn đỉnh 0.490) nhưng LSTM chọn theo valid THUA cả 3 horizon.
-    Walk-forward 13 fold (Bảng V, Hình 4): không DL nào hơn vững; LSTM nhấn đỉnh thua rõ h3 (-0.229, p 0.033).
+    Walk-forward 13 fold (Bảng VI, Hình 4): không DL nào hơn vững; LSTM nhấn đỉnh thua rõ h3 (-0.229, p 0.033).
     Mặt được: POD/CSI h1 cao hơn (CSI 0.49 vs 0.44), ít cắt ngọn hơn. Giữ LightGBM.
- D. Song song có lợi THẬT là song song theo TÁC VỤ: 168 lần fit độc lập, 4,049 s nếu chạy nối tiếp;
-    pool 6 tiến trình → ~13 phút. Chưa chuyển sang Spark (đề xuất).
+ D. MỚI — DL làm THÀNH VIÊN ENSEMBLE (Bảng VII; reports/wf_peak_summary.csv, docs/FINDINGS_PEAK.md):
+    cấu hình E (train từ 1998), 13 fold, tiêu chí đặt TRƯỚC (h2/h3 tăng với p < 0,05, h1 không giảm).
+    E một mình: 0.761 / 0.437 / 0.206. Trung bình 50/50 E + LSTM: h1 +0.029 [+0.006; +0.056], 10/3 fold,
+    p 0.048 (cải thiện có ý nghĩa DUY NHẤT; FAR mức 1 0.25 vs 0.29); h2 -0.022 (p 0.068),
+    h3 -0.023 (p 0.021). Trọng số đỉnh α=3: h1 +0.011 (p 0.13), h2 +0.012 (p 0.22) — không ý nghĩa,
+    không đơn điệu theo α. Isotonic hậu xử lý: HẠI (h3 -0.027, 1/12, p 0.001).
+    → Không biến thể nào đạt tiêu chí → GIỮ E (đóng băng 02/11/2026). Ghép theo horizon (LSTM chỉ ở h1) là chọn
+    SAU khi xem → hướng tiếp theo, phải kiểm trên dữ liệu mới.
+ E. MỚI — Song song theo TÁC VỤ, nay CHẠY TRÊN SPARK (Bảng VIII; reports/spark/wf_bench.csv;
+    src/distributed/spark_walkforward.py + src/eval/wf_peak.py):
+    - Walk-forward DL cũ: 168 fit độc lập, 4,049 s nối tiếp; pool 6 tiến trình ~13 phút (local).
+    - Walk-forward LightGBM của IV-D: 141 lượt (cấu hình × năm × seed, 3 horizon/lượt, ~14.8 s/lượt), mỗi lượt
+      1 task Spark gọi đúng hàm run_job của bản local. Cụm 2 worker × 4 lõi: 270.7 s wall; tổng thời gian
+      task 2,081 s → nhanh 7.7 lần (= 96% lý tưởng 260.2 s). Pool Windows 8 tiến trình: 329.9 s.
+    - Đối chiếu: 154,494 giá trị dự báo của 141 lượt khớp bản local tới 2.3e-13 m³/s — KHÔNG trùng từng bit
+      (LightGBM build Linux khác Windows), chỉ khác ở mức làm tròn.
+    - Nói thật: Spark nhanh hơn pool 1.2 lần, nhưng task chạy Linux trong container còn pool chạy Windows →
+      một phần chênh lệch có thể do hệ điều hành / bản build LightGBM, KHÔNG hẳn do Spark.
 
 V. QUY MÔ & ĐÁNH GIÁ TRUNG THỰC
  A. ETL: cụm 2 worker chậm 11.6 lần Polars trên host; Spark host qua Arrow 17.0 lần; cùng container 3.5 lần.
     Đặc trưng giờ: 7.3 lần (cụm), 32.8 lần (host). 1→4 lõi nhanh 2.6 lần; 4→8 lõi / 1→2 worker KHÔNG nhanh thêm.
+    Toàn bộ vệ tinh (lớn gấp 15 lần ERA5) lặp lại đúng bức tranh đó. Ngoại lệ: walk-forward theo tác vụ (7.7 lần).
  B. Vì sao: đọc qua ổ mount (56–63 s / 14–21 s); phân hoạch lệch (64 khoá → 16 phân hoạch,
     lớn nhất gấp 2.1 lần TB); một máy vật lý; chi phí cố định (khởi động 4.1–6.5 s); mô hình DL nhỏ.
  C. Khi nào Spark có lợi: dữ liệu vượt RAM một máy / nằm sẵn trên kho phân tán (nhiều ô sông toàn quốc;
-    PERSIANN-CCS đủ chuỗi ~130 triệu dòng — vẫn vừa một máy; LSTM giờ 168 bước × 64 ô); song song fold/seed.
+    PERSIANN-CCS đủ chuỗi ~130 triệu dòng — vẫn vừa một máy; LSTM giờ 168 bước × 64 ô).
+    Song song theo tác vụ ĐÃ có lợi ngay ở quy mô hiện tại → việc đầu tiên nên đưa lên nhiều máy thật (cùng lưới siêu tham số).
  D. Lên cloud: Databricks Free Edition CHỈ LÀ ĐỀ XUẤT, CHƯA CHẠY, không có số nào từ đó.
 
-VI. KẾT LUẬN: pipeline phân tán ĐÚNG; MLlib không hơn LightGBM; DL không thắng vững; Spark chậm hơn ở quy mô
-    này vì lý do đã đo. Khuyến nghị: Polars + LightGBM cho job hằng ngày; giữ job Spark đã kiểm cho dữ liệu lớn;
-    bước tiếp: chạy walk-forward song song theo tác vụ trên nhiều máy thật.
+VI. KẾT LUẬN + KHUYẾN NGHỊ
+    Pipeline phân tán ĐÚNG (kể cả 101.0 triệu dòng vệ tinh, từng bit); MLlib không hơn LightGBM; DL không thắng vững
+    khi đứng một mình, chỉ giúp h1 khi ghép với E (+0.029, p 0.048), hại h2–h3.
+    (1) Polars cho ETL + đặc trưng giờ (Spark vẫn chậm 1.8–6.6 lần trên toàn bộ vệ tinh); giữ job Spark đã kiểm cho dữ liệu lớn.
+    (2) Walk-forward chạy thành task Spark: nhanh 7.7 lần trên 8 lõi, đã đối chiếu với bản local; phần sẽ lợi khi có nhiều máy.
+    (3) Giữ LightGBM E làm mô hình chính, không đưa DDP vào job hằng ngày; ghép LightGBM–LSTM theo horizon (h1) là
+        bước DL tiếp theo, cần kiểm trên dữ liệu mới.
 
 CÂU HỎI DỄ BỊ HỎI — trả lời ngắn
- - "Sao dùng Spark mà chậm hơn?" → dữ liệu 75+99 MB vừa RAM; đo được nguyên nhân (ổ mount, lệch
+ - "Sao dùng Spark mà chậm hơn?" → dữ liệu 75+125 MB vừa RAM; đo được nguyên nhân (ổ mount, lệch
    phân hoạch, 1 máy, chi phí cố định). Mục tiêu là chứng minh ĐÚNG khi phân tán + biết KHI NÀO đáng dùng.
+ - "Có chỗ nào Spark nhanh hơn không?" → có: walk-forward theo tác vụ, 141 lượt LightGBM 270.7 s thay vì
+   2,081 s nối tiếp, dự báo khớp bản local. Nhưng so với pool Windows thì một phần chênh có thể do OS/bản build.
+ - "Chạy toàn bộ dữ liệu chưa?" → rồi: 101.0 triệu dòng vệ tinh 1998–2026 trên cụm, 0 giá trị lệch bit.
  - "Phân tán thật không?" → thật về giao thức (2 executor trên 2 container, barrier, gloo qua mạng),
    không thêm phần cứng vì cùng một máy.
  - "Sao không dùng CrossValidator?" → chia ngẫu nhiên, mô hình nhìn thấy tương lai.
- - "DL có tốt hơn không?" → không vững qua 13 năm; bắt sự kiện tốt hơn nhưng kém ổn định.
+ - "DL có tốt hơn không?" → một mình: không vững qua 13 năm; ghép 50/50 với E: h1 tốt hơn có ý nghĩa, h2–h3 kém hơn.
  - "Databricks?" → đề xuất, chưa chạy.
 
 CHỖ NHÓM CẦN KIỂM LẠI TRƯỚC KHI NỘP
- - Số chỉ có trong tài liệu (loại doc bên dưới), nhất là nguyên nhân chậm (ổ mount, phân hoạch lệch) và
-   lỗi OOM của MLlib: chỉ có trong infra/spark/README.md, không có CSV.
- - Tổng thời gian MLlib: PDF in 1,686 s = tổng cột seconds_total của reports/spark_results.csv;
-   infra/spark/README.md ghi 1 706 s (có thể gồm khởi động) — thống nhất cách ghi.
- - README ghi thời gian Spark đặc trưng giờ trên cụm "33,2; 28,7" s; CSV chỉ còn lần cuối (28.6 s) → PDF dùng CSV.
- - Kích thước dữ liệu tính theo 10^6 byte (75 MB ERA5); tài liệu cũ ghi "74 MB" (du, MiB) — cùng một dữ liệu.
- - Tài liệu tham khảo [7] (TorchDistributor) và [13] (Databricks Free Edition): kiểm lại URL.
+ - Số chỉ có trong tài liệu (loại doc bên dưới), nhất là nguyên nhân chậm (ổ mount, phân hoạch lệch),
+   lỗi OOM của MLlib và heap driver mặc định: chỉ có trong infra/spark/README.md, không có CSV.
+ - ĐÃ CHỐT (02/11): tổng thời gian MLlib in 1,686 s = tổng cột seconds_total của reports/spark_results.csv
+   (CSV là nguồn chuẩn). Số 1 706 s trong infra/spark/README.md / FINDINGS_HOURLY_FINEGRID.md nhiều khả năng là thời gian
+   cả lần chạy (thêm khởi động phiên, nạp dữ liệu; không có CSV) — không in trong PDF.
+ - ĐÃ CHỐT (02/11): kích thước dữ liệu tính theo 10^6 byte từ kích thước file: ERA5 75 345 046 byte = 75 MB
+   (71,9 MiB; ~73 MiB tính theo khối 4 KiB). "74 MB" trong tài liệu cũ nhiều khả năng là số du/Explorer (đơn vị nhị phân + khối đĩa)
+   — cùng dữ liệu. Vệ tinh: 125 MB = tổng cột mb_on_disk của full_scale_bench.csv (IMERG + GSMaP-GC + GSMaP_NRT).
+ - ĐÃ CHỐT (02/11): README ghi thời gian Spark đặc trưng giờ ERA5 trên cụm "33,2; 28,7" s; CSV chỉ còn lần cuối
+   (28.6 s) → PDF dùng CSV.
+ - ĐÃ KIỂM (02/11): URL [7] (trang API TorchDistributor, hiện là tài liệu PySpark 4.3.0) và [13] (trang "Sign up for
+   Databricks Free Edition") đều mở được; đã thêm "accessed Nov. 2, 2026" và sửa tiêu đề [13] theo trang.
+ - Thời gian vệ tinh toàn bộ dùng TRUNG VỊ (như bảng README); lần chạy đầu trên cụm chậm hơn (cache lạnh) — ghi trong PDF.
+ - So sánh Spark vs pool Windows ở IV-E: khác hệ điều hành và bản build LightGBM — PDF đã nói rõ, đừng trình bày là
+   "Spark nhanh hơn pool".
  - Phần "khi nào Spark có lợi" và "lên cloud" là ĐỀ XUẤT, không có thí nghiệm.
 
 ====================================================================================================
@@ -188,7 +236,7 @@ csv    rows_gsmap                         25,241,800                 data/raw/ge
 csv    rows_pccs                          915,000                    data/raw/persiann_ccs/*.parquet (metadata)
 csv    n_satfiles                         346                        data/raw/gee/*/*.parquet (metadata) (số file mỗi sản phẩm)  [không in trong PDF]
 claim  sat_same_files                     same number of monthly files data/raw/gee/*/*.parquet (metadata)
-csv    sat_mrows                          75.7                       data/raw/gee/*/*.parquet (metadata)
+csv    sat_mrows                          75.7                       data/raw/gee/*/*.parquet (metadata)  [không in trong PDF]
 csv    sat_cells                          100                        data/raw/gee/*/*.parquet (metadata)
 csv    sat_mb                             99                         data/raw/gee (byte / 10^6)
 csv    era5_mb                            75                         data/raw/rain_hourly (byte / 10^6)
@@ -295,7 +343,7 @@ claim  par_same_pccs                      same cells compared on both hosts repo
 csv    par_nh_pccs                        8,784                      reports/spark/hourly_parity_pccs_linux-docker.csv
 csv    par_nd_pccs                        3,234                      reports/spark/hourly_parity_pccs_linux-docker.csv
 csv    par_ncol                           54                         reports/spark/hourly_parity_era5_linux-docker.csv
-csv    par_nh_units                       6                          reports/spark/hourly_parity_era5_linux-docker.csv  [không in trong PDF]
+csv    par_nh_units                       6                          reports/spark/hourly_parity_era5_linux-docker.csv
 csv    par_hrows                          102,264                    reports/spark/hourly_parity_era5_linux-docker.csv  [không in trong PDF]
 csv    x_par_c                            7.3                        reports/spark/hourly_parity_era5_linux-docker.csv
 csv    x_par_w                            32.8                       reports/spark/hourly_parity_era5_windows-host.csv
@@ -462,15 +510,143 @@ csv    ov_bar_hi                          5.1                        reports/spa
 csv    wf_nfit                            168                        reports/wf_dl_folds.csv (4 mô hình × 14 năm × 3 seed)
 csv    wf_sec                             4,049                      reports/wf_dl_folds.csv (tổng time_s)
 csv    wf_med_lgb                         10.2                       reports/wf_dl_folds.csv
-csv    wf_med_mlp                         9.4                        reports/wf_dl_folds.csv
+csv    wf_med_mlp                         9.4                        reports/wf_dl_folds.csv  [không in trong PDF]
 csv    wf_med_lstm_lo                     32.8                       reports/wf_dl_folds.csv
 csv    wf_med_lstm_hi                     34.5                       reports/wf_dl_folds.csv
 claim  wf_pool                            folds run in a local process pool src/eval/walk_forward_dl.py
 doc    wf_procs                           6                          docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (6 tiến trình × 2 luồng)
 doc    wf_min                             13                         docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (~13 phút)
 doc    h_steps                            168                        src/models/dl_lstm.py docstring (LSTM giờ 7 × 24 bước, chưa cài đặt)
+claim  fl_same_im                         every run of the source reads the same files and rows reports/spark/full_scale_bench.csv
+csv    fl_rows_im                         50,477,000                 reports/spark/full_scale_bench.csv
+csv    fl_files_im                        346                        reports/spark/full_scale_bench.csv
+csv    fl_mb_im                           47.7                       reports/spark/full_scale_bench.csv  [không in trong PDF]
+claim  fl_same_gc                         every run of the source reads the same files and rows reports/spark/full_scale_bench.csv
+csv    fl_rows_gc                         25,241,800                 reports/spark/full_scale_bench.csv
+csv    fl_files_gc                        346                        reports/spark/full_scale_bench.csv  [không in trong PDF]
+csv    fl_mb_gc                           50.8                       reports/spark/full_scale_bench.csv  [không in trong PDF]
+claim  fl_same_nrt                        every run of the source reads the same files and rows reports/spark/full_scale_bench.csv
+csv    fl_rows_nrt                        25,245,600                 reports/spark/full_scale_bench.csv
+csv    fl_files_nrt                       364                        reports/spark/full_scale_bench.csv
+csv    fl_mb_nrt                          26.3                       reports/spark/full_scale_bench.csv
+claim  fl_meta_im                         rows in the benchmark equal the parquet metadata count of Table I reports/spark/full_scale_bench.csv vs data/raw/gee/imerg/*.parquet (metadata)
+claim  fl_meta_gc                         rows in the benchmark equal the parquet metadata count of Table I reports/spark/full_scale_bench.csv vs data/raw/gee/gsmap/*.parquet (metadata)
+claim  fl_nrt_cells                       GSMaP_NRT files hold the same cells as IMERG and GSMaP data/raw/gsmap_nrt (đọc lat/lon)
+csv    fl_mrows                           101.0                      reports/spark/full_scale_bench.csv (3 nguồn)
+csv    fl_mb                              125                        reports/spark/full_scale_bench.csv (3 nguồn)
+csv    fl_x_rows                          15                         reports/spark/full_scale_bench.csv / reports/spark/etl_benchmark.csv (số dòng vệ tinh / ERA5)
+csv    fl_days_lo                         10,519                     reports/spark/full_scale_bench.csv
+csv    fl_days_hi                         10,520                     reports/spark/full_scale_bench.csv
+csv    fl_c2_im                           42.6                       reports/spark/full_scale_bench.csv (trung vị 3 lần)
+csv    fl_c2_gc                           31.6                       reports/spark/full_scale_bench.csv (trung vị 3 lần)
+csv    fl_c2_nrt                          30.9                       reports/spark/full_scale_bench.csv (trung vị 3 lần)
+csv    fl_c1_im                           40.3                       reports/spark/full_scale_bench.csv (trung vị 3 lần)
+csv    fl_c1_gc                           31.3                       reports/spark/full_scale_bench.csv (trung vị 3 lần)
+csv    fl_c1_nrt                          29.4                       reports/spark/full_scale_bench.csv (trung vị 3 lần)
+csv    fl_l8_im                           29.8                       reports/spark/full_scale_bench.csv (trung vị 2 lần)
+csv    fl_l8_gc                           24.1                       reports/spark/full_scale_bench.csv (trung vị 2 lần)
+csv    fl_l8_nrt                          23.3                       reports/spark/full_scale_bench.csv (trung vị 2 lần)
+csv    fl_dp_im                           16.3                       reports/spark/full_scale_bench.csv (trung vị 2 lần)
+csv    fl_dp_gc                           5.1                        reports/spark/full_scale_bench.csv (trung vị 2 lần)
+csv    fl_dp_nrt                          4.7                        reports/spark/full_scale_bench.csv (trung vị 2 lần)
+csv    fl_wp_im                           10.4                       reports/spark/full_scale_bench.csv (trung vị 2 lần)
+csv    fl_wp_gc                           2.4                        reports/spark/full_scale_bench.csv (trung vị 2 lần)
+csv    fl_wp_nrt                          2.3                        reports/spark/full_scale_bench.csv (trung vị 2 lần)
+csv    fl_wa_im                           114.5                      reports/spark/full_scale_bench.csv (trung vị 1 lần)
+csv    fl_wa_gc                           64.3                       reports/spark/full_scale_bench.csv (trung vị 1 lần)
+csv    fl_wa_nrt                          65.0                       reports/spark/full_scale_bench.csv (trung vị 1 lần)
+csv    fl_nrun_lo                         1                          reports/spark/full_scale_bench.csv
+csv    fl_nrun_hi                         3                          reports/spark/full_scale_bench.csv
+claim  fl_no2w                            two workers no faster than one worker (median, every source) reports/spark/full_scale_bench.csv
+csv    fl_x_lo                            1.8                        reports/spark/full_scale_bench.csv (Spark local[8] / Polars, cùng container, trung vị)
+csv    fl_x_hi                            6.6                        reports/spark/full_scale_bench.csv (cụm 2 worker / Polars, cùng container, trung vị)
+csv    fl_x_im                            2.6                        reports/spark/full_scale_bench.csv
+csv    fl_cold                            71.0                       reports/spark/full_scale_bench.csv (lần chạy đầu trên cụm)
+claim  fl_oom                             one run failed: local[8] driver out of memory (IMERG) reports/spark/full_scale_bench.csv
+csv    fl_drv_n                           6                          reports/spark/full_scale_bench.csv
+claim  fl_drv_ok                          every run with --driver-memory 4g finished reports/spark/full_scale_bench.csv
+doc    fl_drv_def                         1                          infra/spark/README.md (heap driver mặc định 1 GB khi qua spark-submit)
+doc    fl_drv_mem                         4                          infra/spark/README.md (spark-submit --driver-memory 4g)
+doc    fl_cells                           24                         infra/spark/README.md (giữ 24 ô có trong weights_gee_0p1.csv)
+claim  fl_bit_c                           cluster: every value bit-identical to Polars, three sources, full record reports/spark/full_scale_parity.csv
+claim  fl_bit_w                           Windows local[8]: every value bit-identical to Polars, full record reports/spark/full_scale_parity.csv
+claim  fl_bit_yr                          single-year checks on Windows also exact reports/spark/full_scale_parity.csv
+claim  fl_same_cw                         same values compared on cluster and Windows reports/spark/full_scale_parity.csv
+csv    fl_vh                              1.5                        reports/spark/full_scale_parity.csv (giá trị giờ / nguồn)
+csv    fl_vd                              0.57                       reports/spark/full_scale_parity.csv (giá trị ngày / nguồn)
+csv    fl_vtot                            6,246,870                  reports/spark/full_scale_parity.csv (cụm, 3 nguồn)
+csv    fl_hours_lo                        252,456                    reports/spark/full_scale_parity.csv
+csv    fl_hours_hi                        252,480                    reports/spark/full_scale_parity.csv
+claim  wfs_one                            one Spark walk-forward run recorded reports/spark/wf_bench.csv
+claim  wfs_pool_same                      one process-pool run with the same jobs reports/spark/wf_bench.csv
+claim  wfs_ver                            run on the Spark version of the cluster reports/spark/wf_bench.csv
+csv    wfs_jobs                           141                        reports/spark/wf_bench.csv
+csv    wfs_cores                          8                          reports/spark/wf_bench.csv
+csv    wfs_ex_cores                       4                          reports/spark/wf_bench.csv
+csv    wfs_wall                           270.7                      reports/spark/wf_bench.csv
+csv    wfs_sum                            2,081                      reports/spark/wf_bench.csv (tổng thời gian các task = chạy nối tiếp)
+csv    wfs_speed                          7.7                        reports/spark/wf_bench.csv
+claim  wfs_speed_ok                       speed-up = sum of task times / wall time reports/spark/wf_bench.csv
+csv    wfs_ideal                          260.2                      reports/spark/wf_bench.csv (tổng / số lõi)
+csv    wfs_eff                            96                         reports/spark/wf_bench.csv (%)
+csv    wfs_task                           14.8                       reports/spark/wf_bench.csv (s mỗi lượt)
+csv    wfs_pool                           329.9                      reports/spark/wf_bench.csv
+csv    wfs_pool_n                         8                          reports/spark/wf_bench.csv
+csv    wfs_x_pool                         1.2                        reports/spark/wf_bench.csv (pool / Spark)
+csv    wfs_pjobs                          141                        reports/spark/wf_bench.csv  [không in trong PDF]
+csv    wfs_pvals                          154,494                    reports/spark/wf_bench.csv
+csv    wfs_diff_m                         2.3                        reports/spark/wf_bench.csv (max |Δ| dự báo, m³/s)
+csv    wfs_diff_e                         -13                        reports/spark/wf_bench.csv
+claim  wfs_not_bit                        Spark and local forecasts not bit-identical reports/spark/wf_bench.csv
+csv    bl_nfold                           13                         reports/wf_peak_summary.csv
+csv    bl_E1                              0.761                      reports/wf_peak_summary.csv
+csv    bl_E2                              0.437                      reports/wf_peak_summary.csv
+csv    bl_E3                              0.206                      reports/wf_peak_summary.csv
+csv    bl_lstm1_m                         +0.029                     reports/wf_peak_summary.csv
+csv    bl_lstm1_ci                        [+0.006; +0.056]           reports/wf_peak_summary.csv
+csv    bl_lstm1_wl                        10/3                       reports/wf_peak_summary.csv
+csv    bl_lstm1_p                         0.048                      reports/wf_peak_summary.csv Wilcoxon
+csv    bl_lstm2_m                         -0.022                     reports/wf_peak_summary.csv
+csv    bl_lstm2_ci                        [-0.044; -0.001]           reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_lstm2_wl                        2/11                       reports/wf_peak_summary.csv
+csv    bl_lstm2_p                         0.068                      reports/wf_peak_summary.csv Wilcoxon
+csv    bl_lstm3_m                         -0.023                     reports/wf_peak_summary.csv
+csv    bl_lstm3_ci                        [-0.039; -0.007]           reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_lstm3_wl                        2/11                       reports/wf_peak_summary.csv
+csv    bl_lstm3_p                         0.021                      reports/wf_peak_summary.csv Wilcoxon
+csv    bl_w31_m                           +0.011                     reports/wf_peak_summary.csv
+csv    bl_w31_ci                          [+0.000; +0.024]           reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_w31_wl                          9/4                        reports/wf_peak_summary.csv
+csv    bl_w31_p                           0.13                       reports/wf_peak_summary.csv Wilcoxon
+csv    bl_w32_m                           +0.012                     reports/wf_peak_summary.csv
+csv    bl_w32_ci                          [-0.009; +0.030]           reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_w32_wl                          9/4                        reports/wf_peak_summary.csv
+csv    bl_w32_p                           0.22                       reports/wf_peak_summary.csv Wilcoxon
+csv    bl_w33_m                           +0.001                     reports/wf_peak_summary.csv
+csv    bl_w33_ci                          [-0.008; +0.009]           reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_w33_wl                          6/7                        reports/wf_peak_summary.csv
+csv    bl_w33_p                           0.89                       reports/wf_peak_summary.csv Wilcoxon
+csv    bl_iso1_m                          -0.040                     reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_iso1_ci                         [-0.108; +0.008]           reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_iso1_wl                         6/7                        reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_iso1_p                          0.64                       reports/wf_peak_summary.csv Wilcoxon  [không in trong PDF]
+csv    bl_iso2_m                          -0.008                     reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_iso2_ci                         [-0.022; +0.007]           reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_iso2_wl                         5/8                        reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_iso2_p                          0.50                       reports/wf_peak_summary.csv Wilcoxon  [không in trong PDF]
+csv    bl_iso3_m                          -0.027                     reports/wf_peak_summary.csv
+csv    bl_iso3_ci                         [-0.040; -0.016]           reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_iso3_wl                         1/12                       reports/wf_peak_summary.csv
+csv    bl_iso3_p                          0.001                      reports/wf_peak_summary.csv Wilcoxon  [không in trong PDF]
+csv    bl_E_pod1                          0.55                       reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_lstm_pod1                       0.57                       reports/wf_peak_summary.csv  [không in trong PDF]
+csv    bl_lstm_far1                       0.25                       reports/wf_peak_summary.csv
+csv    bl_E_far1                          0.29                       reports/wf_peak_summary.csv
+claim  bl_none                            no variant improves h = 2 or h = 3 with p < 0.05 reports/wf_peak_summary.csv
+claim  bl_w_nonmono                       alpha = 5 and 10 worse than alpha = 3 at h = 1 reports/wf_peak_summary.csv
+doc    bl_freeze                          02/11/2026                 docs/FINDINGS_PEAK.md §3 (giữ E, đóng băng)  [không in trong PDF]
 
-SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (29) — nhóm kiểm lại:
+SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (32) — nhóm kiểm lại:
  - grid_sat = 0.1  (docs/FINDINGS_HOURLY_FINEGRID.md §2 (IMERG, GSMaP, ERA5: 0,1°))
  - grid_pccs = 0.04  (docs/FINDINGS_HOURLY_FINEGRID.md §2 (PERSIANN-CCS 0,04°))
  - pccs_cells = 625  (docs/FINDINGS_HOURLY_FINEGRID.md §2 (625 ô, chỉ 10–11/2020))
@@ -500,6 +676,9 @@ SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (29) — nhóm kiểm lại:
  - wf_procs = 6  (docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (6 tiến trình × 2 luồng))
  - wf_min = 13  (docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (~13 phút))
  - h_steps = 168  (src/models/dl_lstm.py docstring (LSTM giờ 7 × 24 bước, chưa cài đặt))
+ - fl_drv_def = 1  (infra/spark/README.md (heap driver mặc định 1 GB khi qua spark-submit))
+ - fl_drv_mem = 4  (infra/spark/README.md (spark-submit --driver-memory 4g))
+ - fl_cells = 24  (infra/spark/README.md (giữ 24 ô có trong weights_gee_0p1.csv))
 
 CẢNH BÁO LẦN BUILD NÀY:
  (không có)

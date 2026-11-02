@@ -30,7 +30,6 @@ import importlib.util
 import json
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
@@ -355,7 +354,7 @@ def _spark_full() -> dict | None:
         b = b[(b.status == "ok") & (b.period == "full")]
         srcb, srcp = "reports/spark/full_scale_bench.csv", "reports/spark/full_scale_parity.csv"
         srcs = ["imerg", "gsmap_gc", "gsmap_nrt"]
-        tags = ["cluster_2w_8c", "cluster_1w_4c", "docker_local8", "docker_polars"]
+        tags = ["cluster_2w_8c", "cluster_1w_4c", "docker_local8_drv4g", "docker_polars"]
         out = {"rows": {}}
         for s in srcs:
             x = b[b.source == s]
@@ -369,9 +368,10 @@ def _spark_full() -> dict | None:
                 y = x[x.tag == t].seconds_total
                 R.auto(f"fs_{s}_{t}_lo", f(y.min(), 1), srcb)
                 R.auto(f"fs_{s}_{t}_hi", f(y.max(), 1), srcb)
-            sp = x[x.engine == "spark"].seconds_total.min()
-            R.auto(f"fs_{s}_ratio", f(sp / x[x.tag == "docker_polars"].seconds_total.min(), 1),
-                   srcb + " (Spark tốt nhất / Polars, cùng container)")
+            sp = x[x.tag == "docker_local8_drv4g"].seconds_total.median()
+            R.auto(f"fs_{s}_ratio", f(sp / x[x.tag == "docker_polars"].seconds_total.median(), 1),
+                   srcb + " (trung vị Spark local[8] driver 4g / trung vị Polars, cùng container;"
+                   " cùng cách tính với report4 fl_x_lo)")
             out["rows"][s] = int(x.rows_in_files.iloc[0])
         tot = sum(out["rows"].values())
         R.auto("fs_sat_mrows", f(tot / 1e6, 1), srcb + " (IMERG + GSMaP + GSMaP_NRT)")
@@ -424,6 +424,10 @@ def _spark_wf() -> dict | None:
         R.auto("wfb_sp_pjobs", n(r.parity_jobs), src)
         R.auto("wfb_sp_diff", f"{r.parity_max_abs_diff:.1e}" if r.parity_max_abs_diff else "0",
                src)
+        if r.parity_max_abs_diff:
+            m_, e_ = f"{r.parity_max_abs_diff:.1e}".split("e")
+            R.auto("wfb_sp_diff_m", m_, src)
+            R.auto("wfb_sp_diff_e", str(int(e_)), src)
         out["spark"] = True
     else:
         WARN.append("reports/spark/wf_bench.csv chưa có dòng Spark → in khung [Spark walk-forward pending]")
