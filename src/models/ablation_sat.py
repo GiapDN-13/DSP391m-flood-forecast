@@ -19,7 +19,10 @@ có đủ mọi cột của mọi cấu hình trong nhóm):
          E0+gsmap_gc              + 9 cột toàn lưu vực
          E0+imerg                 + 9 cột toàn lưu vực
 
-LightGBM tham số ``lgbm.py``, 3 seed. ``valid`` = fit train → đánh giá valid;
+LightGBM 3 seed; nhóm ``r2`` dùng ``lgbm.PARAMS`` (mốc Report 2), nhóm ``ext``
+là mô hình chính nên dùng ``lgbm.params_for(h)`` (L1 ở h=1, L2 ở h=2–3) cho mọi
+cấu hình trong nhóm (cột ``objective``; bản ext L1 cũ ở ``reports/l1_ref/``).
+Chạy một phần nhóm thì dòng nhóm kia được giữ từ file cũ. ``valid`` = fit train → đánh giá valid;
 ``test`` = fit train+valid → đánh giá test (giống lgbm.py). ΔNSE so với mốc nhóm:
 theo từng seed, trung bình 3 seed, và bootstrap khối 30 ngày × 1000 lần trên dự
 báo trung bình 3 seed (cùng chỉ số khối cho hai cấu hình ⇒ so ghép cặp; code của
@@ -38,6 +41,7 @@ from __future__ import annotations
 import argparse
 import sys
 from datetime import date, timedelta
+from pathlib import Path
 
 import numpy as np
 import polars as pl
@@ -48,6 +52,7 @@ from src.features import basins as bs
 from src.features import hourly_features as hf
 from src.models import ablation_ext as ax
 from src.models import ablation_hourly as ab
+from src.models import lgbm
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -128,6 +133,7 @@ def run_group(group: str, thr1: float) -> list[dict]:
         d = panel["date"].cast(pl.Date)
         print(f"h={h}: train {m['train'].sum()} ({d.filter(pl.Series(m['train'])).min()}→) · "
               f"valid {m['valid'].sum()} · test {m['test'].sum()} ngày", flush=True)
+        params = lgbm.params_for(h) if group == "ext" else dict(lgbm.PARAMS)
         for ph, (tr, ev) in {"valid": (m["train"], m["valid"]),
                              "test": (m["train"] | m["valid"], m["test"])}.items():
             ys[(ph, h)] = y[ev]
@@ -137,11 +143,12 @@ def run_group(group: str, thr1: float) -> list[dict]:
             for name, feats in cfgs.items():
                 X = panel.select(feats).to_numpy().astype(float)
                 for seed in SEEDS:
-                    yhat, model = ab.fit_predict(X, feats, y, tr, ev, seed)
+                    yhat, model = ab.fit_predict(X, feats, y, tr, ev, seed, params)
                     preds[(name, ph, h, seed)] = yhat
                     rows.append({"group": group, "config": name, "phase": ph, "horizon": h,
                                  "seed": str(seed), "n_train": int(tr.sum()),
                                  "n_eval": int(ev.sum()), "n_feat": len(feats),
+                                 "objective": params["objective"],
                                  **ab.score(y[ev], yhat, thr1)})
                     if ph == "test" and seed == cfg.SEED and name != names[0]:
                         g = model.booster_.feature_importance("gain")
@@ -168,7 +175,7 @@ def summarize(group: str, rows: list[dict], preds: dict, ys: dict, names: list[s
                    and r["phase"] == ph and r["horizon"] == h]
             row = {"group": group, "config": name, "phase": ph, "horizon": h, "seed": "mean3",
                    "n_train": per[0]["n_train"], "n_eval": per[0]["n_eval"],
-                   "n_feat": per[0]["n_feat"]}
+                   "n_feat": per[0]["n_feat"], "objective": per[0]["objective"]}
             for k in ("NSE", "KGE", "RMSE", "peak_bias", "POD1", "FAR1", "CSI1"):
                 row[k] = float(np.mean([r[k] for r in per]))
             row["n_pos1"] = per[0]["n_pos1"]
@@ -223,6 +230,14 @@ def main(argv: list[str] | None = None) -> int:
     for g in a.groups:
         rows += run_group(g, thr1)
     res = pl.from_dicts(rows, infer_schema_length=None).with_columns(pl.lit(SPLIT_NOTE).alias("split"))
+    if set(a.groups) != set(GROUPS) and Path(a.out).exists():    # giữ dòng nhóm không chạy lại
+        old = pl.read_csv(a.out, infer_schema_length=None)
+        keep = old.filter(~pl.col("group").is_in(a.groups))
+        if "objective" not in keep.columns:
+            keep = keep.with_columns(objective=pl.when(pl.col("config") == "persistence")
+                                     .then(None).otherwise(pl.lit(lgbm.PARAMS["objective"])))
+        print(f"giữ {keep.height} dòng nhóm {sorted(set(keep['group']))} từ file cũ")
+        res = pl.concat([keep, res], how="diagonal_relaxed")
     res.write_csv(a.out, float_precision=5)
     report(res)
     print(f"\n→ {a.out} ({res.height} dòng)")
