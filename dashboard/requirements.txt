@@ -1,0 +1,6 @@
+# Phụ thuộc RIÊNG của dashboard — Streamlit Community Cloud đọc file này
+# (ưu tiên file cạnh app.py hơn requirements.txt ở gốc, vốn rất nặng: torch, pyspark...).
+# Phiên bản đã chạy thử ngày 02/11/2026 (Python 3.13, Windows).
+streamlit==1.66.1
+plotly==7.1.0
+pandas==3.0.3
