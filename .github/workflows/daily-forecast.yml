@@ -32,17 +32,18 @@ jobs:
           cache: pip
 
       - name: Cài dependency tối thiểu
-        # Không cài cả requirements.txt: job này chỉ gọi API và ghi CSV,
-        # không cần torch/lightgbm — cài đủ dùng cho nhanh.
+        # Không cài cả requirements.txt (torch, spark…) — chỉ đủ cho gọi API,
+        # dựng đặc trưng (polars, duckdb) và chạy LightGBM đã huấn luyện.
         # polars: đọc lệnh xả hồ (src/features/reservoirs.py)
-        run: pip install requests pandas pyarrow polars==1.17.1
+        run: pip install requests pandas pyarrow polars==1.17.1 duckdb==1.1.3 numpy==2.1.3 lightgbm==4.5.0
 
       - name: Tải mô hình mới nhất (nếu đã có)
+        # LightGBM cấu hình E (src/models/predict_live.py --train): file văn bản + meta.
         continue-on-error: true
         run: |
           mkdir -p models
-          gh release download v1.0 --pattern "*.pkl" --dir models/ \
-            || echo "Chưa có release v1.0 — chạy chế độ chỉ ghi GloFAS thô (bình thường tới W5)"
+          gh release download model-v1.0 --pattern "lgbm_live_*" --dir models/ \
+            || echo "Chưa có release model-v1.0 — chỉ ghi GloFAS thô"
         env:
           GH_TOKEN: ${{ github.token }}
 
