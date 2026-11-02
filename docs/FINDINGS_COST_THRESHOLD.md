@@ -169,3 +169,62 @@ python -m src.models.cost_threshold --seeds 42 7 2026 --out <csv> --fig <png>   
 python -m src.models.cost_threshold --sets B --out <csv> --fig <png>            # đối chứng B (§3)
 python -m pytest tests/test_cost_threshold.py -q
 ```
+
+---
+
+## 8. Hiệu chỉnh isotonic (FR-M6) — bổ sung Report 4
+
+**Ngày:** 02/11/2026 · Nhánh `feat/report4` · Chạy: `python -m src.models.cost_threshold --calibrate` (~12 phút, 4 luồng, seed 42; R2 + E)
+Số: `reports/cost_calibration.csv` (+ `cost_calibration_bins.csv`) · Hình: `reports/figures/report/cost_reliability_en.png` ·
+Test: `tests/test_cost_calibration.py` · `cost_threshold.csv` **không đổi**.
+
+**Cách làm.** Cùng OOF walk-forward như §0. Với năm test Y: `IsotonicRegression(out_of_bounds="clip", y_min=0, y_max=1)`
+học trên **đúng bể chọn ngưỡng** (OOF năm < Y, ≤ 28/12/(Y−1)) rồi biến đổi xác suất năm Y; ngưỡng chi phí chọn lại
+trên xác suất đã hiệu chỉnh của bể (cùng lưới, cùng luật hoà). Bể < 10 ngày dương ⇒ không hiệu chỉnh (chỉ R2 fold
+2013). Test chứng minh: xáo tuỳ ý nhãn/xác suất mọi năm ≥ Y thì bộ hiệu chỉnh năm Y y hệt. Thêm `bayes_iso` = ngưỡng
+Bayes 1/(1+R) trên xác suất đã hiệu chỉnh (không chọn gì). So cặp từng fold với nhánh thô (Wilcoxon + CI 95 %
+bootstrap theo fold). Nhánh thô tái lập đúng §1 (E h1 10:1: 239, 13 bỏ sót, 109 báo nhầm).
+
+**Mức 1, E, h = 1, WF 2013–2025 (104 ngày dương, 13 fold):**
+
+| Cách | Ngưỡng trung vị [min–max] | Bỏ sót | Báo nhầm (/năm) | POD / FAR / CSI | C 10:1 |
+|---|---|---|---|---|---|
+| p = 0,5 (thô) | 0,5 | 32 | 40 (3,1) | 0,69 / 0,36 / 0,50 | 360 |
+| Chi phí, thô | 0,03 [0,02–0,04] | 13 | 109 (8,4) | 0,88 / 0,55 / 0,43 | 239 |
+| **Chi phí, isotonic** | **0,12 [0,10–0,15]** | **12** | **110 (8,5)** | **0,88 / 0,54 / 0,43** | **230** |
+| Bayes 1/11 trên isotonic | 0,091 | 12 | 110 (8,5) | 0,88 / 0,54 / 0,43 | 230 |
+
+* **Chi phí (isotonic − thô):** 10:1 −0,7/fold [−2,4; +0,5], p = 0,75, rẻ/đắt 2/2 — **không khác**. 5:1: 168 → 157
+  (−0,8/fold, p 0,031, 6/0). 20:1: 352 → 386 (**đắt hơn**, +2,6/fold, p 0,16). So với p = 0,5 vẫn giữ: 360 → 230,
+  p = 0,043 (thô: p 0,042).
+* **Xác suất (đây mới là chỗ isotonic có tác dụng):** Brier 0,0119 → **0,0100** (BSS so với khí hậu bể 0,44 → 0,54),
+  ΔBrier −0,0020/fold [−0,0036; −0,0006], **p = 0,027**, tốt hơn 9/13 fold. Log-loss (kẹp 10⁻⁴) 0,050 → 0,036;
+  ECE (10 khoảng) 0,010 → 0,002.
+* **h2–h3, R2:** Brier giảm ở mọi ô (E h2 0,0189 → 0,0171, h3 0,0218 → 0,0198 — thô ở h3 còn kém khí hậu, BSS −0,02
+  → +0,08) nhưng chênh từng fold không có ý nghĩa (p ≥ 0,09). Chi phí 10:1 thay đổi ≤ ±15 tổng, p ≥ 0,25 mọi ô.
+  Đáng kể duy nhất: E h2 20:1 778 → 722 (p 0,047, 10/1 fold) — một ô trong nhiều ô, không hiệu chỉnh đa so sánh.
+
+**Đọc kết quả.**
+
+1. **Isotonic không giảm chi phí cảnh báo.** Isotonic là ánh xạ đơn điệu ⇒ chỉ đổi *thang* chứ không đổi *thứ tự*;
+   chọn ngưỡng tối thiểu chi phí trên bể cho cùng một điểm cắt (± gộp khối). 239 → 230 là do vài ngày nằm sát ranh
+   giới, không phải cải thiện thật (p 0,75).
+2. **Cái được là ngưỡng có nghĩa.** Sau hiệu chỉnh, ngưỡng tối ưu 0,10–0,15 nằm sát lý thuyết Bayes 1/(1+R) = 0,091,
+   và dùng thẳng 1/11 cho **đúng cùng chi phí 230** — không cần chọn ngưỡng nữa. Ngưỡng lý thuyết trên xác suất thô
+   (w/(w+R) ≈ 0,85) thì đắt hơn cả 0,5 (§2.1). ⇒ Đổi tỉ lệ chi phí (5:1, 20:1) chỉ cần đổi 1/(1+R).
+3. **Hiển thị trên dashboard nên dùng xác suất đã hiệu chỉnh.** "12 %" sau isotonic nghĩa là ≈ 12 % số ngày như vậy
+   thật sự ≥ mức 1 (hình reliability: đường xanh bám chéo ở các khoảng có ≥ 10 ngày). Xác suất thô ở khoảng 0,9–1,0
+   chỉ đúng 80 % (57/71 ngày) và gần như mọi ngày rơi vào [0; 0,1).
+4. **Hạn chế:** > 95 % ngày nằm ở khoảng [0; 0,1); các khoảng 0,3–0,8 chỉ 1–30 ngày ⇒ đường reliability ở đó nhiễu
+   (điểm rỗng). Isotonic là hàm bậc thang ⇒ xác suất hiển thị nhảy theo khối (vài chục mức). Bể học hiệu chỉnh là OOF
+   các năm trước — mô hình năm sau học thêm dữ liệu nên hiệu chỉnh có thể trễ một nhịp.
+
+**Kết luận FR-M6:** giữ quy tắc báo động của §5 (chi phí như nhau). Bật isotonic cho **xác suất hiển thị** và đổi
+ngưỡng báo động sang **1/(1+R) trên xác suất đã hiệu chỉnh** (10:1 ⇒ 0,091) — cùng hiệu năng, dễ giải thích, không
+phải chọn ngưỡng lại mỗi năm.
+
+```
+python -m src.models.cost_threshold --calibrate --oof-out <parquet>   # học OOF + hiệu chỉnh + hình
+python -m src.models.cost_threshold --calibrate --oof-in <parquet>    # chỉ hiệu chỉnh từ OOF đã lưu
+python -m pytest tests/test_cost_calibration.py -q
+```
