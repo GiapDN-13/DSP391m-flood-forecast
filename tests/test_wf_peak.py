@@ -90,3 +90,18 @@ def test_mo_hinh_loi_van_ghi_glofas(monkeypatch):
     monkeypatch.setattr(pli, "predict", boom)
     out = pd.DataFrame({"point": ["huong_kim_long"], "horizon_days": [1]})
     assert list(pdl.add_model_columns(out, date(2026, 11, 2)).columns) == ["point", "horizon_days"]
+
+
+def test_doi_chieu_spark_voi_local(tmp_path):
+    """``spark_walkforward.parity``: cùng dự báo ⇒ |Δ| = 0; lệch tập ngày ⇒ lỗi."""
+    from src.distributed import spark_walkforward as sw
+
+    res = {"config": "E", "year": 2020, "seed": 42, "thr1": 700.0, "time_s": 1.0,
+           "cols": {"horizon": [1, 1], "date": [date(2020, 1, 1), date(2020, 1, 2)],
+                    "y": [1.0, 2.0], "yhat": [1.5, 2.5], "q0": [1.0, 1.0], "flood": [False, False]}}
+    wf_peak.to_frame(res).write_parquet(wf_peak.job_path(res, tmp_path))
+    out = sw.parity([res], tmp_path)
+    assert out == {"parity_jobs": 1, "parity_values": 2, "parity_max_abs_diff": 0.0}
+    bad = {**res, "cols": {**res["cols"], "date": [date(2020, 1, 1), date(2020, 1, 3)]}}
+    with pytest.raises(AssertionError):
+        sw.parity([bad], tmp_path)
