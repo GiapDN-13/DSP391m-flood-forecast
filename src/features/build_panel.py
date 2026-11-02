@@ -143,7 +143,8 @@ def ext_features() -> list[pl.Expr]:
 STORM_FAR_KM = 2000.0      # ngày không có bão trong bán kính 1 500 km
 
 
-def join_context(df: pl.DataFrame) -> pl.DataFrame:
+def join_context(df: pl.DataFrame, met: pl.DataFrame | None = None,
+                 storm: pl.DataFrame | None = None, oni: pl.DataFrame | None = None) -> pl.DataFrame:
     """Ghép các yếu tố khí tượng quy mô lớn — mỗi nhóm là một cơ chế gây lũ khác nhau.
 
     * **Bão / ATNĐ** (IBTrACS): khoảng cách tới Huế, sức gió, đang tiến lại hay ra xa.
@@ -152,9 +153,11 @@ def join_context(df: pl.DataFrame) -> pl.DataFrame:
     * **ENSO** (ONI): trễ 3 tháng — mùa ONI giữa tháng M−3 kết thúc tháng M−2,
       đã được công bố trước tháng M. Dùng số chưa công bố là rò rỉ.
     """
-    met = clean.load_met_daily()
-    storm = clean.load_storm_daily()
-    oni = clean.load_oni()
+    # Mặc định đọc kho đã crawl; job dự báo hằng ngày truyền bảng lấy từ API
+    # (``src/models/predict_live.py``) — cùng schema, cùng phép tính bên dưới.
+    met = clean.load_met_daily() if met is None else met
+    storm = clean.load_storm_daily() if storm is None else storm
+    oni = clean.load_oni() if oni is None else oni
     deg = math.pi / 180
     df = (df.join(met, on="date", how="left")
             .join(storm, on="date", how="left")
@@ -181,6 +184,33 @@ def join_context(df: pl.DataFrame) -> pl.DataFrame:
     ).drop("wind_dir_hue", "wind_dir_north", "wind_dir_sea")
 
 
+def add_features(df: pl.DataFrame, ext: bool = False) -> pl.DataFrame:
+    """Mọi feature từ bảng ngày đã ghép (lưu lượng, mưa 3 vùng, + đất/ngữ cảnh nếu
+    ``ext``). Dùng chung cho dựng panel lịch sử và job dự báo trực tuyến."""
+    rain_cols = [c for c in df.columns if c.startswith("rain_")]
+
+    df = make_lags(df, "discharge", cfg.Q_LAGS)
+    for c in rain_cols:
+        df = make_lags(df, c, cfg.RAIN_LAGS)
+        df = make_rolling(df, c, [3, 5, 7], how="sum")
+    doy = pl.col("date").dt.ordinal_day()
+    df = df.with_columns(
+        antecedent_index("rain_basin").alias("api"),
+        # biến thiên lưu lượng — bắt pha nước đang lên
+        pl.col("discharge").diff(1).alias("q_diff1"),
+        pl.col("discharge").diff(3).alias("q_diff3"),
+        # mùa, mã hoá tuần hoàn để tháng 12 và tháng 1 nằm cạnh nhau
+        (2 * math.pi * doy / 365.25).sin().alias("doy_sin"),
+        (2 * math.pi * doy / 365.25).cos().alias("doy_cos"),
+        pl.col("date").dt.month().cast(pl.Int32).alias("month"),
+        pl.col("date").dt.month().is_in(cfg.FLOOD_SEASON_MONTHS).cast(pl.Int64).alias("mua_lu"),
+    )
+
+    if ext:
+        df = df.with_columns(ext_features())
+    return df
+
+
 # ------------------------------------------------------------ dựng bảng
 
 def build(ext: bool = False) -> pl.DataFrame:
@@ -201,28 +231,7 @@ def build(ext: bool = False) -> pl.DataFrame:
     print(f"\nGiao nhau: {df.height} ngày, {df['date'].min():%Y-%m-%d} → "
           f"{df['date'].max():%Y-%m-%d}")
 
-    rain_cols = [c for c in df.columns if c.startswith("rain_")]
-
-    # --- feature ---
-    df = make_lags(df, "discharge", cfg.Q_LAGS)
-    for c in rain_cols:
-        df = make_lags(df, c, cfg.RAIN_LAGS)
-        df = make_rolling(df, c, [3, 5, 7], how="sum")
-    doy = pl.col("date").dt.ordinal_day()
-    df = df.with_columns(
-        antecedent_index("rain_basin").alias("api"),
-        # biến thiên lưu lượng — bắt pha nước đang lên
-        pl.col("discharge").diff(1).alias("q_diff1"),
-        pl.col("discharge").diff(3).alias("q_diff3"),
-        # mùa, mã hoá tuần hoàn để tháng 12 và tháng 1 nằm cạnh nhau
-        (2 * math.pi * doy / 365.25).sin().alias("doy_sin"),
-        (2 * math.pi * doy / 365.25).cos().alias("doy_cos"),
-        pl.col("date").dt.month().cast(pl.Int32).alias("month"),
-        pl.col("date").dt.month().is_in(cfg.FLOOD_SEASON_MONTHS).cast(pl.Int64).alias("mua_lu"),
-    )
-
-    if ext:
-        df = df.with_columns(ext_features())
+    df = add_features(df, ext)
 
     # --- biến mục tiêu ---
     for h in cfg.HORIZONS:
