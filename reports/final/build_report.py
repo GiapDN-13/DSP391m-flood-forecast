@@ -977,7 +977,9 @@ def story() -> list:
                       "LightGBM with the raw GloFAS forecast on the operational sample (AC-3) "
                       "will be possible once forecasts and verifying GloFAS values overlap.")]
     else:
-        s += [p(f"{V('live_nlgbm')} logged issues already contain the LightGBM columns.")]
+        s += [p(f"The first operational run with the LightGBM columns was issued on "
+                f"{V('live_lgbm_first')} ({V('live_nlgbm')} run(s) so far); AC-3 still needs "
+                "weeks of forecasts overlapping verifying GloFAS values.")]
     s += [p("<b>Dashboard.</b> A Streamlit application reads the log and has three tabs: the "
             "forecast (30 past days and three forecast days for raw GloFAS, floored GloFAS and "
             "LightGBM, with the three risk-level lines and a table of levels), a map of the "
