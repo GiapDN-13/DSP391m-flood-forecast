@@ -156,8 +156,8 @@ Ghi kết quả mock vào bảng cuối file.
 - **Hỏi vặn:** *"Chênh bao nhiêu thì coi là nhiễu?"* → Chỉ đổi ngày bắt đầu train đã làm E h2 0,483 → 0,469; báo cáo dùng ngưỡng nhiễu NSE ±0,01.
 
 **55. [BẪY] NSE "thật" của mô hình chính là bao nhiêu?** [TL] [RD]
-- **Trả lời:** Mô hình chính là LightGBM cấu hình E (88 feature). Lần chia đơn (test từ 07/2022): 0,747/0,483/0,199; walk-forward trung bình 13 năm của E0: 0,761/0,398/0,170 (OUT III; FHF §12.1). Đừng nhầm với 0,747/0,420/0,175 — đó là LightGBM panel Report 2 (`lgbm_results.csv`).
-- **Hỏi vặn:** *"Có đạt AC-1 không?"* → AC-1: h1 ≥ 0,70 (RMSE tốt hơn persistence ≥ 20 %), h2 ≥ 0,40, h3 ≥ 0,25. Lần chia đơn đạt h1 (RMSE tốt hơn 25,6 %) và h2, trượt h3; walk-forward h2 0,398 sát dưới ngưỡng.
+- **Trả lời:** Mô hình chính là LightGBM cấu hình E (88 feature; L1 ở h1, L2 ở h2–h3 — chọn bằng walk-forward/valid, không theo test). Lần chia đơn (test từ 07/2022): 0,747/0,499/0,236; walk-forward trung bình 13 năm: 0,761/0,437/0,206. (Số cũ trước khi đổi L2: 0,747/0,483/0,199 và 0,761/0,398/0,170.) Đừng nhầm với 0,747/0,420/0,175 — đó là LightGBM panel Report 2 (`lgbm_results.csv`).
+- **Hỏi vặn:** *"Có đạt AC-1 không?"* → AC-1: h1 ≥ 0,70 (RMSE tốt hơn persistence ≥ 20 %), h2 ≥ 0,40, h3 ≥ 0,25. Lần chia đơn đạt h1 (RMSE tốt hơn 25,6 %) và h2, trượt h3 (0,236, thiếu 0,014); walk-forward h1 0,761, h2 0,437 đạt, h3 0,206 trượt.
 
 ### H5. Deep Learning
 
@@ -240,8 +240,24 @@ Ghi kết quả mock vào bảng cuối file.
 - **Hỏi vặn:** *"Còn việc GloFAS đổi chế độ 07/2022?"* → Chuyển từ reanalysis sang kho dự báo; test chỉ từ 2022-07, Mann–Whitney p = 0,58.
 
 **74. Thêm dữ liệu (A → E): cái gì giúp, cái gì không?** [DA] [TL]
-- **Trả lời:** Mưa từ 1997 (train 4 550 → 9 298 ngày) giúp h1 0,745 → 0,766. Bão, không khí lạnh, ENSO giúp h2–h3: E 0,483/0,199 so với D 0,428/0,186 (FF §5). Độ ẩm đất (C) và đại diện hồ (D) không thêm gì rõ.
+- **Trả lời:** Mưa từ 1997 (train 4 550 → 9 298 ngày) giúp h1 0,745 → 0,766. Bão, không khí lạnh, ENSO giúp h2–h3: E 0,499/0,236 so với D 0,461/0,199 (ablation 3 seed, L2 ở h2–h3). Độ ẩm đất (C) và đại diện hồ (D) không thêm gì rõ.
 - **Hỏi vặn [BẪY]:** *"E h1 (0,747) thấp hơn B (0,766), sao vẫn chọn E?"* → Đánh đổi có chủ đích: E thắng rõ ở h2–h3, đúng chỗ persistence sụp (0,008/−0,198); h1 của E vẫn ≥ 0,70.
+
+## I. Bổ sung Report 4 (02/11/2026)
+
+**75. Đã thử chữa cắt ngọn lũ chưa? Kết quả?** [TL] [DA]
+- **Trả lời:** Thử 3 hướng, walk-forward 13 fold, tiêu chí đặt trước (h2/h3 ΔNSE > 0, p < 0,05): trọng số mẫu nhấn đỉnh (α = 3: +0,011/+0,012/+0,001, p ≥ 0,13), hiệu chỉnh isotonic sau dự báo (làm hại, h3 −0,027, p 0,001), ghép 50/50 với LSTM (h1 +0,029, p 0,048, nhưng h2–h3 −0,02). Không biến thể nào đạt ⇒ giữ E, đóng băng 02/11 (`FINDINGS_PEAK.md`).
+- **Hỏi vặn:** *"Sao không lấy E+LSTM cho h1?"* → Chọn sau khi xem là lạc quan; job hằng ngày phải chạy thêm torch. Để làm hướng tiếp theo, kiểm trên dữ liệu mới. Gốc vấn đề ở h2–h3 là thiếu mưa dự báo tốt, không phải hàm mất mát.
+
+**76. Xác suất cảnh báo đã hiệu chỉnh chưa?** [DA]
+- **Trả lời:** Rồi (FR-M6): isotonic fit trên xác suất ngoài mẫu các năm trước. Brier 0,0119 → 0,0100 (p 0,027); chi phí 10:1 gần như không đổi (239 → 230, p 0,75) vì isotonic giữ thứ hạng. Lợi ích: xác suất có nghĩa, ngưỡng tối ưu về đúng 1/(1+R) = 1/11, không phải chọn lại hằng năm.
+
+**77. Hệ thống chạy thật thế nào?** [TL]
+- **Trả lời:** GitHub Actions 05:00 giờ VN: lấy GloFAS + dữ liệu API ~130 ngày, dựng đúng 88 cột bằng cùng mã với panel lịch sử, chạy LightGBM E (3 seed × 3 horizon) + xác suất mức 1 đã hiệu chỉnh, ghi `reports/forecast_log/`; dashboard Streamlit đọc file đó.
+- **Hỏi vặn [BẪY]:** *"Đầu vào lúc chạy thật có giống lúc train không?"* → Không hoàn toàn: ERA5 trễ ~5 ngày nên 5 ngày gần nhất lấy từ Forecast API, mưa ngày t là mưa dự báo (kịch bản B); độ ẩm đất giữ giá trị cuối. Vì vậy số NSE báo cáo là cận trên của chất lượng chạy thật; AC-3 (so GloFAS thô) cần tích luỹ thêm nhật ký.
+
+**78. Walk-forward phân tán là gì, sao Spark có lợi ở đây mà ETL thì không?** [TL]
+- **Trả lời:** Đơn vị là một lượt cấu hình × năm × seed (~15 s CPU, độc lập) — song song theo tác vụ, gần tuyến tính theo số lõi; ETL 75–100 MB thì chi phí khởi động/đọc ổ mount của Spark lớn hơn phần tính. Cùng hàm `wf_peak.run_job` chạy local và trên Spark, dự báo đối chiếu phải trùng (`reports/spark/wf_bench.csv`).
 
 ---
 
