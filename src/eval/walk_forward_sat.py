@@ -14,8 +14,14 @@ cuối (28/12) là 31/12, không chạm năm test.
 Nhóm và cấu hình giữ nguyên ``ablation_sat.py`` (mỗi nhóm so với mốc của chính
 nó, trên tập hàng chung của nhóm): ``r2`` = A0, +imerg, +gsmap_gc, +gsmap_gc lưu
 vực con (panel từ 2010); ``ext`` = E0, +gsmap_gc, +imerg (train từ 1998-01-04).
-LightGBM tham số ``lgbm.py``, 3 seed; dự báo = trung bình 3 seed (NSE từng seed
-ghi thêm). Ngưỡng mức 1 MỖI fold = Q95 lưu lượng mùa lũ 9–12 CHỈ trong cửa sổ
+LightGBM 3 seed; dự báo = trung bình 3 seed (NSE từng seed ghi thêm). Tham số
+(``group_params``): nhóm ``r2`` giữ ``lgbm.PARAMS`` (L1 mọi horizon — mốc Report
+2); nhóm ``ext`` là mô hình chính nên dùng ``lgbm.params_for(h)`` (L1 ở h=1, L2 ở
+h=2–3, chọn bằng walk-forward/valid trong ``wf_tuning.py``) cho MỌI cấu hình
+trong nhóm, kể cả ``--lag-test`` và ``--nrt-test``. Cột ``objective`` ghi hàm mất
+mát đã dùng. Kết quả cũ (ext L1, trước 21/10/2026) ở ``reports/l1_ref/``.
+Chạy một phần nhóm (``--groups ext``) ghi vào file mặc định thì dòng của nhóm
+KHÔNG chạy lại được giữ nguyên từ file cũ (``merge_other_groups``). Ngưỡng mức 1 MỖI fold = Q95 lưu lượng mùa lũ 9–12 CHỈ trong cửa sổ
 train của fold (định nghĩa ``risk_levels.fit_thresholds``) — không rò rỉ; ngưỡng
 hai nhóm khác nhau vì cửa sổ train khác nhau. NSE mùa lũ: ngày phát dự báo t
 thuộc tháng 9–12.
@@ -47,6 +53,7 @@ import polars as pl
 
 from src import config as cfg
 from src.eval import metrics, walk_forward
+from src.features import hourly_features as hf
 from src.features import risk_levels as rl
 from src.models import ablation_hourly as ab
 from src.models import ablation_sat as sa
@@ -57,6 +64,8 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 OUT_FOLDS = cfg.ROOT / "reports" / "wf_sat_folds.csv"
 OUT_SUMMARY = cfg.ROOT / "reports" / "wf_sat_summary.csv"
 OUT_FIG = cfg.FIGURES / "report" / "wf_sat_en.png"
+OUT_LAG = cfg.ROOT / "reports" / "wf_sat_lag1.csv"   # phép thử độ trễ khi chạy thật
+OUT_NRT = cfg.ROOT / "reports" / "wf_sat_nrt.csv"    # GSMaP_NRT (JAXA) so với bản chuẩn
 SPLIT_CSV = sa.OUT                          # kết quả một-lần-chia để đối chiếu
 
 GAP = walk_forward.GAP_DAYS                 # 3 = horizon lớn nhất
@@ -107,8 +116,60 @@ def score(y: np.ndarray, yhat: np.ndarray, flood: np.ndarray, thr1: float) -> di
 
 # ================================================================ chạy
 
-def run_group(group: str, years: list[int]) -> list[dict]:
+def load_ext_lag1(group: str = "ext") -> tuple[pl.DataFrame, dict[str, list[str]], dict]:
+    """Nhóm EXT + cấu hình GSMaP-GC TRỄ 1 NGÀY — đúng điều kiện chạy thật.
+
+    Earth Engine đưa ảnh GSMaP lên chậm ~27 giờ (kiểm 20/10/2026: ảnh mới nhất
+    13:00 UTC ngày 19/10 lúc 15:53 UTC ngày 20/10). Job dự báo chạy ~05h giờ VN
+    nên ngày t (hôm qua) chưa đủ giờ; chỉ có đặc trưng vệ tinh của ngày t−1.
+    """
     panel, cfgs, split = sa.load_group(group)
+    base = next(iter(cfgs.values()))
+    gc = [c for c in cfgs["E0+gsmap_gc"] if c not in base]
+    panel = panel.sort("date").with_columns([pl.col(c).shift(1).alias(f"{c}_lag1") for c in gc])
+    new = {next(iter(cfgs)): base, "E0+gsmap_gc": cfgs["E0+gsmap_gc"],
+           "E0+gsmap_gc_lag1": base + [f"{c}_lag1" for c in gc]}
+    return panel, new, split
+
+
+def load_nrt(group: str) -> tuple[pl.DataFrame, dict[str, list[str]], dict]:
+    """Mốc của nhóm + GSMaP-GC bản chuẩn (Earth Engine, chỉ phân tích lại quá khứ)
+    + GSMaP_Gauge_NRT (JAXA, trễ ~4,7 h — dùng được khi chạy thật, không cần trễ)."""
+    panel, cfgs, split = sa.load_group(group)
+    panel = hf.join_panel(panel, sa.load_sat("gsmap_nrt"))
+    name0, base = next(iter(cfgs.items()))
+    std = next(k for k in cfgs if k.endswith("+gsmap_gc"))
+    tag = name0.split()[0]
+    new = {name0: base, std: cfgs[std],
+           f"{tag}+gsmap_nrt": base + sa.sat_cols("gsmap_nrt", [hf.WHOLE])}
+    return panel, new, split
+
+
+def group_params(group: str, h: int) -> dict:
+    """Tham số LightGBM của nhóm ở horizon ``h`` (đọc ``lgbm.PARAMS`` lúc gọi ⇒ giữ
+    ``n_jobs`` đã đặt): ``ext`` = mô hình chính ``lgbm.params_for(h)``; ``r2`` =
+    ``lgbm.PARAMS`` gốc (mốc Report 2)."""
+    return lgbm.params_for(h) if group == "ext" else dict(lgbm.PARAMS)
+
+
+def merge_other_groups(new: pl.DataFrame, path: Path) -> pl.DataFrame:
+    """Giữ dòng của các nhóm KHÔNG có trong ``new`` từ file cũ ``path`` (chạy lại một
+    phần nhóm mà không xoá kết quả nhóm kia). Dòng cũ thiếu cột ``objective`` là
+    ``lgbm.PARAMS`` (L1)."""
+    if not path.exists():
+        return new
+    old = pl.read_csv(path, infer_schema_length=None, try_parse_dates=True)
+    keep = old.filter(~pl.col("group").is_in(new["group"].unique().to_list()))
+    if keep.is_empty():
+        return new
+    if "objective" not in keep.columns:
+        keep = keep.with_columns(objective=pl.lit(lgbm.PARAMS["objective"]))
+    print(f"  giữ {keep.height} dòng nhóm {sorted(set(keep['group']))} từ {path.name} cũ")
+    return pl.concat([keep, new], how="diagonal_relaxed")
+
+
+def run_group(group: str, years: list[int], loader=None) -> list[dict]:
+    panel, cfgs, split = (loader or sa.load_group)(group)
     start, names = split["train"][0], list(cfgs)
     base = names[0]
     union = sorted({c for f in cfgs.values() for c in f})
@@ -127,6 +188,7 @@ def run_group(group: str, years: list[int]) -> list[dict]:
             m = ab.masks(panel, union, h, fold)
             tr, te = m["train"], m["test"]
             y = panel[f"target_h{h}"].to_numpy().astype(float)
+            params = group_params(group, h)
             d_tr, d_te = d.filter(pl.Series(tr)), d.filter(pl.Series(te))
             fl = flood_all[te]
             meta = {"group": group, "fold": year, "fold_type": fold_type(year), "horizon": h,
@@ -134,12 +196,12 @@ def run_group(group: str, years: list[int]) -> list[dict]:
                     "test_start": d_te.min(), "test_end": d_te.max(),
                     "gap_days": (d_te.min() - d_tr.max()).days - 1,
                     "n_train": int(tr.sum()), "n_test": int(te.sum()), "n_flood": int(fl.sum()),
-                    "thr1": thr1}
+                    "thr1": thr1, "objective": params["objective"]}
             rows.append({**meta, "config": "persistence", "n_feat": 1,
                          **score(y[te], q0[te], fl, thr1)})
             out = {}
             for name, feats in cfgs.items():
-                ps = [ab.fit_predict(X[name], feats, y, tr, te, s)[0] for s in SEEDS]
+                ps = [ab.fit_predict(X[name], feats, y, tr, te, s, params)[0] for s in SEEDS]
                 out[name] = {**meta, "config": name, "n_feat": len(feats),
                              **score(y[te], np.mean(ps, axis=0), fl, thr1),
                              **{f"NSE_seed{s}": metrics.nse(y[te], p) for s, p in zip(SEEDS, ps)}}
@@ -197,6 +259,7 @@ def summarize(folds: pl.DataFrame) -> pl.DataFrame:
                 continue
             hits, miss, fa = (int(s[k].sum()) for k in ("hits1", "misses1", "false_alarms1"))
             r = {"group": g, "config": c, "horizon": h, "period": per, "n_folds": s.height,
+                 **({"objective": s["objective"][0]} if "objective" in s.columns else {}),
                  "fold_tu": s["fold"].min(), "fold_den": s["fold"].max(),
                  "NSE_mean": s["NSE"].mean(), "NSE_median": s["NSE"].median(),
                  "NSE_flood_mean": s["NSE_flood"].mean(), "peak_bias_mean": s["peak_bias"].mean(),
@@ -351,7 +414,55 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--n-jobs", type=int, default=8, help="số luồng LightGBM mỗi lần fit")
     ap.add_argument("--out-dir", default=None, help="ghi 3 file đầu ra vào thư mục khác (chạy thử)")
     ap.add_argument("--plot-only", action="store_true")
+    ap.add_argument("--lag-test", action="store_true",
+                    help="chỉ chạy phép thử GSMaP-GC trễ 1 ngày → reports/wf_sat_lag1.csv")
+    ap.add_argument("--nrt-test", action="store_true",
+                    help="so GSMaP_NRT (JAXA) với bản chuẩn trên 2 nhóm → reports/wf_sat_nrt.csv")
     a = ap.parse_args(argv)
+
+    if a.nrt_test:
+        lgbm.PARAMS["n_jobs"] = a.n_jobs
+        std = sa.load_sat("gsmap_gc").select("date", pl.col(f"gsmap_gc_{hf.PREFIX}sum_{hf.WHOLE}").alias("std"))
+        nrt = sa.load_sat("gsmap_nrt").select("date", pl.col(f"gsmap_nrt_{hf.PREFIX}sum_{hf.WHOLE}").alias("nrt"))
+        both = std.join(nrt, on="date").drop_nulls()
+        fl = both.filter(pl.col("date").dt.month().is_in(rl.FLOOD_MONTHS))
+        for lab, x in (("cả năm", both), ("mùa lũ", fl)):
+            if x.height and x["std"].sum() > 0:
+                print(f"Mưa ngày toàn lưu vực, NRT so với bản chuẩn ({lab}): {x.height} ngày, "
+                      f"r = {x.select(pl.corr('std', 'nrt')).item():.3f}, "
+                      f"tổng NRT/chuẩn = {x['nrt'].sum() / x['std'].sum():.3f}")
+        rows = []
+        for g in a.groups:
+            rows += run_group(g, list(YEARS), loader=load_nrt)
+        folds = pl.from_dicts(rows, infer_schema_length=None)
+        if set(a.groups) != set(sa.GROUPS):
+            folds = merge_other_groups(folds, OUT_NRT)
+        folds.write_csv(OUT_NRT, float_precision=5)
+        for name in folds["config"].unique(maintain_order=True):
+            if name == "persistence" or folds.filter(pl.col("config") == name)["dNSE"].null_count() == \
+                    folds.filter(pl.col("config") == name).height:
+                continue
+            for h in cfg.HORIZONS:
+                d = folds.filter((pl.col("config") == name) & (pl.col("horizon") == h))["dNSE"].to_numpy()
+                lo, hi = boot_mean_ci(d)
+                print(f"{name:<18} h{h}: ΔNSE {d.mean():+.3f} [{lo:+.3f}; {hi:+.3f}] "
+                      f"thắng/thua {(d > 0).sum()}/{(d < 0).sum()} p {wilcoxon_p(d):.3f}")
+        print(f"→ {OUT_NRT}")
+        return 0
+
+    if a.lag_test:
+        lgbm.PARAMS["n_jobs"] = a.n_jobs
+        folds = pl.from_dicts(run_group("ext", list(YEARS), loader=load_ext_lag1),
+                              infer_schema_length=None)
+        folds.write_csv(OUT_LAG, float_precision=5)
+        for name in ("E0+gsmap_gc", "E0+gsmap_gc_lag1"):
+            for h in cfg.HORIZONS:
+                d = folds.filter((pl.col("config") == name) & (pl.col("horizon") == h))["dNSE"].to_numpy()
+                lo, hi = boot_mean_ci(d)
+                print(f"{name:<18} h{h}: ΔNSE {d.mean():+.3f} [{lo:+.3f}; {hi:+.3f}] "
+                      f"thắng/thua {(d > 0).sum()}/{(d < 0).sum()} p {wilcoxon_p(d):.3f}")
+        print(f"→ {OUT_LAG}")
+        return 0
 
     od = Path(a.out_dir) if a.out_dir else None
     f_folds = od / OUT_FOLDS.name if od else OUT_FOLDS
@@ -372,13 +483,18 @@ def main(argv: list[str] | None = None) -> int:
         for g in a.groups:
             rows += run_group(g, a.years)
         folds = pl.from_dicts(rows, infer_schema_length=None)
+        partial = set(a.groups) != set(sa.GROUPS)
+        if partial:
+            folds = merge_other_groups(folds, f_folds)
         folds.write_csv(f_folds, float_precision=5)
         print(f"→ {f_folds} ({folds.height} dòng)")
 
     if a.plot_only and f_summ.exists():      # giữ tóm tắt tính từ số chưa làm tròn
         summ = pl.read_csv(f_summ, infer_schema_length=None)
     else:
-        summ = summarize(folds)
+        summ = summarize(folds.filter(pl.col("group").is_in(a.groups)))
+        if not a.plot_only and partial:     # tóm tắt nhóm không chạy lại: giữ bản cũ (số chưa làm tròn)
+            summ = merge_other_groups(summ, f_summ)
         summ.write_csv(f_summ, float_precision=5)
     report(summ)
     print(f"\n→ {f_summ} ({summ.height} dòng)")

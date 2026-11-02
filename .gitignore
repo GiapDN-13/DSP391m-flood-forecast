@@ -53,6 +53,8 @@ env/
 # ===== Bí mật =====
 .env
 .env.*
+# file .env lưu nhầm tên (vd. notepad + đường dẫn bị bash ăn dấu \)
+*.env
 secrets.*
 *_credentials.json
 service-account*.json
