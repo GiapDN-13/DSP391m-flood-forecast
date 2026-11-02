@@ -210,6 +210,83 @@ Windows 42,3 s so với 1,3 s). PERSIANN-CCS chỉ có 2 tháng nên Polars xong
 còn Spark vẫn mất 14–36 s chi phí cố định (lập lịch, xáo dữ liệu). Kết luận giống phần
 ETL ở trên.
 
+### Toàn bộ lưu trữ vệ tinh trên cụm (Report 4, 02/11/2026)
+
+Trước đây Spark chỉ chạy lát ERA5 (2015 → 08/2026). Nay `spark_hourly.py --source`
+nhận thêm `imerg`, `gsmap`, `gsmap_gc`, `gsmap_nrt` (khoá của `hourly_features.GEE`) và
+chạy trên **toàn bộ** lưu trữ 0,1° từ 01/1998: cùng danh sách file tháng (+ `_parts/` ngày
+lẻ của JAXA) với `hf.load_gee`, chỉ giữ 24 ô có trong `weights_gee_0p1.csv`, rồi
+`to_hourly_spark` gộp nửa giờ IMERG về giờ đúng như `hf.to_hourly` (giờ HH:00 = nửa giờ
+kết thúc HH−1:30 + HH:00, mỗi nửa = cường độ × 0,5; thiếu một nửa → giờ rỗng). Hai nửa
+cộng nhau không phụ thuộc thứ tự (a + b = b + a), nên ở bước này `F.sum` vẫn trùng từng bit.
+
+```powershell
+# Git Bash: export MSYS_NO_PATHCONV=1 trước
+docker exec dsp-spark-master /opt/spark/bin/spark-submit --master spark://spark-master:7077 src/distributed/spark_hourly.py --mode cluster --cores-max 8 --executor-cores 4 --source imerg --compare --bench --tag cluster_2w_8c
+#   1 worker: --cores-max 4 · local trong container: --master "local[8]" --driver-memory 4g ... --mode local --cores 8
+docker exec dsp-spark-master python3 -m src.distributed.spark_hourly --source imerg --polars-only --bench --tag docker_polars
+python -m src.distributed.spark_hourly --source imerg --mode local --cores 8 --driver-memory 6g --compare --bench --tag win_local8_arrow
+```
+
+Số liệu gốc: `reports/spark/full_scale_bench.csv` (mỗi lần chạy 1 dòng) và
+`reports/spark/full_scale_parity.csv` (tóm tắt so khớp giờ/ngày); chi tiết từng cột ở
+`data/interim/spark/hourly_parity_<nguồn>_<máy>.csv`.
+
+| Nguồn | File | MB | Dòng trong file | Ô×giờ (24 ô) | Đầu ra |
+|---|---|---|---|---|---|
+| IMERG (30 phút) | 346 | 47,7 | 50 477 000 | 6 057 744 | 252 456 giờ, 10 519 ngày × 54 cột |
+| GSMaP-GC (Earth Engine) | 346 | 50,8 | 25 241 800 | 6 058 032 | 252 456 giờ, 10 519 ngày × 54 cột |
+| GSMaP NRT (JAXA, + 19 file `_parts`) | 364 | 26,3 | 25 245 600 | 6 058 944 | 252 480 giờ, 10 520 ngày × 54 cột |
+
+**Spark = Polars tới từng bit ở cả 3 nguồn, toàn bộ thời kỳ:** 0 giá trị lệch, 0 ô rỗng
+lệch nhau, không ngày/giờ nào chỉ có ở một bên. Mỗi nguồn so khoảng 1,51 triệu giá trị giờ
+(6 đơn vị × ~252 000 giờ) và 0,57 triệu giá trị ngày (54 cột × 10 519 ngày). Kết quả này
+đúng cả trên cụm 2 worker (Linux) lẫn Windows `local[8]`. Trước đó đã thử từng năm
+(IMERG/GSMaP-GC 2020, NRT 2026) trên Windows và cũng ra 0 lệch. Không phải sửa thêm gì
+ngoài ba cách đã dùng cho ERA5.
+
+Thời gian = đọc + tính + gom kết quả về driver, không gồm khởi động JVM (3–15 s). Đơn vị là
+giây, min–trung vị–max của 2–3 lần chạy:
+
+| Cấu hình | IMERG | GSMaP-GC | GSMaP NRT |
+|---|---|---|---|
+| Cụm **2 worker** × 4 lõi | 37,8 – 42,6 – 67,9 | 30,5 – 31,6 – 62,3 | 29,4 – 30,9 – 71,0 |
+| Cụm 1 worker × 4 lõi | 39,1 – 40,3 – 65,5 | 29,8 – 31,3 – 51,1 | 29,2 – 29,4 – 31,4 |
+| Container `local[8]`, driver 4 GB | 29,7; 29,9 | 23,5; 24,7 | 23,2; 23,3 |
+| Container, **Polars** (`hf.build_source`) | 12,4; 20,3 | 4,8; 5,4 | 4,7; 4,7 |
+| Windows `local[8]` + Arrow (kèm `--compare`) | 114,5 | 64,3 | 65,0 |
+| Windows, **Polars** | 8,3; 12,5 | 2,2; 2,5 | 2,3; 2,3 |
+
+Số max của cụm là lần chạy đầu: chạy kèm `--compare`, và file đọc qua ổ mount
+Windows→Docker lần đầu chưa có trong cache. Các lần sau ổn định ở mức trung vị.
+
+Kết luận:
+
+1. **Đã chạy được toàn bộ dữ liệu vệ tinh trên cụm.** Tổng 101 triệu dòng đầu vào
+   (125 MB parquet), 28,8 năm × 3 nguồn. Executor giữ mặc định 1 500 MB, worker 2 GB,
+   không hết bộ nhớ, **không phải tăng bộ nhớ worker** trong `docker-compose.yml`.
+2. **Có một lần hết bộ nhớ, ở chế độ local chứ không phải trên cụm:** IMERG chạy
+   `local[8]` trong container bị `OutOfMemoryError: Java heap space` (dòng `status=failed`
+   trong CSV). Nguyên nhân: chạy qua `spark-submit` thì JVM driver đã khởi động trước khi
+   `get_spark` đặt `spark.driver.memory=2g`, nên heap vẫn là 1 GB mặc định. Ở `local[*]`,
+   cả 8 task chạy chung heap này. Truyền `spark-submit --driver-memory 4g` thì chạy ổn
+   (6/6 lần). Chạy bằng `python -m` thì `--driver-memory` của script có tác dụng.
+3. **2 worker vẫn không nhanh hơn 1 worker, và Polars vẫn nhanh hơn Spark 2–6 lần**
+   (container: IMERG 12–20 s so với 30–42 s; GSMaP 5 s so với 23–31 s). 101 triệu dòng
+   nghe thì lớn, nhưng parquet nén chỉ 125 MB. Sau khi lọc 24 ô và gộp giờ, mỗi nguồn còn
+   ~6 triệu dòng, rồi chỉ ~252 000 giờ × 6 đơn vị, vẫn vừa RAM một máy. Ngoài ra, phần
+   cửa sổ (lag 3/6 giờ, r72h) phân hoạch theo đơn vị nên chỉ có 6 nhóm song song. IMERG
+   là nguồn duy nhất mà Spark thu hẹp khoảng cách (gấp ~2 lần thay vì ~5 lần), vì bước gộp
+   nửa giờ → giờ (50 triệu → 6 triệu dòng) chia đều được cho các task.
+4. Trên Windows, đường vòng Arrow chậm gấp 2–4 lần chạy trong container: toàn bộ ~12 triệu
+   dòng nửa giờ IMERG phải đi qua driver, cần `--driver-memory 6g`.
+
+Image cụm giờ có thêm `scikit-learn==1.6.0 lightgbm==4.5.0 scipy==1.14.1` (cho
+`spark_walkforward.py`). Đã kiểm `import lightgbm, sklearn` chạy được ở cả 3 container.
+Test: `tests/test_spark_satellite.py` dùng IMERG giả bước 30 phút + 1 tháng IMERG thật
+(10/2020, nếu máy có file). Kết quả: 5 passed trên Windows, 6 passed trong container (ở container
+có thêm biến thể Spark tự đọc parquet).
+
 ### LSTM phân tán (seed 42, `lstm_L30_mse`, 20/10/2026)
 
 | Cách chạy | Ở đâu | Tiến trình × luồng | Batch toàn cục | Epoch* | `train()` (s) | Wall (s) | NSE test h1/h2/h3 |
