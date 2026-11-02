@@ -155,13 +155,13 @@
    "id": "ops",
    "title": "Hệ thống vận hành: bản tin tự động mỗi sáng",
    "speaker": "Đặng Nguyên Giáp",
-   "minutes": 1.4,
-   "words": 223,
+   "minutes": 1.6,
+   "words": 256,
    "notes": [
     "Phần cuối của em là hệ thống vận hành.",
     "Mỗi sáng khoảng 5 giờ, GitHub Actions chạy job: tải bản phát GloFAS và thời tiết dự báo khoảng 130 ngày gần nhất, rồi dựng đúng 88 cột đặc trưng bằng chính mã đã dùng cho dữ liệu lịch sử — để tránh lệch giữa lúc học và lúc chạy.",
     "Sau đó chạy LightGBM E đã đóng băng, 3 seed cho mỗi horizon, áp luật nâng sàn khi hồ xả, và tính xác suất vượt mức 1 đã hiệu chỉnh isotonic trên 9.862 ngày ngoài mẫu; báo động khi xác suất từ 1 phần 11 trở lên. Kết quả ghi thành CSV và commit vào repo.",
-    "Trạng thái hiện tại: nhật ký có từ 15/09/2026, 48 ngày phát tới 02/11; ngày 20/09 mất do lỗi múi giờ và nhóm không điền bù. Mã ghi cột LightGBM đã xong; các cột này xuất hiện khi bản phát mô hình model-v1.0 được công bố — tới hôm nay nhật ký mới có GloFAS thô và GloFAS nâng sàn.",
+    "Trạng thái hiện tại: nhật ký có từ 15/09/2026, 48 ngày phát tới 02/11; ngày 20/09 mất do lỗi múi giờ và nhóm không điền bù. Mô hình đã phát hành ở release model-v1.0, và ngày 02/11 job trên GitHub Actions đã chạy lần đầu với LightGBM: 47,4, 65,8 và 63,0 mét khối mỗi giây cho 1 đến 3 ngày tới, cạnh GloFAS thô 41,0, 40,4 và 69,3 — đúng bằng số chạy trên máy nhóm. Để so với GloFAS thô một cách có ý nghĩa thì cần tích luỹ thêm vài tuần.",
     "Và một điều nhóm phải nói rõ: đầu vào lúc chạy thật khác lúc học. Mưa ngày t là mưa dự báo, độ ẩm đất giữ giá trị cuối. Vì vậy các con số NSE bạn Đức sắp trình bày là cận trên của chất lượng chạy thật."
    ],
    "builds": 4

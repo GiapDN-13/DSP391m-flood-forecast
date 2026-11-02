@@ -61,7 +61,7 @@ X. HẠN CHẾ & HƯỚNG TIẾP — mục tiêu mô phỏng; h3 dưới AC-1; �
 XI. KẾT LUẬN + trả lời RQ1–RQ3 của Report 1 + bảng vai trò nhóm (chỉ tên + vai trò).
 
 KHUNG CHỜ (pending) TRONG BẢN BUILD NÀY:
- - VIII Job hằng ngày: chưa bản phát nào trong reports/forecast_log/ có cột lgbm_q → khung [First operational LightGBM forecasts pending]
+ (không có)
 
 CÂU HỎI DỄ BỊ HỎI — trả lời ngắn
  - "Sao không so với GloFAS?" → kho dự báo lưu lượng quá khứ không có (404); nhật ký từ 15/09/2026, chưa đủ cặp kiểm.
@@ -643,6 +643,8 @@ csv    live_oof_pos                             185                        model
 csv    live_level                               806                        models/lgbm_live_iso_level1_h1.json
 csv    live_nlogs                               48                         reports/forecast_log/*.csv (tính lúc build)
 csv    live_last                                2026-11-02                 reports/forecast_log/*.csv (tính lúc build)
+csv    live_nlgbm                               1                          reports/forecast_log/*.csv (lần chạy có cột lgbm_q, kể cả chạy tay) (tính lúc build)
+csv    live_lgbm_first                          2026-11-02                 reports/forecast_log/*.csv (lần chạy đầu có lgbm_q) (tính lúc build)
 csv    fs_imerg_mb                              47.7                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_imerg_rows                            50,477,000                 reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_imerg_cluster_2w_8c_lo                37.8                       reports/spark/full_scale_bench.csv (tính lúc build)
@@ -692,7 +694,7 @@ csv    wfb_sp_pjobs                             141                        repor
 csv    wfb_sp_diff_m                            2.3                        reports/spark/wf_bench.csv (tính lúc build)
 csv    wfb_sp_diff_e                            -13                        reports/spark/wf_bench.csv (tính lúc build)
 
-(605 khoá khác của sổ Report 3/4 + bản cuối kỳ được nạp và kiểm nhưng không in.)
+(604 khoá khác của sổ Report 3/4 + bản cuối kỳ được nạp và kiểm nhưng không in.)
 
 SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (32) — nhóm kiểm lại:
  - area_sys = 2,830  (docs/FINDINGS_GRID.md §3 (UNESCO-IHP Catalogue of Rivers Vol. V, Viet Nam-8))
@@ -729,4 +731,4 @@ SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (32) — nhóm kiểm lại:
  - pk_crit_h1 = 0.01  (docs/FINDINGS_PEAK.md §1 (tiêu chí: ΔNSE h1 ≥ −0,01))
 
 CẢNH BÁO LẦN BUILD NÀY:
- - reports/forecast_log/: chưa bản phát nào có cột lgbm_q → in khung [first operational LightGBM forecasts pending]
+ (không có)

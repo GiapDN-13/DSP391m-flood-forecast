@@ -330,13 +330,16 @@ def _live(cfg) -> None:
     R.auto("live_nlogs", n(len(logs)), src)
     R.claim("live_first", logs[0].stem == "2026-09-15", "log starts on 15 September 2026", src)
     R.auto("live_last", logs[-1].stem, src)
-    lg = 0
-    for x in logs:
+    # Kể cả bản chạy tay trong ngày (``*_chu-ky-muon-*.csv``): vẫn là lần chạy thật trên Actions
+    lg = []
+    for x in sorted((REP / "forecast_log").glob("20??-??-??*.csv")):
         h = pd.read_csv(x, nrows=5)
         if "lgbm_q" in h.columns and h["lgbm_q"].notna().any():
-            lg += 1
-    LIVE_LGBM = lg > 0
-    R.auto("live_nlgbm", n(lg), src + " (bản phát có cột lgbm_q)")
+            lg.append(x.stem[:10])
+    LIVE_LGBM = bool(lg)
+    R.auto("live_nlgbm", n(len(lg)), src + " (lần chạy có cột lgbm_q, kể cả chạy tay)")
+    if lg:
+        R.auto("live_lgbm_first", lg[0], src + " (lần chạy đầu có lgbm_q)")
     if not LIVE_LGBM:
         WARN.append("reports/forecast_log/: chưa bản phát nào có cột lgbm_q → in khung "
                     "[first operational LightGBM forecasts pending]")
