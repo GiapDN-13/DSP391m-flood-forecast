@@ -69,8 +69,8 @@ V = fx.R            # V("key") → số đã kiểm, dấu trừ in thành gạc
 rng = fx.rng        # "a–b" từ khoá _lo/_hi
 WARN: list[str] = []
 
-T = {k: r3.roman(i) for i, k in enumerate(["data", "parity", "full", "mllib", "ddp", "wf", "blend",
-                                           "wfs"], start=1)}
+T = {k: r3.roman(i) for i, k in enumerate(["data", "parity", "full", "mllib", "mllibf", "ddp", "wf",
+                                           "blend", "wfs"], start=1)}
 F = {k: str(i) for i, k in enumerate(["arch", "etl", "dlsplit", "wfdl"], start=1)}
 # helper của Report 3 đọc sổ / số bảng / số hình qua biến toàn cục của module ⇒ trỏ sang Report 4
 r3.V, r3.T, r3.F = V, T, F
@@ -217,7 +217,7 @@ def story() -> list:
             "single-machine pipeline exactly, the hourly features bit for bit on the full "
             "satellite record; (ii) MLlib "
             "gradient-boosted trees and random forests [5] trained on the cluster with a "
-            "leakage-free hyperparameter search; (iii) LSTM training with PyTorch distributed "
+            "leakage-free hyperparameter search, also on the full data of the main model and scored over yearly walk-forward folds; (iii) LSTM training with PyTorch distributed "
             "data parallel (DDP) [6] through Spark, with TorchDistributor [7] and a barrier-mode "
             "fallback; (iv) a walk-forward comparison of deep learning with LightGBM, alone and "
             "as an ensemble member; (v) a task-parallel walk-forward on Spark, the one place "
@@ -350,6 +350,7 @@ def story() -> list:
 
     # ============================================================ III
     s += [h1("III", "Distributed Machine Learning with MLlib"),
+          h2("A", "Report 2 panel, one split"),
           p(f"{TT}spark_train.py{TE} trains MLlib gradient-boosted trees (GBT) and random "
             f"forests (RF) on the {V('nfA')} predictors of the Report 2 panel (configuration A "
             "of Report 3), on log(1 + Q), one model per horizon, with the same temporal split "
@@ -390,6 +391,38 @@ def story() -> list:
             f"{V('ml_sec_tot')} s on {V('ml_cores')} cores in total ({rng('ml_gbt_sec')} s per "
             f"horizon for GBT, {rng('ml_rf_sec')} s for RF); a LightGBM fit of all three horizons "
             f"takes a median of {V('wf_med_lgb')} s on two threads (Section IV-E).")]
+    s += [h2("B", "Full data of the main model, walk-forward"),
+          p(f"Section III-A uses the smaller Report 2 panel. {TT}spark_train_full.py{TE} retrains "
+            "both MLlib models on exactly the data of the main LightGBM model E: the extended "
+            f"panel from {V('mf_start')}, its {V('mf_nfeat')} predictors, the same rows and target. "
+            "Hyperparameters are chosen on validation as before (training 1998&#8211;2015, "
+            f"validation to June 2022, {V('mf_ngrid')} fits), the refit is scored once on the test "
+            f"period, and the chosen settings then run through the {V('mf_nfold')} yearly folds "
+            f"of Table {T['blend']}, every fit as an MLlib job on the cluster."),
+          tbl([["Model", "Test h=1", "h=2", "h=3", "WF h=1", "h=2", "h=3"],
+               ["LightGBM E (main model)"] + [V(f"abE{h}") for h in (1, 2, 3)]
+               + [V(f"bl_E{h}") for h in (1, 2, 3)],
+               ["Spark GBT"] + [V(f"mf_gbt_t{h}") for h in (1, 2, 3)]
+               + [V(f"mf_gbt_w{h}") for h in (1, 2, 3)],
+               ["Spark RF"] + [V(f"mf_rf_t{h}") for h in (1, 2, 3)]
+               + [V(f"mf_rf_w{h}") for h in (1, 2, 3)]],
+              [1.1 * inch] + [0.4 * inch] * 3 + [0.46 * inch] + [0.4 * inch] * 2, "mllibf",
+              "MLLIB ON THE FULL DATA OF THE MAIN MODEL: NSE ON THE TEST PERIOD AND MEAN NSE OVER "
+              f"{V('mf_nfold')} WALK-FORWARD FOLDS 2013&#8211;2025", small=True),
+          p(f"On the test period MLlib is level with E at h = 2 (GBT {V('mf_gbt_dt2')}, RF "
+            f"{V('mf_rf_dt2')}) and behind at h = 1 and 3 (Table {T['mllibf']}). Across the folds "
+            "both models are worse at every horizon, with the 95% bootstrap interval of the "
+            "difference below zero and Wilcoxon p &lt; 0.05: one day ahead GBT "
+            f"{V('mf_gbt_w1_m')} {V('mf_gbt_w1_ci')} (wins/losses {V('mf_gbt_w1_wl')}) and RF "
+            f"{V('mf_rf_w1_m')} {V('mf_rf_w1_ci')} ({V('mf_rf_w1_wl')}); two days ahead "
+            f"{V('mf_gbt_w2_m')} and {V('mf_rf_w2_m')}; three days ahead {V('mf_gbt_w3_m')} and "
+            f"{V('mf_rf_w3_m')}. The small test gain at h = 2 is therefore the noise of one split. "
+            f"Peak bias ranges from {V('mf_pb_lo')} at h = 1 to {V('mf_pb_hi')} at h = 3 and "
+            "neither model catches a level-1 day three days ahead, so more years and a "
+            "distributed learner do not remove the peak underestimation. A likely reason for "
+            "the gap is the learner, not the data: MLlib grows trees level by level to a fixed "
+            "depth, LightGBM leaf by leaf with regularisation. Both steps took "
+            f"{V('mf_wall')} minutes on {V('mf_cores')} cores.")]
 
     # ============================================================ IV
     s += [h1("IV", "Deep Learning"),
@@ -615,8 +648,9 @@ def story() -> list:
           p("The project's pipeline now runs on a Spark cluster and gives the same answers as "
             "the single-machine version: the ETL row for row and the hourly features bit for "
             f"bit, including the full satellite record of {V('fl_mrows')} million rows. MLlib "
-            "models trained on the cluster do not beat LightGBM one day ahead "
-            f"(NSE {V('ml_gbt_NSE_1')} and {V('ml_rf_NSE_1')} against {V('lgb_nse1')}). LSTM "
+            "models trained on the cluster with the full data of the main model are worse than "
+            f"LightGBM at every horizon over {V('mf_nfold')} walk-forward folds (one day ahead "
+            f"{V('mf_gbt_w1_m')} and {V('mf_rf_w1_m')} NSE, p &lt; 0.05). LSTM "
             "training distributed through TorchDistributor or a barrier stage reproduces the "
             "same result on one machine and on two workers, and across "
             f"{V('wf_nfold')} yearly folds no deep model beats LightGBM consistently. Deep "
@@ -743,8 +777,9 @@ def build() -> int:
             "indices with the same result as a single-machine Polars pipeline, and the "
             f"{V('par_ncol')} hourly rainfall features agree bit for bit, also on the full "
             f"1998&#8211;2026 satellite record ({V('fl_mrows')} million rows). MLlib gradient-boosted "
-            f"trees and random forests reach NSE {V('ml_gbt_NSE_1')} and {V('ml_rf_NSE_1')} one "
-            f"day ahead, against {V('lgb_nse1')} for LightGBM. An LSTM trained with PyTorch DDP "
+            "trees and random forests trained on the cluster with the main model's full data "
+            f"are worse than LightGBM at every horizon over {V('mf_nfold')} walk-forward folds "
+            f"(one day ahead {V('mf_gbt_w1_m')} and {V('mf_rf_w1_m')} NSE, p &lt; 0.05). An LSTM trained with PyTorch DDP "
             "through TorchDistributor or a Spark barrier stage gives the same result on one "
             f"machine and on two workers. Across {V('wf_nfold')} yearly walk-forward folds no "
             "LSTM or MLP beats LightGBM consistently; a 50/50 blend of LSTM and the main "
@@ -865,6 +900,12 @@ III. ML PHÂN TÁN (MLlib) — Bảng {T['mllib']}
    nhưng 1 lần chia, chưa kiểm định, LightGBM không tinh chỉnh → KHÔNG nói Spark tốt hơn.
  - Bài học kỹ thuật: executor {o['oom_mem']} MB chết (exit {o['oom_code']}) → maxMemoryInMB {o['rf_mem']} + executor {o['ok_mem']} MB.
    Tổng {o['ml_sec_tot']} s trên {o['ml_cores']} lõi.
+ B. MỚI — Dữ liệu ĐẦY ĐỦ của E (Bảng {T['mllibf']}; reports/spark_full_*.csv, src/distributed/spark_train_full.py):
+   panel từ {o['mf_start']}, {o['mf_nfeat']} cột E; chọn tham số trên valid ({o['mf_ngrid']} fit), test 1 lần, rồi walk-forward {o['mf_nfold']} fold.
+   Test: GBT {o['mf_gbt_t1']} / {o['mf_gbt_t2']} / {o['mf_gbt_t3']}, RF {o['mf_rf_t1']} / {o['mf_rf_t2']} / {o['mf_rf_t3']} (E {o['abE1']} / {o['abE2']} / {o['abE3']}).
+   WF ΔNSE so với E: GBT {o['mf_gbt_w1_m']} / {o['mf_gbt_w2_m']} / {o['mf_gbt_w3_m']}, RF {o['mf_rf_w1_m']} / {o['mf_rf_w2_m']} / {o['mf_rf_w3_m']};
+   CI 95 % đều < 0, p < 0,05 (RF h1 thua {o['mf_rf_w1_wl']}). h2 test nhỉnh = nhiễu một lần chia. Không bắt ngày mức 1 nào ở h3.
+   Lý do khả dĩ: MLlib mọc cây theo tầng, độ sâu cố định; LightGBM theo lá + regularization. {o['mf_wall']} phút trên {o['mf_cores']} lõi.
 
 IV. DEEP LEARNING
  A. LSTM (cửa sổ 14/30 ngày, 9 biến gốc, 3 đầu ra), tuỳ chọn dự báo phần dư, loss nhấn đỉnh; MLP trên cột lag.
@@ -909,7 +950,7 @@ V. QUY MÔ & ĐÁNH GIÁ TRUNG THỰC
  D. Lên cloud: Databricks Free Edition CHỈ LÀ ĐỀ XUẤT, CHƯA CHẠY, không có số nào từ đó.
 
 VI. KẾT LUẬN + KHUYẾN NGHỊ
-    Pipeline phân tán ĐÚNG (kể cả {o['fl_mrows']} triệu dòng vệ tinh, từng bit); MLlib không hơn LightGBM; DL không thắng vững
+    Pipeline phân tán ĐÚNG (kể cả {o['fl_mrows']} triệu dòng vệ tinh, từng bit); MLlib kém LightGBM có ý nghĩa ở cả 3 horizon (dữ liệu đầy đủ, walk-forward); DL không thắng vững
     khi đứng một mình, chỉ giúp h1 khi ghép với E ({o['bl_lstm1_m']}, p {o['bl_lstm1_p']}), hại h2–h3.
     (1) Polars cho ETL + đặc trưng giờ (Spark vẫn chậm {o['fl_x_lo']}–{o['fl_x_hi']} lần trên toàn bộ vệ tinh); giữ job Spark đã kiểm cho dữ liệu lớn.
     (2) Walk-forward chạy thành task Spark: nhanh {o['wfs_speed']} lần trên {o['wfs_cores']} lõi, đã đối chiếu với bản local; phần sẽ lợi khi có nhiều máy.

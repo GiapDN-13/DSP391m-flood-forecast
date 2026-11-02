@@ -304,13 +304,13 @@
    "title": "Deep learning: không thắng LightGBM một cách vững",
    "speaker": "Mai Thị Lệ Huyền",
    "minutes": 1.5,
-   "words": 212,
+   "words": 234,
    "notes": [
     "Em là Mai Thị Lệ Huyền. Phần của em là những gì nhóm đã thử nghiêm túc nhưng không đưa vào mô hình chính, các hạn chế và hướng tiếp theo. Đầu tiên là deep learning. Biểu đồ cho chênh lệch NSE so với LightGBM qua 13 năm walk-forward, kèm khoảng tin cậy 95 %; vạch đứng là không chênh.",
     "LSTM cửa sổ 30 ngày với hàm MSE: h1 hơn 0,021 nhưng khoảng tin cậy chứa 0; h2, h3 kém khoảng 0,025. Tức là không hơn một cách vững.",
     "Các biến thể nhấn đỉnh lũ còn kém hơn khi xa: LSTM nhấn đỉnh thua rõ ở h3, âm 0,229, p 0,033; MLP nhấn đỉnh cũng thua ở h3.",
     "DL cũng kém ổn định: độ lệch giữa các seed 0,03 đến 0,20, trong khi LightGBM chỉ 0,01. Mặt tích cực: ở h1, DL bắt sự kiện tốt hơn, CSI 0,49 so với 0,44 — đây là manh mối cho thử nghiệm ghép ở slide sau.",
-    "Về phân tán: huấn luyện DDP hai rank trên cụm cho cùng NSE nhưng chậm hơn một tiến trình, vì mô hình chỉ khoảng 19 nghìn tham số. MLlib GBT và RF cũng không hơn LightGBM ở h1: 0,699 và 0,687 so với 0,747. Nên nhóm giữ LightGBM."
+    "Về phân tán: huấn luyện DDP hai rank trên cụm cho cùng NSE nhưng chậm hơn một tiến trình, vì mô hình chỉ khoảng 19 nghìn tham số. MLlib GBT và RF học trên đúng dữ liệu đầy đủ của mô hình E, chạy walk-forward 13 năm trên cụm, đều kém LightGBM ở cả ba horizon, có ý nghĩa thống kê: h1 kém 0,044 và 0,049. Nên nhóm giữ LightGBM."
    ],
    "builds": 4
   },
