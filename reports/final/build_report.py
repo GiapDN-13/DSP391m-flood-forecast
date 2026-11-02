@@ -764,14 +764,14 @@ def story() -> list:
         for src, lab in (("imerg", "IMERG"), ("gsmap_gc", "GSMaP-GC"), ("gsmap_nrt", "GSMaP_NRT")):
             rows.append([lab, V(f"fs_{src}_rows"), V(f"fs_{src}_mb"),
                          rng(f"fs_{src}_cluster_2w_8c"), rng(f"fs_{src}_cluster_1w_4c"),
-                         rng(f"fs_{src}_docker_local8"), rng(f"fs_{src}_docker_polars")])
+                         rng(f"fs_{src}_docker_local8_drv4g"), rng(f"fs_{src}_docker_polars")])
         s += [h2("B", "Full-scale satellite features"),
-              p(f"After Report 4 the hourly-feature job was run on the full satellite record "
+              p(f"Report 4 also ran the hourly-feature job on the full satellite record "
                 f"({V('fs_sat_mrows')} million hourly rows, {V('fs_mb_tot')} MB of Parquet; "
                 f"Table {T['full']}). On the two-worker cluster all {V('fs_values')} compared "
                 f"values ({V('fs_hrows')} hourly rows and {V('fs_ncol')} daily features per "
-                "product) are bit-identical to Polars. Spark is still slower: the best Spark "
-                f"run takes {V('fs_imerg_ratio')}, {V('fs_gsmap_gc_ratio')} and "
+                "product) are bit-identical to Polars. Spark is still slower: in medians, the best Spark "
+                f"set-up (local[8]) takes {V('fs_imerg_ratio')}, {V('fs_gsmap_gc_ratio')} and "
                 f"{V('fs_gsmap_nrt_ratio')} times as long as Polars in the same container, and "
                 "the second worker does not help, because both workers share one machine and "
                 "its disk."),
@@ -780,7 +780,8 @@ def story() -> list:
                   [0.62 * inch, 0.66 * inch, 0.32 * inch, 0.5 * inch, 0.5 * inch, 0.46 * inch,
                    0.44 * inch], "full",
                   "FULL-RECORD HOURLY SATELLITE FEATURES IN THE CONTAINERS: SECONDS (MIN"
-                  "&#8211;MAX OVER RUNS), START-UP EXCLUDED", small=True)]
+                  "&#8211;MAX OVER RUNS; FIRST CLUSTER RUN WITH COLD CACHE), START-UP "
+                  "EXCLUDED; LOCAL[8] WITH A 4 GB DRIVER", small=True)]
     else:
         s += [h2("B", "Full-scale satellite features"),
               pending("<b>[Full-scale Spark run pending]</b> The run of the hourly-feature job "
@@ -870,10 +871,16 @@ def story() -> list:
             + (f" For the peak experiments of Section VII, {V('wfb_pool_jobs')} LightGBM "
                f"runs took {V('wfb_pool_s')} s on a pool of {V('wfb_pool_cores')} processes."
                if SW.get("pool") else "")
-            + (f" The same runs as Spark tasks ({TT}spark_walkforward.py{TE}, "
-               f"{V('wfb_sp_tag')}, {V('wfb_sp_cores')} cores) took {V('wfb_sp_s')} s, "
-               f"{V('wfb_sp_speed')} times faster than in sequence, and reproduced the local "
-               f"forecasts of {V('wfb_sp_pjobs')} runs (largest difference {V('wfb_sp_diff')})."
+            + (f" The same runs as Spark tasks ({TT}spark_walkforward.py{TE}, two workers, "
+               f"{V('wfb_sp_cores')} cores) took {V('wfb_sp_s')} s, {V('wfb_sp_speed')} times "
+               "faster than the summed task time, and reproduced the local forecasts of "
+               f"{V('wfb_sp_pjobs')} runs up to rounding (largest difference "
+               + (f"{V('wfb_sp_diff_m')} &#215; 10<super>{V('wfb_sp_diff_e')}</super>"
+                  if "wfb_sp_diff_m" in V.val else V('wfb_sp_diff'))
+               + " m<super>3</super>/s; LightGBM is built differently for "
+               "Linux and Windows). Part of the gap to the Windows pool may come from the "
+               "operating system and the LightGBM build rather than from Spark; what is "
+               "established is near-linear scaling of independent fits on the cluster."
                if SW.get("spark") else "")),
           *([] if SW.get("spark") else [pending(
               "<b>[Spark walk-forward pending]</b> The run of the same LightGBM jobs as Spark "
@@ -895,7 +902,7 @@ def story() -> list:
 
     # ============================================================ VII
     s += [h1("VII", "Experiments on Peak Underprediction"),
-          p("After Report 4, three remedies for peak cutting were tested on the "
+          p("Report 4 also tested three remedies for peak cutting on the "
             f"{V('pk_nfold')}-fold walk-forward with criteria fixed before running: accept a "
             f"variant only if {DELTA}NSE at h = 2 or 3 is positive with p below 0.05 and h = 1 "
             f"loses at most {V('pk_crit_h1')}, or if detection rises clearly at that cost. "

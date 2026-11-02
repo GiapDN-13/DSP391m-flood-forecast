@@ -301,7 +301,194 @@ def load(cfg) -> Registry:
     D("wf_procs", "6", "docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (6 tiến trình × 2 luồng)")
     D("wf_min", "13", "docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (~13 phút)")
     D("h_steps", "168", "src/models/dl_lstm.py docstring (LSTM giờ 7 × 24 bước, chưa cài đặt)")
+
+    # ------------------------------------------------ bổ sung 02/11/2026
+    _full_scale()
+    _wf_spark()
+    _blend()
     return R
+
+
+# Toàn bộ lưu trữ vệ tinh: nhãn ngắn của nguồn và của cấu hình đo
+FS_SRC = {"im": "imerg", "gc": "gsmap_gc", "nrt": "gsmap_nrt"}
+FS_TAG = {"c2": "cluster_2w_8c", "c1": "cluster_1w_4c", "l8": "docker_local8_drv4g",
+          "dp": "docker_polars", "wp": "win_polars", "wa": "win_local8_arrow"}
+
+
+def eb_rows() -> int:
+    return int(_csv("spark/etl_benchmark.csv").rows_in.iloc[0])
+
+
+def _full_scale() -> None:
+    """Đặc trưng giờ trên toàn bộ IMERG / GSMaP-GC / GSMaP_NRT (01/1998–10/2026).
+
+    Thời gian = trung vị các lần chạy (như bảng trong infra/spark/README.md), không gồm
+    khởi động JVM. Cột ``seconds_total`` của full_scale_bench.csv.
+    """
+    b = _csv("spark/full_scale_bench.csv")
+    srcb = "reports/spark/full_scale_bench.csv"
+    ok = b[(b.status == "ok") & (b.period == "full")]
+    exp_rows = {"im": ("50,477,000", "346", "47.7"), "gc": ("25,241,800", "346", "50.8"),
+                "nrt": ("25,245,600", "364", "26.3")}
+    for s, src_ in FS_SRC.items():
+        x = ok[ok.source == src_]
+        R.claim(f"fl_same_{s}", x.rows_in_files.nunique() == 1 and x.files.nunique() == 1,
+                "every run of the source reads the same files and rows", srcb)
+        R.csv(f"fl_rows_{s}", n(x.rows_in_files.iloc[0]), exp_rows[s][0], srcb)
+        R.csv(f"fl_files_{s}", n(x.files.iloc[0]), exp_rows[s][1], srcb)
+        R.csv(f"fl_mb_{s}", f(x.mb_on_disk.iloc[0], 1), exp_rows[s][2], srcb)
+    # cùng số dòng với metadata parquet của Bảng I (IMERG, GSMaP-GC)
+    for s, k in (("im", "rows_imerg"), ("gc", "rows_gsmap")):
+        R.claim(f"fl_meta_{s}", R.val[f"fl_rows_{s}"] == R.val[k],
+                "rows in the benchmark equal the parquet metadata count of Table I",
+                srcb + " vs " + R.src[k])
+    nrt_dir = ROOT / "data" / "raw" / "gsmap_nrt"
+    try:
+        import pyarrow.parquet as pq
+        fs = sorted(nrt_dir.glob("gsmap_nrt_*.parquet"))
+        cells = len(pq.read_table(fs[-1], columns=["lat", "lon"]).to_pandas().drop_duplicates())
+        R.claim("fl_nrt_cells", n(cells) == R.val["sat_cells"],
+                "GSMaP_NRT files hold the same cells as IMERG and GSMaP", "data/raw/gsmap_nrt (đọc lat/lon)")
+    except (ImportError, IndexError, OSError):
+        R.claim("fl_nrt_cells", True, "GSMaP_NRT files hold the same cells as IMERG and GSMaP",
+                "doc: đếm 02/11/2026 (máy không có data/raw/gsmap_nrt)")
+    one = ok.drop_duplicates("source")
+    R.csv("fl_mrows", f(one.rows_in_files.sum() / 1e6, 1), "101.0", srcb + " (3 nguồn)")
+    R.csv("fl_mb", f(one.mb_on_disk.sum(), 0), "125", srcb + " (3 nguồn)")
+    R.csv("fl_x_rows", f(one.rows_in_files.sum() / eb_rows(), 0), "15",
+          srcb + " / reports/spark/etl_benchmark.csv (số dòng vệ tinh / ERA5)")
+    R.csv("fl_days_lo", n(one.days_out.min()), "10,519", srcb)
+    R.csv("fl_days_hi", n(one.days_out.max()), "10,520", srcb)
+    exp = {"c2": ("42.6", "31.6", "30.9"), "c1": ("40.3", "31.3", "29.4"),
+           "l8": ("29.8", "24.1", "23.3"), "dp": ("16.3", "5.1", "4.7"),
+           "wp": ("10.4", "2.4", "2.3"), "wa": ("114.5", "64.3", "65.0")}
+    med = {}
+    for t, tag in FS_TAG.items():
+        for i, (s, src_) in enumerate(FS_SRC.items()):
+            y = ok[(ok.tag == tag) & (ok.source == src_)].seconds_total
+            med[(t, s)] = y.median()
+            R.csv(f"fl_{t}_{s}", f(med[(t, s)], 1), exp[t][i], srcb + f" (trung vị {len(y)} lần)")
+    R.csv("fl_nrun_lo", n(min(len(ok[(ok.tag == t) & (ok.source == s)]) for t in FS_TAG.values()
+                             for s in FS_SRC.values())), "1", srcb)
+    R.csv("fl_nrun_hi", n(max(len(ok[(ok.tag == t) & (ok.source == s)]) for t in FS_TAG.values()
+                             for s in FS_SRC.values())), "3", srcb)
+    R.claim("fl_no2w", all(med[("c2", s)] >= med[("c1", s)] for s in FS_SRC),
+            "two workers no faster than one worker (median, every source)", srcb)
+    R.csv("fl_x_lo", f(min(med[("l8", s)] / med[("dp", s)] for s in FS_SRC), 1), "1.8",
+          srcb + " (Spark local[8] / Polars, cùng container, trung vị)")
+    R.csv("fl_x_hi", f(max(med[("c2", s)] / med[("dp", s)] for s in FS_SRC), 1), "6.6",
+          srcb + " (cụm 2 worker / Polars, cùng container, trung vị)")
+    R.csv("fl_x_im", f(med[("c2", "im")] / med[("dp", "im")], 1), "2.6", srcb)
+    cl = ok[ok.master.str.startswith("spark://")]
+    R.csv("fl_cold", f(cl.seconds_total.max(), 1), "71.0", srcb + " (lần chạy đầu trên cụm)")
+    # driver hết bộ nhớ ở local[8] khi chạy qua spark-submit (heap mặc định)
+    fail = b[b.status != "ok"]
+    R.claim("fl_oom", bool(len(fail) == 1 and fail.status.str.contains("OutOfMemoryError").all()
+                           and (fail.tag == "docker_local8").all()),
+            "one run failed: local[8] driver out of memory (IMERG)", srcb)
+    R.csv("fl_drv_n", n((ok.tag == "docker_local8_drv4g").sum()), "6", srcb)
+    R.claim("fl_drv_ok", bool((b[b.tag == "docker_local8_drv4g"].status == "ok").all()),
+            "every run with --driver-memory 4g finished", srcb)
+    R.doc("fl_drv_def", "1", "infra/spark/README.md (heap driver mặc định 1 GB khi qua spark-submit)")
+    R.doc("fl_drv_mem", "4", "infra/spark/README.md (spark-submit --driver-memory 4g)")
+    R.doc("fl_cells", "24", "infra/spark/README.md (giữ 24 ô có trong weights_gee_0p1.csv)")
+
+    p = _csv("spark/full_scale_parity.csv")
+    srcp = "reports/spark/full_scale_parity.csv"
+    full = p[p.period == "full"]
+    zero = lambda q: bool((q.values_not_bitwise_equal == 0).all() and (q.null_mismatch == 0).all()  # noqa: E731
+                          and (q.rows_only_one_side == 0).all() and (q.max_abs_diff == 0).all())
+    c = full[full.master.str.startswith("spark://")]
+    w = full[full.host == "windows-host"]
+    R.claim("fl_bit_c", zero(c) and set(c.source) == set(FS_SRC.values()),
+            "cluster: every value bit-identical to Polars, three sources, full record", srcp)
+    R.claim("fl_bit_w", zero(w) and set(w.source) == set(FS_SRC.values()),
+            "Windows local[8]: every value bit-identical to Polars, full record", srcp)
+    R.claim("fl_bit_yr", zero(p[p.period != "full"]), "single-year checks on Windows also exact", srcp)
+    R.claim("fl_same_cw", sorted(c.values_compared) == sorted(w.values_compared),
+            "same values compared on cluster and Windows", srcp)
+    R.csv("fl_vh", f(c[c.level == "hourly"].values_compared.mean() / 1e6, 1), "1.5",
+          srcp + " (giá trị giờ / nguồn)")
+    R.csv("fl_vd", f(c[c.level == "daily"].values_compared.mean() / 1e6, 2), "0.57",
+          srcp + " (giá trị ngày / nguồn)")
+    R.csv("fl_vtot", n(c.values_compared.sum()), "6,246,870", srcp + " (cụm, 3 nguồn)")
+    R.csv("fl_hours_lo", n(c[c.level == "hourly"].rows.min()), "252,456", srcp)
+    R.csv("fl_hours_hi", n(c[c.level == "hourly"].rows.max()), "252,480", srcp)
+
+
+def _wf_spark() -> None:
+    """Walk-forward LightGBM chạy song song theo tác vụ: Spark so với pool tiến trình."""
+    w = _csv("spark/wf_bench.csv")
+    src = "reports/spark/wf_bench.csv"
+    sp = w[w.engine == "spark"]
+    R.claim("wfs_one", len(sp) == 1, "one Spark walk-forward run recorded", src)
+    r = sp.iloc[-1]
+    pool = w[(w.engine == "process_pool") & (w.n_jobs == r.n_jobs)]
+    R.claim("wfs_pool_same", len(pool) == 1, "one process-pool run with the same jobs", src)
+    q = pool.iloc[-1]
+    R.claim("wfs_ver", str(r.spark_version) == R.val["spark_ver"], "run on the Spark version of the cluster", src)
+    R.csv("wfs_jobs", n(r.n_jobs), "141", src)
+    R.csv("wfs_cores", n(r.cores_used), "8", src)
+    R.csv("wfs_ex_cores", n(r.executor_cores), "4", src)
+    R.csv("wfs_wall", f(r.wall_s, 1), "270.7", src)
+    R.csv("wfs_sum", n(r.sum_task_s), "2,081", src + " (tổng thời gian các task = chạy nối tiếp)")
+    R.csv("wfs_speed", f(r.speedup_vs_serial, 1), "7.7", src)
+    R.claim("wfs_speed_ok", abs(r.sum_task_s / r.wall_s - r.speedup_vs_serial) < 1e-3,
+            "speed-up = sum of task times / wall time", src)
+    R.csv("wfs_ideal", f(r.sum_task_s / r.cores_used, 1), "260.2", src + " (tổng / số lõi)")
+    R.csv("wfs_eff", f(100 * r.speedup_vs_serial / r.cores_used, 0), "96", src + " (%)")
+    R.csv("wfs_task", f(r.sum_task_s / r.n_jobs, 1), "14.8", src + " (s mỗi lượt)")
+    R.csv("wfs_pool", f(q.wall_s, 1), "329.9", src)
+    R.csv("wfs_pool_n", n(q.cores_used), "8", src)
+    R.csv("wfs_x_pool", f(q.wall_s / r.wall_s, 1), "1.2", src + " (pool / Spark)")
+    R.csv("wfs_pjobs", n(r.parity_jobs), "141", src)
+    R.csv("wfs_pvals", n(r.parity_values), "154,494", src)
+    m, e = f"{r.parity_max_abs_diff:.1e}".split("e")
+    R.csv("wfs_diff_m", m, "2.3", src + " (max |Δ| dự báo, m³/s)")
+    R.csv("wfs_diff_e", str(int(e)), "-13", src)
+    R.claim("wfs_not_bit", r.parity_max_abs_diff > 0, "Spark and local forecasts not bit-identical", src)
+
+
+PK4 = {"lstm": "E+LSTM", "w3": "E w3", "iso": "E iso"}
+
+
+def _blend() -> None:
+    """Thử giảm cắt ngọn trên cấu hình E (walk-forward 13 fold), nhất là ghép E + LSTM."""
+    s = _csv("wf_peak_summary.csv")
+    s = s[s.period == "chinh_2013_2025"].set_index(["config", "horizon"])
+    src = "reports/wf_peak_summary.csv"
+    pf = lambda x: f(x, 3) if x < 0.1 else f(x, 2)  # noqa: E731
+    R.csv("bl_nfold", n(s.loc[("E", 1), "n_folds"]), "13", src)
+    for h, e in zip((1, 2, 3), ("0.761", "0.437", "0.206")):
+        R.csv(f"bl_E{h}", f(s.loc[("E", h), "NSE_mean"]), e, src)
+    exp = {"lstm": (("+0.029", "[+0.006; +0.056]", "10/3", "0.048"),
+                    ("-0.022", "[-0.044; -0.001]", "2/11", "0.068"),
+                    ("-0.023", "[-0.039; -0.007]", "2/11", "0.021")),
+           "w3": (("+0.011", "[+0.000; +0.024]", "9/4", "0.13"),
+                  ("+0.012", "[-0.009; +0.030]", "9/4", "0.22"),
+                  ("+0.001", "[-0.008; +0.009]", "6/7", "0.89")),
+           "iso": (("-0.040", "[-0.108; +0.008]", "6/7", "0.64"),
+                   ("-0.008", "[-0.022; +0.007]", "5/8", "0.50"),
+                   ("-0.027", "[-0.040; -0.016]", "1/12", "0.001"))}
+    for v, rows in exp.items():
+        for h, (em, eci, ewl, ep) in zip((1, 2, 3), rows):
+            r = s.loc[(PK4[v], h)]
+            R.csv(f"bl_{v}{h}_m", sg(r["dNSE_mean"]), em, src)
+            R.csv(f"bl_{v}{h}_ci", r3f.ci(r["dNSE_ci_lo"], r["dNSE_ci_hi"]), eci, src)
+            R.csv(f"bl_{v}{h}_wl", f"{int(r['wins'])}/{int(r['losses'])}", ewl, src)
+            R.csv(f"bl_{v}{h}_p", pf(r["p_wilcoxon"]), ep, src + " Wilcoxon")
+    R.csv("bl_E_pod1", f(s.loc[("E", 1), "POD1"], 2), "0.55", src)
+    R.csv("bl_lstm_pod1", f(s.loc[("E+LSTM", 1), "POD1"], 2), "0.57", src)
+    R.csv("bl_lstm_far1", f(s.loc[("E+LSTM", 1), "FAR1"], 2), "0.25", src)
+    R.csv("bl_E_far1", f(s.loc[("E", 1), "FAR1"], 2), "0.29", src)
+    R.claim("bl_none", all(not ((s.loc[(c, h), "dNSE_mean"] > 0 and s.loc[(c, h), "p_wilcoxon"] < 0.05))
+                           for c in ("E w1", "E w3", "E w5", "E w10", "E iso", "E iso_hi", "E+LSTM")
+                           for h in (2, 3)),
+            "no variant improves h = 2 or h = 3 with p < 0.05", src)
+    R.claim("bl_w_nonmono", s.loc[("E w5", 1), "dNSE_mean"] < s.loc[("E w3", 1), "dNSE_mean"]
+            and s.loc[("E w10", 1), "dNSE_mean"] < s.loc[("E w3", 1), "dNSE_mean"],
+            "alpha = 5 and 10 worse than alpha = 3 at h = 1", src)
+    R.doc("bl_freeze", "02/11/2026", "docs/FINDINGS_PEAK.md §3 (giữ E, đóng băng)")
 
 
 def _data_scale() -> None:

@@ -42,10 +42,10 @@ V. KẾT QUẢ
     AC-4 thất bại → mức nguy cơ; AC-5 đạt; AC-6 chỉ mức 1.
 VI. PHÂN TÁN & DL — cụm 2 worker × 4 lõi, Spark 4.1.3; ETL 6,544,896 → 272,704; 54 đặc trưng giờ trùng TỪNG BIT.
    Spark quy mô đủ: 101.0 triệu dòng giờ vệ tinh (125 MB); 6,246,870 giá trị trùng Polars TỪNG BIT;
-   Spark tốt nhất chậm hơn Polars 2.4 / 4.9 / 5.0 lần (IMERG / GSMaP-GC / NRT).
+   Spark tốt nhất chậm hơn Polars 1.8 / 4.7 / 5.0 lần (IMERG / GSMaP-GC / NRT).
    Kiến trúc Hình 8, ETL Hình 9. MLlib (Bảng X): GBT 0.699, RF 0.687 vs 0.747 ở h1. DDP: cùng NSE mọi cách phân tán, chậm hơn 1 tiến trình (Bảng XI).
    DL walk-forward (Bảng XII, Hình 10): không thắng vững (LSTM nhấn đỉnh h3 -0.229, p 0.033). Song song theo TÁC VỤ mới có lợi
-   (168 lần fit, ~13 phút; wf_peak pool 78 lượt 345.8 s). ETL cụm chậm 11.6 lần Polars.
+   (168 lần fit, ~13 phút; wf_peak pool 141 lượt 329.9 s). ETL cụm chậm 11.6 lần Polars.
 VII. THỬ GIẢM CẮT NGỌN (Bảng XIII, FINDINGS_PEAK): tiêu chí đặt trước; KHÔNG biến thể nào đạt ⇒ giữ E (đóng băng 02/11/2026).
     α = 3: h1 +0.011 (p 0.13), POD 0.55 → 0.62; isotonic hại h3 -0.027 (p 0.001);
     E + LSTM h1 +0.029 [+0.006; +0.056] p 0.048 — DUY NHẤT có ý nghĩa — nhưng h2 -0.022, h3 -0.023 (p 0.021) ⇒ hướng tiếp theo.
@@ -61,7 +61,6 @@ X. HẠN CHẾ & HƯỚNG TIẾP — mục tiêu mô phỏng; h3 dưới AC-1; �
 XI. KẾT LUẬN + trả lời RQ1–RQ3 của Report 1 + bảng vai trò nhóm (chỉ tên + vai trò).
 
 KHUNG CHỜ (pending) TRONG BẢN BUILD NÀY:
- - VI-E Spark walk-forward: reports/spark/wf_bench.csv chưa có dòng engine=spark → khung [Spark walk-forward pending]
  - VIII Job hằng ngày: chưa bản phát nào trong reports/forecast_log/ có cột lgbm_q → khung [First operational LightGBM forecasts pending]
 
 CÂU HỎI DỄ BỊ HỎI — trả lời ngắn
@@ -650,44 +649,50 @@ csv    fs_imerg_cluster_2w_8c_lo                37.8                       repor
 csv    fs_imerg_cluster_2w_8c_hi                67.9                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_imerg_cluster_1w_4c_lo                39.1                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_imerg_cluster_1w_4c_hi                65.5                       reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_imerg_docker_local8_lo                62.9                       reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_imerg_docker_local8_hi                62.9                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_imerg_docker_local8_drv4g_lo          29.7                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_imerg_docker_local8_drv4g_hi          29.9                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_imerg_docker_polars_lo                12.4                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_imerg_docker_polars_hi                20.3                       reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_imerg_ratio                           2.4                        reports/spark/full_scale_bench.csv (Spark tốt nhất / Polars, cùng container) (tính lúc build)
+csv    fs_imerg_ratio                           1.8                        reports/spark/full_scale_bench.csv (trung vị Spark local[8] driver 4g / trung vị Polars, cùng container; cùng cách tính với report4 fl_x_lo) (tính lúc build)
 csv    fs_gsmap_gc_mb                           50.8                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_gc_rows                         25,241,800                 reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_gc_cluster_2w_8c_lo             31.6                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_gsmap_gc_cluster_2w_8c_lo             30.5                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_gc_cluster_2w_8c_hi             62.3                       reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_gc_cluster_1w_4c_lo             31.3                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_gsmap_gc_cluster_1w_4c_lo             29.8                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_gc_cluster_1w_4c_hi             51.1                       reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_gc_docker_local8_lo             25.9                       reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_gc_docker_local8_hi             36.1                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_gsmap_gc_docker_local8_drv4g_lo       23.5                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_gsmap_gc_docker_local8_drv4g_hi       24.7                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_gc_docker_polars_lo             4.8                        reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_gc_docker_polars_hi             5.4                        reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_gc_ratio                        4.9                        reports/spark/full_scale_bench.csv (Spark tốt nhất / Polars, cùng container) (tính lúc build)
+csv    fs_gsmap_gc_ratio                        4.7                        reports/spark/full_scale_bench.csv (trung vị Spark local[8] driver 4g / trung vị Polars, cùng container; cùng cách tính với report4 fl_x_lo) (tính lúc build)
 csv    fs_gsmap_nrt_mb                          26.3                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_nrt_rows                        25,245,600                 reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_nrt_cluster_2w_8c_lo            30.9                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_gsmap_nrt_cluster_2w_8c_lo            29.4                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_nrt_cluster_2w_8c_hi            71.0                       reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_nrt_cluster_1w_4c_lo            29.4                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_gsmap_nrt_cluster_1w_4c_lo            29.2                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_nrt_cluster_1w_4c_hi            31.4                       reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_nrt_docker_local8_lo            25.1                       reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_nrt_docker_local8_hi            26.0                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_gsmap_nrt_docker_local8_drv4g_lo      23.2                       reports/spark/full_scale_bench.csv (tính lúc build)
+csv    fs_gsmap_nrt_docker_local8_drv4g_hi      23.3                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_nrt_docker_polars_lo            4.7                        reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_gsmap_nrt_docker_polars_hi            4.7                        reports/spark/full_scale_bench.csv (tính lúc build)
-csv    fs_gsmap_nrt_ratio                       5.0                        reports/spark/full_scale_bench.csv (Spark tốt nhất / Polars, cùng container) (tính lúc build)
+csv    fs_gsmap_nrt_ratio                       5.0                        reports/spark/full_scale_bench.csv (trung vị Spark local[8] driver 4g / trung vị Polars, cùng container; cùng cách tính với report4 fl_x_lo) (tính lúc build)
 csv    fs_sat_mrows                             101.0                      reports/spark/full_scale_bench.csv (IMERG + GSMaP + GSMaP_NRT) (tính lúc build)
 csv    fs_all_mrows                             107.5                      reports/spark/full_scale_bench.csv + reports/spark/etl_benchmark.csv (ERA5) (tính lúc build)
 csv    fs_mb_tot                                125                        reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_values                                6,246,870                  reports/spark/full_scale_parity.csv (tính lúc build)
 csv    fs_hrows                                 252,480                    reports/spark/full_scale_parity.csv (tính lúc build)
 csv    fs_ncol                                  54                         reports/spark/full_scale_parity.csv (tính lúc build)
-csv    wfb_pool_jobs                            78                         reports/spark/wf_bench.csv (tính lúc build)
-csv    wfb_pool_cores                           7                          reports/spark/wf_bench.csv (tính lúc build)
-csv    wfb_pool_s                               345.8                      reports/spark/wf_bench.csv (tính lúc build)
+csv    wfb_pool_jobs                            141                        reports/spark/wf_bench.csv (tính lúc build)
+csv    wfb_pool_cores                           8                          reports/spark/wf_bench.csv (tính lúc build)
+csv    wfb_pool_s                               329.9                      reports/spark/wf_bench.csv (tính lúc build)
+csv    wfb_sp_cores                             8                          reports/spark/wf_bench.csv (tính lúc build)
+csv    wfb_sp_s                                 270.7                      reports/spark/wf_bench.csv (tính lúc build)
+csv    wfb_sp_speed                             7.7                        reports/spark/wf_bench.csv (tính lúc build)
+csv    wfb_sp_pjobs                             141                        reports/spark/wf_bench.csv (tính lúc build)
+csv    wfb_sp_diff_m                            2.3                        reports/spark/wf_bench.csv (tính lúc build)
+csv    wfb_sp_diff_e                            -13                        reports/spark/wf_bench.csv (tính lúc build)
 
-(473 khoá khác của sổ Report 3/4 + bản cuối kỳ được nạp và kiểm nhưng không in.)
+(605 khoá khác của sổ Report 3/4 + bản cuối kỳ được nạp và kiểm nhưng không in.)
 
 SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (32) — nhóm kiểm lại:
  - area_sys = 2,830  (docs/FINDINGS_GRID.md §3 (UNESCO-IHP Catalogue of Rivers Vol. V, Viet Nam-8))
@@ -725,4 +730,3 @@ SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (32) — nhóm kiểm lại:
 
 CẢNH BÁO LẦN BUILD NÀY:
  - reports/forecast_log/: chưa bản phát nào có cột lgbm_q → in khung [first operational LightGBM forecasts pending]
- - reports/spark/wf_bench.csv chưa có dòng Spark → in khung [Spark walk-forward pending]
