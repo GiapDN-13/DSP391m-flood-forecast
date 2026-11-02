@@ -8,6 +8,8 @@ RUN pip3 install --no-cache-dir \
         numpy==2.1.3 pandas==2.2.3 pyarrow==18.1.0 polars==1.17.1
 # torch CPU: cho src/distributed/spark_dl.py (LSTM phân tán qua TorchDistributor)
 RUN pip3 install --no-cache-dir torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu
+# LightGBM walk-forward phân tán (spark_walkforward.py) — cùng phiên bản requirements.txt
+RUN pip3 install --no-cache-dir scikit-learn==1.6.0 lightgbm==4.5.0 scipy==1.14.1
 USER spark
 ENV PYSPARK_PYTHON=python3 \
     PYTHONIOENCODING=utf-8 \
