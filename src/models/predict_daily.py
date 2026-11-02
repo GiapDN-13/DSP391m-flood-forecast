@@ -22,6 +22,7 @@ import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+import numpy as np
 import pandas as pd
 import requests
 
@@ -97,16 +98,69 @@ def fetch_sea_level(lat: float = 16.57, lon: float = 107.63) -> pd.DataFrame:
     return pd.DataFrame({"target_date": g.index, "sea_level_max": g.to_numpy()})
 
 
+RISK_LEVELS = cfg.ROOT / "reports" / "risk_levels.csv"
+
+
+def risk_thresholds() -> dict[str, float]:
+    """Mức nguy cơ theo phân vị lưu lượng mùa lũ (``src/features/risk_levels.py``).
+
+    KHÔNG phải BĐ I/II/III: quan hệ mực nước–lưu lượng ở Kim Long chỉ R² 0,18
+    (``FINDINGS_REGIME.md``), nên không quy được lưu lượng ra mực báo động."""
+    if not RISK_LEVELS.exists():
+        return {}
+    d = pd.read_csv(RISK_LEVELS)
+    return {m: float(v) for m, v in zip(d["muc"], d["nguong_m3s"]) if m.startswith("nguy_co_")}
+
+
 def alert_level(q: float) -> str:
-    """Quy lưu lượng ra cấp báo động, nếu ngưỡng đã được chốt ở W3."""
-    levels = getattr(cfg, "ALERT_LEVELS_Q", {}) or {}
+    """Quy lưu lượng ra mức nguy cơ 1–3 (``binh_thuong`` nếu dưới mức 1)."""
+    levels = risk_thresholds()
     if not levels or pd.isna(q):
         return "chua_co_nguong"
-    for name in ("BD3", "BD2", "BD1"):
-        thr = levels.get(name)
-        if thr is not None and q >= thr:
+    for name in sorted(levels, reverse=True):          # nguy_co_3 trước
+        if q >= levels[name]:
             return name
-    return "duoi_BD1"
+    return "binh_thuong"
+
+
+def add_model_columns(out: pd.DataFrame, run_date) -> pd.DataFrame:
+    """Thêm dự báo LightGBM (cấu hình E) cạnh GloFAS thô cho ô Kim Long, h = 1–3.
+
+    Cột: ``lgbm_q`` (m³/s), ``lgbm_san_ho`` (đã nâng sàn lệnh xả hồ), ``alert_lgbm``.
+    Mô hình hỏng/thiếu thì vẫn ghi phần GloFAS — không để mất cả ngày.
+    """
+    from src.models import predict_live
+
+    if not predict_live.models_ready():
+        print("Chưa có mô hình trong models/ — chỉ ghi dự báo GloFAS thô.")
+        return out
+    try:
+        pred = predict_live.predict(run_date)
+    except Exception as e:                                  # noqa: BLE001
+        print(f"  ! mô hình LightGBM lỗi — chỉ ghi GloFAS thô: {e}", flush=True)
+        return out
+    info = pred.pop("info", {})
+    if info.get("missing"):
+        print(f"  ! thiếu {len(info['missing'])} cột đặc trưng: {info['missing'][:5]}…")
+    kl = out["point"] == "huong_kim_long"
+    out["lgbm_q"] = [pred.get(int(h)) if k else None
+                     for h, k in zip(out["horizon_days"], kl)]
+    out["lgbm_q"] = out["lgbm_q"].astype(float)
+    if "q_release_upstream" in out:
+        from src.features import reservoirs
+        out["lgbm_san_ho"] = [reservoirs.release_floor(q, r) if pd.notna(q) else None
+                              for q, r in zip(out["lgbm_q"], out["q_release_upstream"])]
+    out["alert_lgbm"] = [alert_level(q) if pd.notna(q) else None for q in out["lgbm_q"]]
+    # Xác suất đã hiệu chỉnh của Q(t+1) ≥ mức 1 — chỉ có cho h = 1
+    if "p_level1" in pred:
+        h1 = kl & (out["horizon_days"] == 1)
+        out["p_level1"] = np.where(h1, pred.pop("p_level1"), np.nan)
+        out["canh_bao_level1"] = np.where(h1, out["p_level1"] >= pred.pop("p_threshold"), None)
+        pred.pop("p_level1_raw", None)
+    out["model_storm_ok"] = info.get("storm_ok")
+    print("  LightGBM (Kim Long): " + " · ".join(
+        f"h{h} {q:.1f}" for h, q in sorted((k, v) for k, v in pred.items() if isinstance(k, int))))
+    return out
 
 
 def ict_today():
@@ -175,9 +229,7 @@ def main() -> int:
 
     out = pd.concat(rows, ignore_index=True)
 
-    if not any(MODELS.glob("*.pkl")):
-        print("Chưa có mô hình trong models/ — chỉ ghi dự báo GloFAS thô. "
-              "Đây là trạng thái bình thường cho tới W5.")
+    out = add_model_columns(out, run_date)
 
     # Một file cho mỗi ngày phát báo. Giữ bản ĐẦU TIÊN của ngày — đó là bản
     # phát lúc 05:00 ICT. Lần chạy sau trong cùng ngày (chạy tay, hoặc job trễ)
