@@ -146,6 +146,33 @@ NSE trên tập test; chi tiết (RMSE, KGE, peak_bias, tham số chọn, thời
   (block manager báo 720 MiB). Đặt `maxMemoryInMB=64` + executor 1 800 MB thì chạy
   hết, kết quả trên là của lần chạy này.
 
+### MLlib trên dữ liệu đầy đủ của mô hình E + walk-forward (02/11/2026)
+
+`spark_train_full.py` học GBT/RF trên đúng dữ liệu của E: `daily_panel_ext` từ
+1998-01-04, 88 cột E, cùng hàng và nhãn `log1p(Q)`. Chọn tham số trên valid (train
+1998 → 2015, valid 2016 → 06/2022; 36 lần fit, lưới ở `reports/spark/train_full_grid.csv`),
+test một lần từ 07/2022, rồi walk-forward 13 fold 2013–2025 (giống `wf_tuning`), so với E
+cùng fold (`reports/wf_peak_folds.csv`).
+
+```bash
+MSYS_NO_PATHCONV=1 docker exec -d dsp-spark-master sh -c 'cd /opt/repo &&   /opt/spark/bin/spark-submit --master spark://spark-master:7077 --driver-memory 2g   src/distributed/spark_train_full.py --mode cluster --cores-max 8 --executor-cores 4   > .cache/mllib_full.log 2>&1'
+```
+
+Chạy tách (`-d`) và ghi log ra file: lượt đầu chạy qua `docker exec` thường bị chết
+pipe khi phiên máy chủ bị dừng. Tổng 116,7 phút trên 8 lõi.
+
+| | Test h1 / h2 / h3 | Walk-forward NSE | ΔNSE so với E (thắng/thua, p) |
+|---|---|---|---|
+| LightGBM E | 0,747 / 0,499 / 0,236 | 0,761 / 0,437 / 0,206 | — |
+| Spark GBT | 0,692 / 0,503 / 0,215 | 0,717 / 0,382 / 0,116 | −0,044 (1/12, 0,005) · −0,055 (0,0005) · −0,090 (0,001) |
+| Spark RF | 0,717 / 0,506 / 0,224 | 0,712 / 0,390 / 0,179 | −0,049 (0/13, 0,0002) · −0,047 (0,013) · −0,027 (0,033) |
+
+Số: `reports/spark_full_results.csv`, `spark_full_wf_folds.csv`, `spark_full_wf_summary.csv`.
+Kết luận: **cả hai kém E ở mọi horizon** (CI 95 % bootstrap đều < 0, p < 0,05). Mức nhỉnh
+ở h2 trên test là nhiễu của một lần chia (đúng như cảnh báo ở trên). Cắt ngọn y như E,
+không bắt được ngày mức 1 nào ở h3. Lý do khả dĩ: MLlib mọc cây theo tầng với độ sâu cố
+định, LightGBM mọc theo lá và có regularization.
+
 ## Cách chạy — đặc trưng mưa giờ + LSTM phân tán (Report 4)
 
 Hai file mới: `src/distributed/spark_hourly.py` (bản Spark của

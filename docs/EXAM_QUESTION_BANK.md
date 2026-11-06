@@ -189,7 +189,7 @@ Ghi kết quả mock vào bảng cuối file.
 
 **62. Làm sao biết Spark cho kết quả đúng?** [TL] [DA]
 - **Trả lời:** So từng ô với Polars: ETL trùng mọi cột mưa (`t2m_mean` lệch 0,001 do làm tròn); 54 cột `hr_*` trùng từng bit trên cùng máy (FHF §5). Đợt kiểm chứng bắt được lỗi `peak_hour` lưu vực con lệch 79/21 305 dòng giữa Windows và cụm (cộng số thực khác thứ tự ~1e-17) — sửa bằng làm tròn trước khi tìm giờ đỉnh, nay trùng 21 305/21 305.
-- **Hỏi vặn:** *"MLlib có tốt hơn LightGBM không?"* → h1 LightGBM tốt nhất (0,747 so với GBT 0,699, RF 0,687); RF nhỉnh h2/h3 (0,454/0,214) nhưng chỉ trên một lần chia.
+- **Hỏi vặn:** *"MLlib có tốt hơn LightGBM không?"* → Không. Lần đầu (panel Report 2, một lần chia) RF nhỉnh h2/h3 nên nhóm kiểm lại cho công bằng: học GBT/RF trên **đúng dữ liệu của E** (từ 1998, 88 cột) rồi walk-forward 13 fold trên cụm (116,7 phút). Kết quả kém E ở **cả 3 horizon**, CI 95 % đều < 0, p < 0,05: h1 GBT −0,044, RF −0,049 (RF thua 13/13 fold); h3 −0,090 / −0,027. Test h2 nhỉnh 0,004–0,007 chỉ là nhiễu một lần chia. Lý do khả dĩ: MLlib mọc cây theo tầng, độ sâu cố định; LightGBM mọc theo lá + regularization (`infra/spark/README.md`).
 
 ### H7. SHAP
 

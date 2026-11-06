@@ -306,6 +306,7 @@ def load(cfg) -> Registry:
     _full_scale()
     _wf_spark()
     _blend()
+    _mllib_full()
     return R
 
 
@@ -447,6 +448,64 @@ def _wf_spark() -> None:
     R.csv("wfs_diff_m", m, "2.3", src + " (max |Δ| dự báo, m³/s)")
     R.csv("wfs_diff_e", str(int(e)), "-13", src)
     R.claim("wfs_not_bit", r.parity_max_abs_diff > 0, "Spark and local forecasts not bit-identical", src)
+
+
+def _pv(x: float) -> str:
+    """p Wilcoxon: 3 chữ số, dưới 0,001 thì 4 chữ số (không in 0.000)."""
+    return f(x, 4) if x < 0.001 else f(x, 3)
+
+
+def _mllib_full() -> None:
+    """MLlib GBT/RF trên dữ liệu đầy đủ của E (1998→, 88 cột): test một lần + walk-forward."""
+    t = _csv("spark_full_results.csv").set_index(["model", "horizon"])
+    src = "reports/spark_full_results.csv"
+    exp_t = {"gbt": (("0.692", "-0.055"), ("0.503", "+0.004"), ("0.215", "-0.021")),
+             "rf": (("0.717", "-0.030"), ("0.506", "+0.007"), ("0.224", "-0.012"))}
+    for tg, rows in exp_t.items():
+        for h, (e_nse, e_d) in zip((1, 2, 3), rows):
+            r = t.loc[(f"spark_{tg}", h)]
+            R.csv(f"mf_{tg}_t{h}", f(r.NSE), e_nse, src)
+            R.csv(f"mf_{tg}_dt{h}", sg(r.dNSE_vs_E), e_d, src)
+    R.claim("mf_E_test", all(R.val[f"abE{h}"] == f(t.loc[("spark_gbt", h), "NSE_E"]) for h in (1, 2, 3)),
+            "E reference in spark_full_results equals ablation_ext (Report 3)", src + " vs ablation_ext.csv")
+    R.csv("mf_ntest_lo", n(t.n_test.min()), "1,520", src)
+    R.csv("mf_ntest_hi", n(t.n_test.max()), "1,522", src)
+    R.csv("mf_cores", n(t.cores.iloc[0]), "8", src)
+    R.claim("mf_cluster", bool((t.master == "spark://spark-master:7077").all()),
+            "every fit ran on the standalone cluster", src)
+    gp = [json.loads(x) for x in t.loc["spark_gbt"].params]
+    R.claim("mf_gbt_d3", all(q["maxDepth"] == 3 for q in gp[:2]), "GBT depth 3 at h = 1 and 2", src)
+    g = _csv("spark/train_full_grid.csv")
+    R.csv("mf_ngrid", n(len(g)), "36", "reports/spark/train_full_grid.csv")
+
+    s = _csv("spark_full_wf_summary.csv").set_index(["model", "horizon"])
+    src = "reports/spark_full_wf_summary.csv"
+    exp_w = {"gbt": (("0.717", "-0.044", "[-0.068; -0.022]", "1/12", "0.005"),
+                     ("0.382", "-0.055", "[-0.077; -0.035]", "1/12", "0.0005"),
+                     ("0.116", "-0.090", "[-0.147; -0.041]", "2/11", "0.001")),
+             "rf": (("0.712", "-0.049", "[-0.070; -0.030]", "0/13", "0.0002"),
+                    ("0.390", "-0.047", "[-0.078; -0.016]", "2/11", "0.013"),
+                    ("0.179", "-0.027", "[-0.051; -0.007]", "3/10", "0.033"))}
+    for tg, rows in exp_w.items():
+        for h, (e_nse, em, eci, ewl, ep) in zip((1, 2, 3), rows):
+            r = s.loc[(f"spark_{tg}", h)]
+            R.csv(f"mf_{tg}_w{h}", f(r.NSE_mean), e_nse, src)
+            R.csv(f"mf_{tg}_w{h}_m", sg(r.dNSE_mean), em, src)
+            R.csv(f"mf_{tg}_w{h}_ci", r3f.ci(r.dNSE_ci_lo, r.dNSE_ci_hi), eci, src)
+            R.csv(f"mf_{tg}_w{h}_wl", f"{int(r.wins)}/{int(r.losses)}", ewl, src)
+            R.csv(f"mf_{tg}_w{h}_p", _pv(r.p_wilcoxon), ep, src + " Wilcoxon")
+    R.claim("mf_E_wf", all(f(s.loc[("spark_gbt", h), "NSE_E_mean"]) == R.val[f"bl_E{h}"] for h in (1, 2, 3)),
+            "E reference per fold equals wf_peak_summary (same 13 folds)", src + " vs wf_peak_summary.csv")
+    R.csv("mf_nfold", n(s.n_folds.iloc[0]), "13", src)
+    R.claim("mf_all_worse", bool((s.dNSE_ci_hi < 0).all() and (s.p_wilcoxon < 0.05).all()),
+            "both MLlib models worse than E at every horizon: 95% CI below 0, p < 0.05", src)
+    R.claim("mf_pod3_0", bool((s.xs(3, level="horizon").POD1 == 0).all()),
+            "no level-1 day caught three days ahead by either MLlib model", src)
+    R.csv("mf_wall", f(s.wall_s_all.iloc[0] / 60, 1), "116.7", src + " (phút, cả hai bước)")
+    R.csv("mf_pb_lo", f(s.xs(1, level="horizon").peak_bias_mean.max(), 2), "-0.30", src + " (h1)")
+    R.csv("mf_pb_hi", f(s.xs(3, level="horizon").peak_bias_mean.min(), 2), "-0.84", src + " (h3)")
+    R.doc("mf_nfeat", "88", "src/distributed/spark_train_full.py docstring (88 cột E, wf_tuning.e_features)")
+    R.doc("mf_start", "1998", "src/distributed/spark_train_full.py (START = 1998-01-04)")
 
 
 PK4 = {"lstm": "E+LSTM", "w3": "E w3", "iso": "E iso"}
