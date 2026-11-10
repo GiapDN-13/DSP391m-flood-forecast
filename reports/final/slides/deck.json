@@ -75,7 +75,7 @@
   },
   {
    "id": "basin",
-   "title": "Lưu vực sông Hương tới Kim Long",
+   "title": "Lưu vực ngắn, dốc, có hai hồ GloFAS không mô phỏng",
    "speaker": "Đặng Nguyên Giáp",
    "minutes": 1.1,
    "words": 172,
@@ -197,7 +197,7 @@
   },
   {
    "id": "model",
-   "title": "Mô hình chính: LightGBM cấu hình E",
+   "title": "Mô hình chính: LightGBM E, 88 đặc trưng",
    "speaker": "Hồ Anh Đức",
    "minutes": 1.0,
    "words": 140,
@@ -241,7 +241,7 @@
   },
   {
    "id": "ablation",
-   "title": "Ablation: nhóm dữ liệu nào giúp horizon nào",
+   "title": "Ablation: thêm năm giúp h1, thời tiết giúp h2–h3",
    "speaker": "Hồ Anh Đức",
    "minutes": 1.2,
    "words": 152,
@@ -286,7 +286,7 @@
   },
   {
    "id": "shap",
-   "title": "SHAP: mô hình dựa vào đâu",
+   "title": "SHAP: càng xa, mô hình càng dựa vào mưa và thời tiết",
    "speaker": "Hồ Anh Đức",
    "minutes": 1.3,
    "words": 180,
@@ -361,7 +361,7 @@
   },
   {
    "id": "future",
-   "title": "Hướng tiếp theo",
+   "title": "Hướng tiếp theo: gỡ cắt ngọn cần thêm thông tin",
    "speaker": "Mai Thị Lệ Huyền",
    "minutes": 1.0,
    "words": 118,

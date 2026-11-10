@@ -236,7 +236,7 @@ for i, (big, small, c) in enumerate(facts):
                      f'<p style="font-size:24px;color:{INK};line-height:1.35">{small}</p>',
                      f"border-left:6px solid {c};padding:4px 0 4px 24px;display:flex;flex-direction:column;gap:6px",
                      order=i + 1))
-slide("basin", "Lưu vực sông Hương tới Kim Long", parts, GIAP, 1.0, [
+slide("basin", "Lưu vực ngắn, dốc, có hai hồ GloFAS không mô phỏng", parts, GIAP, 1.0, [
     "Đây là khu vực nghiên cứu: lưu vực sông Hương tính tới cửa ra Kim Long, ô vuông nhỏ là điểm mục tiêu GloFAS.",
     "Nhóm tự cắt lưu vực từ mô hình số độ cao 30 mét: 1.543 km². Báo cáo trước ghi 2.830 km², nhưng con số đó là cả hệ thống sông Hương, đã gồm sông Bồ 938 km² — sông Bồ nhập ở hạ lưu Kim Long nên nhóm đã đính chính.",
     "Lưu vực chia thành 5 lưu vực con, mưa được gộp theo đúng ranh giới này thay vì theo dải vĩ độ.",
@@ -496,7 +496,7 @@ for i, (h, v, p) in enumerate(dl):
     parts.append(P(cx0 + x - 40, cy0 + H - Bm + 12, 200, h, 26, INK, "center", bold=True, order=2))
 parts.append(SVG(cx0, cy0, W, H, bars, "ΔNSE L2 so với L1", order=2, anim="rise"))
 parts.append(P(X0 + 864, Y0 + 480, 800, "Chỉ đổi sang L2 ở horizon có cải thiện ý nghĩa — h1 giữ L1.", 25, INK, order=3))
-slide("model", "Mô hình chính: LightGBM cấu hình E", parts, DUC, 1.0, [
+slide("model", "Mô hình chính: LightGBM E, 88 đặc trưng", parts, DUC, 1.0, [
     "Mô hình chính là LightGBM, phù hợp với dữ liệu bảng khoảng chín nghìn ngày, huấn luyện nhanh và giải thích được bằng SHAP.",
     "Cấu hình E: 88 đặc trưng, một mô hình riêng cho mỗi horizon; 600 cây, learning rate 0,05, 31 lá, min_child_samples 30; lấy trung bình 3 seed. Hàm mất mát L1 ở h1 và L2 ở h2–h3. Mô hình đóng băng ngày 02/11/2026.",
     "Vì sao lại L1 và L2 khác nhau? Nhóm so trên walk-forward 13 năm: đổi sang L2 tăng NSE h2 thêm 0,039 với p 0,003 và h3 thêm 0,036 với p 0,002; còn ở h1 chỉ tăng 0,018, p 0,22 — không có ý nghĩa.",
@@ -624,7 +624,7 @@ for pi, (hn, idx, lo, hi, msg, best) in enumerate(panels):
     parts.append(P(px, Y0 + 490, pw_, msg, 25, BLUE, bold=True, order=pi + 1))
 parts.append(P(X0, 830, CW, "Hệ thống thời tiết báo trước mưa trước khi mưa rơi ⇒ giúp đúng h2–h3. Độ ẩm đất (C), đại diện hồ (D): không thêm gì rõ. Trung bình 3 seed, sd 0.012.",
                26, INK, bold=True, order=4))
-slide("ablation", "Ablation: nhóm dữ liệu nào giúp horizon nào", parts, DUC, 1.2, [
+slide("ablation", "Ablation: thêm năm giúp h1, thời tiết giúp h2–h3", parts, DUC, 1.2, [
     "Ablation cho biết mỗi nhóm dữ liệu đóng góp gì. Mỗi cột là một cấu hình A đến E trên tập test, trung bình 3 seed. Lưu ý trục mỗi panel không bắt đầu từ 0 để thấy rõ chênh lệch.",
     "Ở h1, bước giúp nhiều nhất là B — kéo dài mưa về 1997, gấp đôi số ngày train: tăng 0,021. E ở h1 thấp hơn B một chút, 0,747 so với 0,766 — đây là đánh đổi có chủ đích, vì h1 của E vẫn trên 0,70.",
     "Ở h2, E thêm bão, không khí lạnh, ENSO: tăng từ 0,461 lên 0,499, tức 0,038 so với D.",
@@ -736,7 +736,7 @@ parts.append(BOX(X0, 700, CW,
                  '<b>Chưa hợp lý, ghi thẳng:</b> độ ẩm đất tác động <b>ngược chiều</b> (trùng thông tin với Q hôm nay); h3 dựa 15.6 % vào lịch. '
                  'Đỉnh 10/2022: GloFAS 1,967, dự báo 862 — chỉ 12/9,283 ngày train cao như vậy.</p>',
                  f"background:{CARD};border:1px solid #D9DEE3;border-left:8px solid {ORANGE};border-radius:12px;padding:20px 28px", order=4))
-slide("shap", "SHAP: mô hình dựa vào đâu", parts, DUC, 1.3, [
+slide("shap", "SHAP: càng xa, mô hình càng dựa vào mưa và thời tiết", parts, DUC, 1.3, [
     "SHAP cho biết mô hình dựa vào nhóm thông tin nào. Đây là tỉ trọng trung bình trị tuyệt đối SHAP theo nhóm, seed 42.",
     "Ở h1, mô hình dựa chủ yếu vào trí nhớ của sông — lưu lượng gần đây chiếm 58,4 %; riêng lưu lượng hôm nay 37,4 %.",
     "Ở h2, mưa chiếm nhiều nhất, 41,6 %, và hệ thống thời tiết tăng lên 19,2 %.",
@@ -836,15 +836,15 @@ parts = [BOX(X0, Y0 - 10, CW,
              '<p style="font-size:25px;line-height:1.4"><b>Tiêu chí đặt TRƯỚC khi chạy:</b> ΔNSE h2/h3 &gt; 0 với Wilcoxon p &lt; 0.05 <b>và</b> h1 không giảm quá 0.01 '
              '(hoặc bắt đỉnh rõ hơn mà NSE không giảm quá 0.01). Mốc E tái lập: 0.761 / 0.437 / 0.206.</p>',
              f"background:{BG2};border-radius:12px;padding:18px 28px", order=1)]
-cw_ = (560, 250, 220, 250, 384)
+cw_ = (480, 270, 270, 270, 374)
 th = "".join(f'<th style="text-align:left;font-size:24px;color:{MUTED};font-weight:600;width:{w}px">{h}</th>' for h, w in zip(hdr, cw_))
 parts.append(BOX(X0, Y0 + 120, CW, f'<table style="width:100%;table-layout:fixed"><tr>{th}</tr></table>', "", order=1, anim="fade"))
 for k, (a, b1, b2, b3, cc, o, col) in enumerate(pk):
-    tds = "".join(f'<td style="text-align:left;font-size:{24 if i else 25}px;width:{w}px;{"font-weight:600;" if i == 0 else ""}color:{col if i == 4 else INK}">{v}</td>'
+    tds = "".join(f'<td style="text-align:left;font-size:{27 if i else 28}px;width:{w}px;{"font-weight:600;" if i == 0 else ""}color:{col if i == 4 else INK}">{v}</td>'
                   for i, (v, w) in enumerate(zip((a, b1, b2, b3, cc), cw_)))
-    parts.append(BOX(X0, Y0 + 180 + k * 90, CW, f'<table style="width:100%;table-layout:fixed"><tr>{tds}</tr></table>', "", order=o, anim="fade"))
-parts.append(BOX(X0, 780, CW,
-                 f'<p style="font-size:28px;line-height:1.4"><b style="color:{BLUE}">Không biến thể nào đạt ⇒ giữ E, đóng băng 02/11/2026.</b> '
+    parts.append(BOX(X0, Y0 + 185 + k * 115, CW, f'<table style="width:100%;table-layout:fixed"><tr>{tds}</tr></table>', "", order=o, anim="fade"))
+parts.append(BOX(X0, 800, CW,
+                 f'<p style="font-size:29px;line-height:1.4"><b style="color:{BLUE}">Không biến thể nào đạt ⇒ giữ E, đóng băng 02/11/2026.</b> '
                  f'Cắt ngọn ở h2–h3 là do thiếu thông tin (mưa gây lũ chưa rơi), không chữa được bằng hàm mất mát hay hậu xử lý.</p>',
                  f"background:{CARD};border:1px solid #D9DEE3;border-left:8px solid {BLUE};border-radius:12px;padding:20px 28px", order=5))
 slide("peak", "Thử giảm cắt ngọn lũ: ba hướng, tiêu chí đặt trước", parts, HUYEN, 1.6, [
@@ -866,11 +866,11 @@ lim = [("Mục tiêu là mô phỏng", "Học lưu lượng GloFAS, không phả
 parts = []
 for i, (h, s_) in enumerate(lim):
     col, row = i % 2, i // 2
-    parts.append(BOX(X0 + col * 856, Y0 - 10 + row * 205, 808,
-                     f'<h3 style="font-size:29px;font-weight:600;color:#9A4A10">{h}</h3>'
-                     f'<p style="font-size:24px;color:{INK};line-height:1.4">{s_}</p>',
+    parts.append(BOX(X0 + col * 856, Y0 - 10 + row * 230, 808,
+                     f'<h3 style="font-size:32px;font-weight:600;color:#9A4A10">{h}</h3>'
+                     f'<p style="font-size:27px;color:{INK};line-height:1.4">{s_}</p>',
                      f"background:{CARD};border:1px solid #D9DEE3;border-left:8px solid {ORANGE};border-radius:12px;padding:22px 28px;display:flex;flex-direction:column;gap:8px",
-                     order=row + 1, h=180))
+                     order=row + 1, h=205))
 slide("limits", "Hạn chế — nói thẳng", parts, HUYEN, 1.3, [
     "Nhóm liệt kê thẳng các hạn chế.",
     "Thứ nhất, mục tiêu là lưu lượng mô phỏng GloFAS, không phải số đo trạm — và GloFAS không có hồ, thiếu lũ lớn. Thứ hai, h3 dưới tiêu chí AC-1 cả trên test lẫn walk-forward, và đỉnh lũ bị cắt ở mọi horizon.",
@@ -888,11 +888,11 @@ fw = [("Ghép E + LSTM theo horizon ở h1", "Kiểm trên mùa lũ mới, đún
 parts = []
 for i, (h, s_, c) in enumerate(fw):
     col, row = i % 3, i // 3
-    parts.append(BOX(X0 + col * 568, Y0 + row * 300, 528,
-                     f'<h3 style="font-size:29px;font-weight:600;line-height:1.25">{h}</h3>'
-                     f'<p style="font-size:24px;color:{MUTED};line-height:1.4">{s_}</p>',
-                     card_style(c, pad=28), order=row + 1, h=260))
-slide("future", "Hướng tiếp theo", parts, HUYEN, 1.0, [
+    parts.append(BOX(X0 + col * 568, Y0 + row * 330, 528,
+                     f'<h3 style="font-size:32px;font-weight:600;line-height:1.25">{h}</h3>'
+                     f'<p style="font-size:27px;color:{MUTED};line-height:1.4">{s_}</p>',
+                     card_style(c, pad=30), order=row + 1, h=300))
+slide("future", "Hướng tiếp theo: gỡ cắt ngọn cần thêm thông tin", parts, HUYEN, 1.0, [
     "Từ các hạn chế đó, nhóm đề xuất sáu hướng tiếp theo.",
     "Một: ghép E với LSTM riêng cho h1, kiểm trên mùa lũ mới với tiêu chí đặt trước. Hai: mưa dự báo tốt hơn và số liệu xả hồ — đây là chỗ duy nhất có thể gỡ cắt ngọn ở h2–h3. Ba: tích luỹ nhật ký để kiểm AC-3, tức so trực tiếp với GloFAS thô.",
     "Bốn: khi GloFAS lên v5 có mô phỏng hồ chứa, chạy lại phép thử hồ và huấn luyện lại. Năm: đưa walk-forward song song theo tác vụ lên nhiều máy thật. Sáu: nếu đồ án tiếp tục sau môn học, xin số liệu mực nước giờ của trạm KTTV.",
