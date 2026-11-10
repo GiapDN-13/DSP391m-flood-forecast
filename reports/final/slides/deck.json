@@ -155,26 +155,26 @@
    "id": "ops",
    "title": "Hệ thống vận hành: bản tin tự động mỗi sáng",
    "speaker": "Đặng Nguyên Giáp",
-   "minutes": 1.6,
-   "words": 256,
+   "minutes": 1.7,
+   "words": 266,
    "notes": [
     "Phần cuối của em là hệ thống vận hành.",
     "Mỗi sáng khoảng 5 giờ, GitHub Actions chạy job: tải bản phát GloFAS và thời tiết dự báo khoảng 130 ngày gần nhất, rồi dựng đúng 88 cột đặc trưng bằng chính mã đã dùng cho dữ liệu lịch sử — để tránh lệch giữa lúc học và lúc chạy.",
     "Sau đó chạy LightGBM E đã đóng băng, 3 seed cho mỗi horizon, áp luật nâng sàn khi hồ xả, và tính xác suất vượt mức 1 đã hiệu chỉnh isotonic trên 9.862 ngày ngoài mẫu; báo động khi xác suất từ 1 phần 11 trở lên. Kết quả ghi thành CSV và commit vào repo.",
-    "Trạng thái hiện tại: nhật ký có từ 15/09/2026, 48 ngày phát tới 02/11; ngày 20/09 mất do lỗi múi giờ và nhóm không điền bù. Mô hình đã phát hành ở release model-v1.0, và ngày 02/11 job trên GitHub Actions đã chạy lần đầu với LightGBM: 47,4, 65,8 và 63,0 mét khối mỗi giây cho 1 đến 3 ngày tới, cạnh GloFAS thô 41,0, 40,4 và 69,3 — đúng bằng số chạy trên máy nhóm. Để so với GloFAS thô một cách có ý nghĩa thì cần tích luỹ thêm vài tuần.",
+    "Trạng thái hiện tại: nhật ký có từ 15/09/2026, 56 bản phát tới hôm nay; ngày 20/09 mất do lỗi múi giờ và nhóm không điền bù. Mô hình phát hành ở release model-v1.0 và chạy trên GitHub Actions từ 02/11. Sáng nay, 10/11, hệ thống phát cảnh báo mức 1 đầu tiên cho ngày 11/11: GloFAS thô 970, LightGBM 817 mét khối mỗi giây, đều trên mức 1 là 806; xác suất đã hiệu chỉnh 0,21, cao hơn ngưỡng 1 phần 11. Đúng hay sai phải chờ GloFAS tái phân tích những ngày này, nên nhóm chưa kết luận tiêu chí AC-3.",
     "Và một điều nhóm phải nói rõ: đầu vào lúc chạy thật khác lúc học. Mưa ngày t là mưa dự báo, độ ẩm đất giữ giá trị cuối. Vì vậy các con số NSE bạn Đức sắp trình bày là cận trên của chất lượng chạy thật."
    ],
    "builds": 4
   },
   {
    "id": "dashboard",
-   "title": "Dashboard Streamlit: ba tab",
+   "title": "Dashboard: bản phát 10/11 báo mức nguy cơ 1",
    "speaker": "Đặng Nguyên Giáp",
    "minutes": 1.0,
-   "words": 166,
+   "words": 163,
    "notes": [
     "Người dùng xem kết quả qua dashboard Streamlit, đọc trực tiếp nhật ký dự báo.",
-    "Tab Dự báo: 30 ngày đã qua và 1 đến 3 ngày tới, có đường GloFAS thô, GloFAS nâng sàn hồ và LightGBM khi bản phát có cột mô hình, cùng ba đường mức nguy cơ. Như ảnh chụp bản 02/11, dashboard tự ghi chú khi bản phát chưa có cột LightGBM.",
+    "Tab Dự báo: 30 ngày đã qua và 1 đến 3 ngày tới, có đường GloFAS thô, GloFAS nâng sàn hồ và LightGBM, cùng ba đường mức nguy cơ. Ảnh là bản phát sáng nay: cả GloFAS thô và LightGBM cùng vượt mức nguy cơ 1 cho ngày mai.",
     "Tab Bản đồ: 5 lưu vực con tô màu theo mức nguy cơ của ngày chọn. Nhóm ghi rõ đây là một mức chung cho cả lưu vực tại Kim Long, không phải dự báo riêng từng lưu vực con.",
     "Tab Giải thích và hạn chế: tỉ trọng SHAP theo nhóm, các chỉ số NSE và danh sách hạn chế.",
     "Dashboard tự cập nhật khi job commit, và ghi rõ trên mọi trang: sản phẩm học thuật, không phải bản tin cảnh báo chính thức. Em xin chuyển lời cho bạn Đức trình bày mô hình và đánh giá."

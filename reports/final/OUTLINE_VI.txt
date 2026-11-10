@@ -49,7 +49,7 @@ VI. PHÂN TÁN & DL — cụm 2 worker × 4 lõi, Spark 4.1.3; ETL 6,544,896 →
 VII. THỬ GIẢM CẮT NGỌN (Bảng XIII, FINDINGS_PEAK): tiêu chí đặt trước; KHÔNG biến thể nào đạt ⇒ giữ E (đóng băng 02/11/2026).
     α = 3: h1 +0.011 (p 0.13), POD 0.55 → 0.62; isotonic hại h3 -0.027 (p 0.001);
     E + LSTM h1 +0.029 [+0.006; +0.056] p 0.048 — DUY NHẤT có ý nghĩa — nhưng h2 -0.022, h3 -0.023 (p 0.021) ⇒ hướng tiếp theo.
-VIII. HỆ THỐNG VẬN HÀNH — GitHub Actions 20:00 UTC (~05:00 VN); nhật ký từ 15/09/2026 (48 ngày phát tới 2026-11-02, mất 20/09).
+VIII. HỆ THỐNG VẬN HÀNH — GitHub Actions 20:00 UTC (~05:00 VN); nhật ký từ 15/09/2026 (56 ngày phát tới 2026-11-10, mất 20/09).
     LightGBM E đóng băng (10,466 hàng h1), cột lgbm_q / lgbm_san_ho / p_level1 (isotonic trên 9,862 ngày OOF, báo ở 0.091 = 1/11).
     ĐẦU VÀO CHẠY THẬT KHÁC LÚC HỌC: mưa ngày t là mưa DỰ BÁO; độ ẩm đất giữ giá trị cuối; bão tải lỗi = không bão.
     Dashboard Streamlit 3 tab (dự báo, bản đồ 5 lưu vực con, giải thích & hạn chế).
@@ -651,9 +651,9 @@ csv    live_thr                                 0.091                      model
 csv    live_oof_n                               9,862                      models/lgbm_live_iso_level1_h1.json
 csv    live_oof_pos                             185                        models/lgbm_live_iso_level1_h1.json
 csv    live_level                               806                        models/lgbm_live_iso_level1_h1.json
-csv    live_nlogs                               48                         reports/forecast_log/*.csv (tính lúc build)
-csv    live_last                                2026-11-02                 reports/forecast_log/*.csv (tính lúc build)
-csv    live_nlgbm                               1                          reports/forecast_log/*.csv (lần chạy có cột lgbm_q, kể cả chạy tay) (tính lúc build)
+csv    live_nlogs                               56                         reports/forecast_log/*.csv (tính lúc build)
+csv    live_last                                2026-11-10                 reports/forecast_log/*.csv (tính lúc build)
+csv    live_nlgbm                               7                          reports/forecast_log/*.csv (lần chạy có cột lgbm_q, kể cả chạy tay) (tính lúc build)
 csv    live_lgbm_first                          2026-11-02                 reports/forecast_log/*.csv (lần chạy đầu có lgbm_q) (tính lúc build)
 csv    fs_imerg_mb                              47.7                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_imerg_rows                            50,477,000                 reports/spark/full_scale_bench.csv (tính lúc build)

@@ -995,7 +995,7 @@ def story() -> list:
             "five sub-basins coloured by the basin-wide level at Kim Long, and an explanation "
             "tab with grouped SHAP shares, skill scores and limitations. It states on every "
             "page that the product is academic and that risk levels are not the official "
-            "alert stages.")]
+            "alert stages. It is deployed at https://dsp391m-huong-flood.streamlit.app.")]
 
     # ============================================================ IX
     s += [h1("IX", "Discussion"),

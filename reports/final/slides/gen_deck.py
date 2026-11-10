@@ -279,7 +279,7 @@ for i, (n_, h, s_) in enumerate(steps):
     parts.append(BOX(x, Y0 + 10, bw5,
                      f'<p style="font-family:{SERIF};font-size:48px;font-weight:600;color:{BLUE};line-height:1">{n_}</p>'
                      f'<h3 style="font-size:30px;font-weight:600">{h}</h3>'
-                     f'<p style="font-size:23px;color:{MUTED};line-height:1.35">{s_}</p>',
+                     f'<p style="font-size:25px;color:{MUTED};line-height:1.35">{s_}</p>',
                      f"background:{BG2};border-radius:18px;padding:28px 22px;display:flex;flex-direction:column;gap:12px",
                      order=i + 1, h=360))
     if i < 4:
@@ -338,7 +338,7 @@ leg = [("Polars", TEAL), ("Spark local[8]", BLUE), ("Cụm 2 worker × 4 lõi", 
 lx = cx0 + L
 for nm, c in leg:
     parts.append(BOX(lx, Y0 + H + 4, 300, f'<span style="display:inline-block;width:22px;height:22px;border-radius:4px;background:{c};vertical-align:-3px"></span>'
-                     f'<span style="font-size:22px;margin-left:10px">{nm}</span>', "", order=3, anim="fade"))
+                     f'<span style="font-size:24px;margin-left:10px">{nm}</span>', "", order=3, anim="fade"))
     lx += 300
 parts.append(P(X0, 820, CW, "Polars nhanh hơn Spark 1.8 / 4.7 / 5.0 lần; 2 worker không nhanh hơn 1. Dữ liệu vừa RAM một máy, cụm chạy trên một máy vật lý — Spark chứng minh tính đúng.",
                27, INK, bold=True, order=4))
@@ -391,15 +391,15 @@ for i, (h, s_) in enumerate(flow):
     c = BLUE if i in (3, 4) else INK
     parts.append(BOX(x, Y0, bw6,
                      f'<h3 style="font-size:28px;font-weight:600;color:{c}">{h}</h3>'
-                     f'<p style="font-size:22px;color:{MUTED};line-height:1.35">{s_}</p>',
+                     f'<p style="font-size:24px;color:{MUTED};line-height:1.35">{s_}</p>',
                      f"background:{BG2};border-radius:16px;padding:22px 18px;display:flex;flex-direction:column;gap:10px",
                      order=1 if i < 3 else 2, h=250))
     if i < 5:
         parts.append(arrow(x + bw6 - 13, Y0 + 100, order=1 if i < 2 else 2, size=34))
 parts.append(BOX(X0, Y0 + 300, 808,
                  f'<h3 style="font-size:28px;font-weight:600;color:{TEAL}">Trạng thái</h3>'
-                 + ul(["Nhật ký từ 15/09/2026: 48 ngày phát tới 02/11/2026 (mất 20/09 do lỗi múi giờ, không điền bù)",
-                       "Lần chạy đầu có LightGBM trên Actions: <b>02/11/2026</b> — h1–h3 47.4 / 65.8 / 63.0 m³/s (GloFAS 41.0 / 40.4 / 69.3)"], 24, 8),
+                 + ul(["Nhật ký từ 15/09/2026: 56 bản phát tới 10/11 (mất 20/09 do lỗi múi giờ, không điền bù); có LightGBM từ 02/11",
+                       "<b>10/11/2026: cảnh báo mức 1 đầu tiên</b> cho 11/11 — GloFAS 970, LightGBM 817 m³/s (mức 1 = 806), P = 0.21 &gt; 1/11"], 24, 8),
                  card_style(TEAL, pad=26, gap=10), order=3, h=290))
 parts.append(BOX(X0 + 856, Y0 + 300, 808,
                  f'<h3 style="font-size:28px;font-weight:600;color:{ORANGE}">Đầu vào chạy thật khác lúc học</h3>'
@@ -411,25 +411,25 @@ slide("ops", "Hệ thống vận hành: bản tin tự động mỗi sáng", par
     "Phần cuối của em là hệ thống vận hành.",
     "Mỗi sáng khoảng 5 giờ, GitHub Actions chạy job: tải bản phát GloFAS và thời tiết dự báo khoảng 130 ngày gần nhất, rồi dựng đúng 88 cột đặc trưng bằng chính mã đã dùng cho dữ liệu lịch sử — để tránh lệch giữa lúc học và lúc chạy.",
     "Sau đó chạy LightGBM E đã đóng băng, 3 seed cho mỗi horizon, áp luật nâng sàn khi hồ xả, và tính xác suất vượt mức 1 đã hiệu chỉnh isotonic trên 9.862 ngày ngoài mẫu; báo động khi xác suất từ 1 phần 11 trở lên. Kết quả ghi thành CSV và commit vào repo.",
-    "Trạng thái hiện tại: nhật ký có từ 15/09/2026, 48 ngày phát tới 02/11; ngày 20/09 mất do lỗi múi giờ và nhóm không điền bù. Mô hình đã phát hành ở release model-v1.0, và ngày 02/11 job trên GitHub Actions đã chạy lần đầu với LightGBM: 47,4, 65,8 và 63,0 mét khối mỗi giây cho 1 đến 3 ngày tới, cạnh GloFAS thô 41,0, 40,4 và 69,3 — đúng bằng số chạy trên máy nhóm. Để so với GloFAS thô một cách có ý nghĩa thì cần tích luỹ thêm vài tuần.",
+    "Trạng thái hiện tại: nhật ký có từ 15/09/2026, 56 bản phát tới hôm nay; ngày 20/09 mất do lỗi múi giờ và nhóm không điền bù. Mô hình phát hành ở release model-v1.0 và chạy trên GitHub Actions từ 02/11. Sáng nay, 10/11, hệ thống phát cảnh báo mức 1 đầu tiên cho ngày 11/11: GloFAS thô 970, LightGBM 817 mét khối mỗi giây, đều trên mức 1 là 806; xác suất đã hiệu chỉnh 0,21, cao hơn ngưỡng 1 phần 11. Đúng hay sai phải chờ GloFAS tái phân tích những ngày này, nên nhóm chưa kết luận tiêu chí AC-3.",
     "Và một điều nhóm phải nói rõ: đầu vào lúc chạy thật khác lúc học. Mưa ngày t là mưa dự báo, độ ẩm đất giữ giá trị cuối. Vì vậy các con số NSE bạn Đức sắp trình bày là cận trên của chất lượng chạy thật.",
 ])
 
 # ------------------------------------------------------------------ 10 dashboard
-parts = [IMG(X0, Y0 - 20, 808, "dashboard_tab_du_bao.png", "Dashboard tab Dự báo", order=1, h=490),
-         IMG(X0 + 856, Y0 - 20, 808, "dashboard_tab_ban_do.png", "Dashboard tab Bản đồ lưu vực", order=2, h=490)]
-tabs = [("Dự báo", "30 ngày qua + 1–3 ngày tới: GloFAS thô, nâng sàn hồ, LightGBM; 3 đường mức nguy cơ; bảng nhãn mức"),
+parts = [IMG(X0, Y0 - 20, 808, "dash_slide_du_bao.png", "Dashboard tab Dự báo, bản phát 10/11/2026", order=1, h=490),
+         IMG(X0 + 856, Y0 - 20, 808, "dash_slide_ban_do.png", "Dashboard tab Bản đồ lưu vực", order=2, h=490)]
+tabs = [("Dự báo", "30 ngày qua + 1–3 ngày tới: GloFAS thô, LightGBM, sàn hồ; 3 mức nguy cơ"),
         ("Bản đồ lưu vực", "5 lưu vực con tô theo mức của ngày chọn — một mức chung toàn lưu vực"),
         ("Giải thích &amp; hạn chế", "SHAP theo nhóm, NSE test / walk-forward / persistence, các hạn chế")]
 for i, (h, s_) in enumerate(tabs):
     parts.append(BOX(X0 + i * 568, Y0 + 510, 528,
-                     f'<p style="font-size:26px;font-weight:600">{h}</p><p style="font-size:22px;color:{MUTED};line-height:1.35">{s_}</p>',
+                     f'<p style="font-size:26px;font-weight:600">{h}</p><p style="font-size:24px;color:{MUTED};line-height:1.35">{s_}</p>',
                      "display:flex;flex-direction:column;gap:6px", order=i + 1))
-parts.append(P(X0, Y0 + 640, CW, "Streamlit, tự cập nhật khi job commit · ghi rõ: sản phẩm học thuật, không phải bản tin cảnh báo chính thức",
+parts.append(P(X0, Y0 + 660, CW, f'<b style="color:{BLUE}">dsp391m-huong-flood.streamlit.app</b> · tự cập nhật khi job commit · sản phẩm học thuật, không phải bản tin cảnh báo chính thức',
                24, MUTED, order=4))
-slide("dashboard", "Dashboard Streamlit: ba tab", parts, GIAP, 0.8, [
+slide("dashboard", "Dashboard: bản phát 10/11 báo mức nguy cơ 1", parts, GIAP, 0.8, [
     "Người dùng xem kết quả qua dashboard Streamlit, đọc trực tiếp nhật ký dự báo.",
-    "Tab Dự báo: 30 ngày đã qua và 1 đến 3 ngày tới, có đường GloFAS thô, GloFAS nâng sàn hồ và LightGBM khi bản phát có cột mô hình, cùng ba đường mức nguy cơ. Như ảnh chụp bản 02/11, dashboard tự ghi chú khi bản phát chưa có cột LightGBM.",
+    "Tab Dự báo: 30 ngày đã qua và 1 đến 3 ngày tới, có đường GloFAS thô, GloFAS nâng sàn hồ và LightGBM, cùng ba đường mức nguy cơ. Ảnh là bản phát sáng nay: cả GloFAS thô và LightGBM cùng vượt mức nguy cơ 1 cho ngày mai.",
     "Tab Bản đồ: 5 lưu vực con tô màu theo mức nguy cơ của ngày chọn. Nhóm ghi rõ đây là một mức chung cho cả lưu vực tại Kim Long, không phải dự báo riêng từng lưu vực con.",
     "Tab Giải thích và hạn chế: tỉ trọng SHAP theo nhóm, các chỉ số NSE và danh sách hạn chế.",
     "Dashboard tự cập nhật khi job commit, và ghi rõ trên mọi trang: sản phẩm học thuật, không phải bản tin cảnh báo chính thức. Em xin chuyển lời cho bạn Đức trình bày mô hình và đánh giá.",
@@ -540,7 +540,7 @@ for i, (nm, c, o) in enumerate(lg):
                      f'<span style="display:inline-block;width:26px;height:{6 if o == 3 else 26}px;background:{c};border-radius:3px;vertical-align:middle"></span>'
                      f'<span style="font-size:24px;margin-left:12px;vertical-align:middle">{nm}</span>', "", order=o, anim="fade"))
 parts.append(BOX(X0 + 1300, Y0 + 230, 364,
-                 f'<p style="font-size:23px;line-height:1.4;color:{MUTED}">h1: RMSE thấp hơn persistence <b style="color:{INK}">25.6 %</b> (AC-1 cần ≥ 20 %).<br>'
+                 f'<p style="font-size:25px;line-height:1.4;color:{MUTED}">h1: RMSE thấp hơn persistence <b style="color:{INK}">25.6 %</b> (AC-1 cần ≥ 20 %).<br>'
                  f'Khí hậu 0.097 · ARIMA −0.093 · seasonal naive −0.434.</p>', "", order=4))
 slide("baselines", "So với baseline và tiêu chí AC-1 (test từ 07/2022)", parts, DUC, 1.4, [
     "Kết quả trên tập test từ 07/2022, mô hình chưa từng thấy. NSE bằng 1 là hoàn hảo, bằng 0 là không hơn trung bình.",
@@ -584,11 +584,11 @@ for i, (nm, c, da, o) in enumerate(leg):
     dd = f' stroke-dasharray="{da}"' if da else ""
     parts.append(BOX(X0 + 1340, Y0 + i * 52, 330,
                      f'<svg width="40" height="20" style="display:inline-block;vertical-align:middle"><line x1="0" x2="40" y1="10" y2="10" stroke="{c}" stroke-width="4"{dd}/></svg>'
-                     f'<span style="font-size:23px;margin-left:10px;vertical-align:middle">{nm}</span>', "", order=o, anim="fade"))
+                     f'<span style="font-size:25px;margin-left:10px;vertical-align:middle">{nm}</span>', "", order=o, anim="fade"))
 parts.append(BOX(X0 + 1340, Y0 + 240, 324,
-                 f'<p style="font-size:22px;color:{MUTED};line-height:1.35">Trung bình 13 năm</p>'
+                 f'<p style="font-size:24px;color:{MUTED};line-height:1.35">Trung bình 13 năm</p>'
                  f'<p style="font-size:26px;line-height:1.4"><b style="color:{BLUE}">E: 0.761 / 0.437 / 0.206</b><br>Persistence: 0.536 / −0.084 / −0.361</p>'
-                 f'<p style="font-size:22px;color:{MUTED};line-height:1.35">E h1 hơn persistence 12/13 năm (trừ 2019); h2, h3 hơn cả 13 năm</p>',
+                 f'<p style="font-size:24px;color:{MUTED};line-height:1.35">E h1 hơn persistence 12/13 năm (trừ 2019); h2, h3 hơn cả 13 năm</p>',
                  "display:flex;flex-direction:column;gap:8px", order=4))
 slide("walkforward", "Walk-forward 13 năm 2013–2025: kết quả đứng vững", parts, DUC, 1.3, [
     "Một tập test chỉ có 4 mùa lũ, có thể may mắn. Nên nhóm kiểm walk-forward: lần lượt coi mỗi năm 2013 đến 2025 là năm chưa biết, huấn luyện trên mọi năm trước đó rồi dự báo.",
@@ -642,7 +642,7 @@ hdr = ["Quy tắc báo mức 1 (h1, 13 fold)", "Ngưỡng", "Bỏ sót", "Báo n
 rows_ = [("p ≥ 0.5 (mặc định)", "0.5", "32", "3.1", "360", 2, ""),
          ("Ngưỡng chi phí, xác suất thô", "0.03", "13", "8.4", "239", 3, ""),
          ("Isotonic + ngưỡng Bayes 1/11", "0.091", "12", "8.5", "230", 4, f"color:{BLUE};font-weight:600")]
-th = "".join(f'<th style="text-align:{"left" if i == 0 else "right"};font-size:22px;color:{MUTED};font-weight:600">{h}</th>' for i, h in enumerate(hdr))
+th = "".join(f'<th style="text-align:{"left" if i == 0 else "right"};font-size:24px;color:{MUTED};font-weight:600">{h}</th>' for i, h in enumerate(hdr))
 parts.append(BOX(X0, Y0 + 110, 1000, f'<table style="width:100%;font-size:26px"><tr>{th}</tr></table>', "", order=2, anim="fade"))
 for k, (a, b_, c_, d_, e_, o, sty) in enumerate(rows_):
     tds = "".join(f'<td style="text-align:{"left" if i == 0 else "right"};{sty};width:{w}px">{v}</td>'
@@ -652,8 +652,8 @@ parts.append(P(X0, Y0 + 380, 1000, "Chi phí: một lần bỏ sót = 10 lần b
 parts.append(BOX(X0 + 1060, Y0 + 110, 604,
                  f'<h3 style="font-size:28px;font-weight:600;color:{BLUE}">Hiệu chỉnh isotonic</h3>'
                  f'<p style="font-family:{SERIF};font-size:60px;font-weight:600;line-height:1">0.0119 → 0.0100</p>'
-                 f'<p style="font-size:23px;color:{MUTED};line-height:1.35">Brier (p 0.027, tốt hơn 9/13 fold) · ECE 0.010 → 0.002</p>'
-                 f'<p style="font-size:23px;line-height:1.4">Chi phí không đổi (239 → 230, p 0.75) vì isotonic giữ thứ hạng. '
+                 f'<p style="font-size:25px;color:{MUTED};line-height:1.35">Brier (p 0.027, tốt hơn 9/13 fold) · ECE 0.010 → 0.002</p>'
+                 f'<p style="font-size:25px;line-height:1.4">Chi phí không đổi (239 → 230, p 0.75) vì isotonic giữ thứ hạng. '
                  f'Cái được: <b>xác suất có nghĩa</b>, ngưỡng tối ưu 0.12 ≈ 1/11 = 0.091 ⇒ job dùng thẳng 1/11.</p>',
                  card_style(BLUE, pad=28, gap=12), order=4, h=470))
 slide("alerts", "Cảnh báo: ngưỡng theo chi phí + xác suất đã hiệu chỉnh", parts, DUC, 1.6, [
@@ -688,14 +688,14 @@ parts.append(SVG(X0, Y0 - 10, W, H, lay[2], "LightGBM E", order=2, anim="rise"))
 for i, (nm, c, o) in enumerate((("Persistence", GRAY, 1), ("LightGBM E", BLUE, 2))):
     parts.append(BOX(X0 + 560 + i * 230, Y0 - 6, 230,
                      f'<span style="display:inline-block;width:22px;height:22px;background:{c};border-radius:3px;vertical-align:-3px"></span>'
-                     f'<span style="font-size:22px;margin-left:10px">{nm}</span>', "", order=o, anim="fade"))
+                     f'<span style="font-size:24px;margin-left:10px">{nm}</span>', "", order=o, anim="fade"))
 side = [("15 đợt", "được báo trước ngày lũ bắt đầu — persistence không bao giờ làm được", BLUE, 3),
         ("0.80 / 0.54 / 0.31", "tỉ số đỉnh dự báo / đỉnh thật (trung vị) — cắt ngọn tăng theo horizon", ORANGE, 4),
         ("1 và 0", "đợt báo nhầm ở h2, h3 (persistence: 16 và 29)", TEAL, 4)]
 for i, (big, small, c, o) in enumerate(side):
     parts.append(BOX(X0 + 1070, Y0 + i * 175, 594,
                      f'<p style="font-family:{SERIF};font-size:52px;font-weight:600;color:{c};line-height:1">{big}</p>'
-                     f'<p style="font-size:23px;color:{MUTED};line-height:1.35">{small}</p>',
+                     f'<p style="font-size:25px;color:{MUTED};line-height:1.35">{small}</p>',
                      "display:flex;flex-direction:column;gap:8px", order=o))
 slide("events", "Theo đợt lũ: h1 bắt ngang persistence nhưng có báo trước", parts, DUC, 1.2, [
     "NSE là chỉ số trung bình; người dân quan tâm từng đợt lũ. Nhóm gộp các ngày vượt mức 1 liên tiếp thành đợt: walk-forward có 43 đợt.",
@@ -714,7 +714,7 @@ lx = X0 + 120
 leg = ""
 for nme, c in grp:
     parts.append(BOX(lx, Y0 - 20, 330, f'<span style="display:inline-block;width:24px;height:24px;background:{c};border-radius:4px;vertical-align:-4px"></span>'
-                     f'<span style="font-size:23px;margin-left:10px">{nme}</span>', ""))
+                     f'<span style="font-size:25px;margin-left:10px">{nme}</span>', ""))
     lx += 312
 bw = 1500
 for i, (k, vs) in enumerate(vals):
@@ -784,7 +784,7 @@ facts = [("Thua rõ ở h3", "LSTM nhấn đỉnh −0.229, p 0.033", ORANGE, 2)
          ("Phân tán không giúp", "DDP 2 rank cùng NSE, chậm hơn 1 tiến trình · MLlib trên dữ liệu đầy đủ, 13 fold: kém E cả 3 horizon (h1 −0.044 / −0.049, p < 0.05)", INK, 4)]
 for i, (h, s_, c, o) in enumerate(facts):
     parts.append(BOX(X0 + 1120, Y0 - 20 + i * 150, 544,
-                     f'<p style="font-size:27px;font-weight:600;color:{c}">{h}</p><p style="font-size:22px;color:{MUTED};line-height:1.35">{s_}</p>',
+                     f'<p style="font-size:27px;font-weight:600;color:{c}">{h}</p><p style="font-size:24px;color:{MUTED};line-height:1.35">{s_}</p>',
                      "display:flex;flex-direction:column;gap:4px;border-bottom:1px solid #D9DEE3;padding-bottom:12px", order=o))
 slide("dl", "Deep learning: không thắng LightGBM một cách vững", parts, HUYEN, 1.5, [
     "Em là Mai Thị Lệ Huyền. Phần của em là những gì nhóm đã thử nghiêm túc nhưng không đưa vào mô hình chính, các hạn chế và hướng tiếp theo. Đầu tiên là deep learning. Biểu đồ cho chênh lệch NSE so với LightGBM qua 13 năm walk-forward, kèm khoảng tin cậy 95 %; vạch đứng là không chênh.",
@@ -837,7 +837,7 @@ parts = [BOX(X0, Y0 - 10, CW,
              '(hoặc bắt đỉnh rõ hơn mà NSE không giảm quá 0.01). Mốc E tái lập: 0.761 / 0.437 / 0.206.</p>',
              f"background:{BG2};border-radius:12px;padding:18px 28px", order=1)]
 cw_ = (560, 250, 220, 250, 384)
-th = "".join(f'<th style="text-align:left;font-size:22px;color:{MUTED};font-weight:600;width:{w}px">{h}</th>' for h, w in zip(hdr, cw_))
+th = "".join(f'<th style="text-align:left;font-size:24px;color:{MUTED};font-weight:600;width:{w}px">{h}</th>' for h, w in zip(hdr, cw_))
 parts.append(BOX(X0, Y0 + 120, CW, f'<table style="width:100%;table-layout:fixed"><tr>{th}</tr></table>', "", order=1, anim="fade"))
 for k, (a, b1, b2, b3, cc, o, col) in enumerate(pk):
     tds = "".join(f'<td style="text-align:left;font-size:{24 if i else 25}px;width:{w}px;{"font-weight:600;" if i == 0 else ""}color:{col if i == 4 else INK}">{v}</td>'
