@@ -781,7 +781,7 @@ for i, (nm, _, c, o) in enumerate(dlrows):
 facts = [("Thua rõ ở h3", "LSTM nhấn đỉnh −0.229, p 0.033", ORANGE, 2),
          ("Kém ổn định", "độ lệch giữa seed: DL 0.03–0.20 · LightGBM 0.01", INK, 3),
          ("Hơn ở h1 theo sự kiện", "CSI mức 1: DL 0.49 · LightGBM 0.44", TEAL, 3),
-         ("Phân tán không giúp", "DDP 2 rank cùng NSE, train 9.9–10.1 s vs 9.0–9.5 s · MLlib GBT 0.699, RF 0.687 vs 0.747 (h1)", INK, 4)]
+         ("Phân tán không giúp", "DDP 2 rank cùng NSE, chậm hơn 1 tiến trình · MLlib trên dữ liệu đầy đủ, 13 fold: kém E cả 3 horizon (h1 −0.044 / −0.049, p < 0.05)", INK, 4)]
 for i, (h, s_, c, o) in enumerate(facts):
     parts.append(BOX(X0 + 1120, Y0 - 20 + i * 150, 544,
                      f'<p style="font-size:27px;font-weight:600;color:{c}">{h}</p><p style="font-size:22px;color:{MUTED};line-height:1.35">{s_}</p>',
@@ -791,7 +791,7 @@ slide("dl", "Deep learning: không thắng LightGBM một cách vững", parts, 
     "LSTM cửa sổ 30 ngày với hàm MSE: h1 hơn 0,021 nhưng khoảng tin cậy chứa 0; h2, h3 kém khoảng 0,025. Tức là không hơn một cách vững.",
     "Các biến thể nhấn đỉnh lũ còn kém hơn khi xa: LSTM nhấn đỉnh thua rõ ở h3, âm 0,229, p 0,033; MLP nhấn đỉnh cũng thua ở h3.",
     "DL cũng kém ổn định: độ lệch giữa các seed 0,03 đến 0,20, trong khi LightGBM chỉ 0,01. Mặt tích cực: ở h1, DL bắt sự kiện tốt hơn, CSI 0,49 so với 0,44 — đây là manh mối cho thử nghiệm ghép ở slide sau.",
-    "Về phân tán: huấn luyện DDP hai rank trên cụm cho cùng NSE nhưng chậm hơn một tiến trình, vì mô hình chỉ khoảng 19 nghìn tham số. MLlib GBT và RF cũng không hơn LightGBM ở h1: 0,699 và 0,687 so với 0,747. Nên nhóm giữ LightGBM.",
+    "Về phân tán: huấn luyện DDP hai rank trên cụm cho cùng NSE nhưng chậm hơn một tiến trình, vì mô hình chỉ khoảng 19 nghìn tham số. MLlib GBT và RF học trên đúng dữ liệu đầy đủ của mô hình E, chạy walk-forward 13 năm trên cụm, đều kém LightGBM ở cả ba horizon, có ý nghĩa thống kê: h1 kém 0,044 và 0,049. Nên nhóm giữ LightGBM.",
 ])
 
 # ------------------------------------------------------------------ 20 satellite
