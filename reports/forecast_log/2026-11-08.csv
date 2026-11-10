@@ -1,0 +1,8 @@
+run_date,point,lat,lon,target_date,glofas_discharge,rain_forecast,temp_forecast,sea_level_max,horizon_days,alert_glofas,q_release_upstream,glofas_san_ho
+2026-11-08,huong_kim_long,16.45,107.5,2026-11-08,35.81,5.9,24.8,1.2,0,binh_thuong,,35.81
+2026-11-08,huong_kim_long,16.45,107.5,2026-11-09,31.14,61.0,22.7,1.39,1,binh_thuong,,31.14
+2026-11-08,huong_kim_long,16.45,107.5,2026-11-10,285.42,40.4,21.4,1.4,2,binh_thuong,,285.42
+2026-11-08,huong_kim_long,16.45,107.5,2026-11-11,1012.91,38.3,21.8,1.39,3,nguy_co_1,,1012.91
+2026-11-08,huong_kim_long,16.45,107.5,2026-11-12,976.24,15.2,22.9,1.33,4,nguy_co_1,,976.24
+2026-11-08,huong_kim_long,16.45,107.5,2026-11-13,804.38,16.5,24.1,1.16,5,binh_thuong,,804.38
+2026-11-08,huong_kim_long,16.45,107.5,2026-11-14,,6.0,24.9,1.09,6,chua_co_nguong,,
