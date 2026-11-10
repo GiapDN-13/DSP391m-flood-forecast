@@ -5,6 +5,8 @@ Dữ liệu mở: **Open-Meteo Flood API (GloFAS v4)**, **Open-Meteo Historical 
 
 **Team:** Giáp (Tech Lead) · Đức (Data Analyst) · Mai Thị Lệ Huyền (Research & Documentation Lead)
 
+**Dashboard:** https://dsp391m-huong-flood.streamlit.app · **Report 4 (Capstone Project Document):** `reports/capstone/` (build: `python reports/capstone/build_report.py`)
+
 ---
 
 ## 📌 Bắt đầu từ đâu
