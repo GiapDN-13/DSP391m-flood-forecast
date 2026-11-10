@@ -1036,9 +1036,9 @@ def story() -> list:
                ["Fixed 0.5 alert threshold", "Cost-based, calibrated, 1/11",
                 "Misses cost more than false alarms"],
                ["LSTM only if time allowed", "LSTM, MLP, distributed DDP",
-                "Requested in the review of Report 3"],
+                "Requested by the supervisor, Oct. 2026"],
                ["Single machine", "Spark cluster, MLlib, task parallelism",
-                "Requested in the review of Report 3"]],
+                "Requested by the supervisor, Oct. 2026"]],
               [1.2 * inch, 1.15 * inch, 1.15 * inch], "dev",
               "DEVIATIONS FROM THE PROPOSAL", small=True)]
 
