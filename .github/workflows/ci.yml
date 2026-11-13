@@ -17,6 +17,13 @@ jobs:
           python-version: "3.11"
           cache: pip
 
+      # Spark 4.1 + Arrow cần Java 17/21; ubuntu-latest (26.04 từ 10/2026) mặc định Java mới
+      # hơn làm mọi test Spark lỗi ở ArrowUtils. Java 21 = Java của cụm (infra/spark/Dockerfile).
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - name: Cài dependency
         # ruff/pytest/nbstripout đã ghim phiên bản trong requirements.txt —
         # cài thêm ở đây sẽ gây lệch version giữa CI và máy cá nhân.

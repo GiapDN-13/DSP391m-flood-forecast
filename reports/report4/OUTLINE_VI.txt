@@ -47,20 +47,26 @@ III. ML PHÂN TÁN (MLlib) — Bảng IV
    nhưng 1 lần chia, chưa kiểm định, LightGBM không tinh chỉnh → KHÔNG nói Spark tốt hơn.
  - Bài học kỹ thuật: executor 1,500 MB chết (exit 52) → maxMemoryInMB 64 + executor 1,800 MB.
    Tổng 1,686 s trên 8 lõi.
+ B. MỚI — Dữ liệu ĐẦY ĐỦ của E (Bảng V; reports/spark_full_*.csv, src/distributed/spark_train_full.py):
+   panel từ 1998, 88 cột E; chọn tham số trên valid (36 fit), test 1 lần, rồi walk-forward 13 fold.
+   Test: GBT 0.692 / 0.503 / 0.215, RF 0.717 / 0.506 / 0.224 (E 0.747 / 0.499 / 0.236).
+   WF ΔNSE so với E: GBT -0.044 / -0.055 / -0.090, RF -0.049 / -0.047 / -0.027;
+   CI 95 % đều < 0, p < 0,05 (RF h1 thua 0/13). h2 test nhỉnh = nhiễu một lần chia. Không bắt ngày mức 1 nào ở h3.
+   Lý do khả dĩ: MLlib mọc cây theo tầng, độ sâu cố định; LightGBM theo lá + regularization. 116.7 phút trên 8 lõi.
 
 IV. DEEP LEARNING
  A. LSTM (cửa sổ 14/30 ngày, 9 biến gốc, 3 đầu ra), tuỳ chọn dự báo phần dư, loss nhấn đỉnh; MLP trên cột lag.
     LSTM L30: 19,395 tham số, 2,162 cửa sổ train; 8 cấu hình × 3 seed.
- B. DDP (gloo) qua TorchDistributor (local + cụm) và barrier tự viết (Bảng V). TorchDistributor HỎNG trên
+ B. DDP (gloo) qua TorchDistributor (local + cụm) và barrier tự viết (Bảng VI). TorchDistributor HỎNG trên
     Windows (torch Windows không có libuv) → barrier. Kết quả:
     (1) 1 tiến trình tái lập đúng seed 42 (0.709 / 0.432 / 0.180);
     (2) cùng số rank + batch → cùng NSE bất kể cách phân tán (0.712 / 0.413 / 0.160); barrier = TD từng bit trên cụm;
     (3) DDP lệch +0.003 / -0.019 / -0.020 so với 1 tiến trình ≈ 1 sd giữa seed (0.016 / 0.018 / 0.021);
     (4) CHẬM hơn: train() 9.9–10.1 s vs 9.0–9.5 s; TorchDistributor tốn thêm 12.7–13.1 s khởi động.
  C. DL vs LightGBM: một lần chia có cấu hình hơn ở h2–h3 (MLP nhấn đỉnh 0.490) nhưng LSTM chọn theo valid THUA cả 3 horizon.
-    Walk-forward 13 fold (Bảng VI, Hình 4): không DL nào hơn vững; LSTM nhấn đỉnh thua rõ h3 (-0.229, p 0.033).
+    Walk-forward 13 fold (Bảng VII, Hình 4): không DL nào hơn vững; LSTM nhấn đỉnh thua rõ h3 (-0.229, p 0.033).
     Mặt được: POD/CSI h1 cao hơn (CSI 0.49 vs 0.44), ít cắt ngọn hơn. Giữ LightGBM.
- D. MỚI — DL làm THÀNH VIÊN ENSEMBLE (Bảng VII; reports/wf_peak_summary.csv, docs/FINDINGS_PEAK.md):
+ D. MỚI — DL làm THÀNH VIÊN ENSEMBLE (Bảng VIII; reports/wf_peak_summary.csv, docs/FINDINGS_PEAK.md):
     cấu hình E (train từ 1998), 13 fold, tiêu chí đặt TRƯỚC (h2/h3 tăng với p < 0,05, h1 không giảm).
     E một mình: 0.761 / 0.437 / 0.206. Trung bình 50/50 E + LSTM: h1 +0.029 [+0.006; +0.056], 10/3 fold,
     p 0.048 (cải thiện có ý nghĩa DUY NHẤT; FAR mức 1 0.25 vs 0.29); h2 -0.022 (p 0.068),
@@ -68,7 +74,7 @@ IV. DEEP LEARNING
     không đơn điệu theo α. Isotonic hậu xử lý: HẠI (h3 -0.027, 1/12, p 0.001).
     → Không biến thể nào đạt tiêu chí → GIỮ E (đóng băng 02/11/2026). Ghép theo horizon (LSTM chỉ ở h1) là chọn
     SAU khi xem → hướng tiếp theo, phải kiểm trên dữ liệu mới.
- E. MỚI — Song song theo TÁC VỤ, nay CHẠY TRÊN SPARK (Bảng VIII; reports/spark/wf_bench.csv;
+ E. MỚI — Song song theo TÁC VỤ, nay CHẠY TRÊN SPARK (Bảng IX; reports/spark/wf_bench.csv;
     src/distributed/spark_walkforward.py + src/eval/wf_peak.py):
     - Walk-forward DL cũ: 168 fit độc lập, 4,049 s nối tiếp; pool 6 tiến trình ~13 phút (local).
     - Walk-forward LightGBM của IV-D: 141 lượt (cấu hình × năm × seed, 3 horizon/lượt, ~14.8 s/lượt), mỗi lượt
@@ -91,7 +97,7 @@ V. QUY MÔ & ĐÁNH GIÁ TRUNG THỰC
  D. Lên cloud: Databricks Free Edition CHỈ LÀ ĐỀ XUẤT, CHƯA CHẠY, không có số nào từ đó.
 
 VI. KẾT LUẬN + KHUYẾN NGHỊ
-    Pipeline phân tán ĐÚNG (kể cả 101.0 triệu dòng vệ tinh, từng bit); MLlib không hơn LightGBM; DL không thắng vững
+    Pipeline phân tán ĐÚNG (kể cả 101.0 triệu dòng vệ tinh, từng bit); MLlib kém LightGBM có ý nghĩa ở cả 3 horizon (dữ liệu đầy đủ, walk-forward); DL không thắng vững
     khi đứng một mình, chỉ giúp h1 khi ghép với E (+0.029, p 0.048), hại h2–h3.
     (1) Polars cho ETL + đặc trưng giờ (Spark vẫn chậm 1.8–6.6 lần trên toàn bộ vệ tinh); giữ job Spark đã kiểm cho dữ liệu lớn.
     (2) Walk-forward chạy thành task Spark: nhanh 7.7 lần trên 8 lõi, đã đối chiếu với bản local; phần sẽ lợi khi có nhiều máy.
@@ -645,8 +651,66 @@ csv    bl_E_far1                          0.29                       reports/wf_
 claim  bl_none                            no variant improves h = 2 or h = 3 with p < 0.05 reports/wf_peak_summary.csv
 claim  bl_w_nonmono                       alpha = 5 and 10 worse than alpha = 3 at h = 1 reports/wf_peak_summary.csv
 doc    bl_freeze                          02/11/2026                 docs/FINDINGS_PEAK.md §3 (giữ E, đóng băng)  [không in trong PDF]
+csv    mf_gbt_t1                          0.692                      reports/spark_full_results.csv
+csv    mf_gbt_dt1                         -0.055                     reports/spark_full_results.csv  [không in trong PDF]
+csv    mf_gbt_t2                          0.503                      reports/spark_full_results.csv
+csv    mf_gbt_dt2                         +0.004                     reports/spark_full_results.csv
+csv    mf_gbt_t3                          0.215                      reports/spark_full_results.csv
+csv    mf_gbt_dt3                         -0.021                     reports/spark_full_results.csv  [không in trong PDF]
+csv    mf_rf_t1                           0.717                      reports/spark_full_results.csv
+csv    mf_rf_dt1                          -0.030                     reports/spark_full_results.csv  [không in trong PDF]
+csv    mf_rf_t2                           0.506                      reports/spark_full_results.csv
+csv    mf_rf_dt2                          +0.007                     reports/spark_full_results.csv
+csv    mf_rf_t3                           0.224                      reports/spark_full_results.csv
+csv    mf_rf_dt3                          -0.012                     reports/spark_full_results.csv  [không in trong PDF]
+claim  mf_E_test                          E reference in spark_full_results equals ablation_ext (Report 3) reports/spark_full_results.csv vs ablation_ext.csv
+csv    mf_ntest_lo                        1,520                      reports/spark_full_results.csv  [không in trong PDF]
+csv    mf_ntest_hi                        1,522                      reports/spark_full_results.csv  [không in trong PDF]
+csv    mf_cores                           8                          reports/spark_full_results.csv
+claim  mf_cluster                         every fit ran on the standalone cluster reports/spark_full_results.csv
+claim  mf_gbt_d3                          GBT depth 3 at h = 1 and 2 reports/spark_full_results.csv
+csv    mf_ngrid                           36                         reports/spark/train_full_grid.csv
+csv    mf_gbt_w1                          0.717                      reports/spark_full_wf_summary.csv
+csv    mf_gbt_w1_m                        -0.044                     reports/spark_full_wf_summary.csv
+csv    mf_gbt_w1_ci                       [-0.068; -0.022]           reports/spark_full_wf_summary.csv
+csv    mf_gbt_w1_wl                       1/12                       reports/spark_full_wf_summary.csv
+csv    mf_gbt_w1_p                        0.005                      reports/spark_full_wf_summary.csv Wilcoxon  [không in trong PDF]
+csv    mf_gbt_w2                          0.382                      reports/spark_full_wf_summary.csv
+csv    mf_gbt_w2_m                        -0.055                     reports/spark_full_wf_summary.csv
+csv    mf_gbt_w2_ci                       [-0.077; -0.035]           reports/spark_full_wf_summary.csv  [không in trong PDF]
+csv    mf_gbt_w2_wl                       1/12                       reports/spark_full_wf_summary.csv  [không in trong PDF]
+csv    mf_gbt_w2_p                        0.0005                     reports/spark_full_wf_summary.csv Wilcoxon  [không in trong PDF]
+csv    mf_gbt_w3                          0.116                      reports/spark_full_wf_summary.csv
+csv    mf_gbt_w3_m                        -0.090                     reports/spark_full_wf_summary.csv
+csv    mf_gbt_w3_ci                       [-0.147; -0.041]           reports/spark_full_wf_summary.csv  [không in trong PDF]
+csv    mf_gbt_w3_wl                       2/11                       reports/spark_full_wf_summary.csv  [không in trong PDF]
+csv    mf_gbt_w3_p                        0.001                      reports/spark_full_wf_summary.csv Wilcoxon  [không in trong PDF]
+csv    mf_rf_w1                           0.712                      reports/spark_full_wf_summary.csv
+csv    mf_rf_w1_m                         -0.049                     reports/spark_full_wf_summary.csv
+csv    mf_rf_w1_ci                        [-0.070; -0.030]           reports/spark_full_wf_summary.csv
+csv    mf_rf_w1_wl                        0/13                       reports/spark_full_wf_summary.csv
+csv    mf_rf_w1_p                         0.0002                     reports/spark_full_wf_summary.csv Wilcoxon  [không in trong PDF]
+csv    mf_rf_w2                           0.390                      reports/spark_full_wf_summary.csv
+csv    mf_rf_w2_m                         -0.047                     reports/spark_full_wf_summary.csv
+csv    mf_rf_w2_ci                        [-0.078; -0.016]           reports/spark_full_wf_summary.csv  [không in trong PDF]
+csv    mf_rf_w2_wl                        2/11                       reports/spark_full_wf_summary.csv  [không in trong PDF]
+csv    mf_rf_w2_p                         0.013                      reports/spark_full_wf_summary.csv Wilcoxon  [không in trong PDF]
+csv    mf_rf_w3                           0.179                      reports/spark_full_wf_summary.csv
+csv    mf_rf_w3_m                         -0.027                     reports/spark_full_wf_summary.csv
+csv    mf_rf_w3_ci                        [-0.051; -0.007]           reports/spark_full_wf_summary.csv  [không in trong PDF]
+csv    mf_rf_w3_wl                        3/10                       reports/spark_full_wf_summary.csv  [không in trong PDF]
+csv    mf_rf_w3_p                         0.033                      reports/spark_full_wf_summary.csv Wilcoxon  [không in trong PDF]
+claim  mf_E_wf                            E reference per fold equals wf_peak_summary (same 13 folds) reports/spark_full_wf_summary.csv vs wf_peak_summary.csv
+csv    mf_nfold                           13                         reports/spark_full_wf_summary.csv
+claim  mf_all_worse                       both MLlib models worse than E at every horizon: 95% CI below 0, p < 0.05 reports/spark_full_wf_summary.csv
+claim  mf_pod3_0                          no level-1 day caught three days ahead by either MLlib model reports/spark_full_wf_summary.csv
+csv    mf_wall                            116.7                      reports/spark_full_wf_summary.csv (phút, cả hai bước)
+csv    mf_pb_lo                           -0.30                      reports/spark_full_wf_summary.csv (h1)
+csv    mf_pb_hi                           -0.84                      reports/spark_full_wf_summary.csv (h3)
+doc    mf_nfeat                           88                         src/distributed/spark_train_full.py docstring (88 cột E, wf_tuning.e_features)
+doc    mf_start                           1998                       src/distributed/spark_train_full.py (START = 1998-01-04)
 
-SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (32) — nhóm kiểm lại:
+SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (34) — nhóm kiểm lại:
  - grid_sat = 0.1  (docs/FINDINGS_HOURLY_FINEGRID.md §2 (IMERG, GSMaP, ERA5: 0,1°))
  - grid_pccs = 0.04  (docs/FINDINGS_HOURLY_FINEGRID.md §2 (PERSIANN-CCS 0,04°))
  - pccs_cells = 625  (docs/FINDINGS_HOURLY_FINEGRID.md §2 (625 ô, chỉ 10–11/2020))
@@ -679,6 +743,8 @@ SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (32) — nhóm kiểm lại:
  - fl_drv_def = 1  (infra/spark/README.md (heap driver mặc định 1 GB khi qua spark-submit))
  - fl_drv_mem = 4  (infra/spark/README.md (spark-submit --driver-memory 4g))
  - fl_cells = 24  (infra/spark/README.md (giữ 24 ô có trong weights_gee_0p1.csv))
+ - mf_nfeat = 88  (src/distributed/spark_train_full.py docstring (88 cột E, wf_tuning.e_features))
+ - mf_start = 1998  (src/distributed/spark_train_full.py (START = 1998-01-04))
 
 CẢNH BÁO LẦN BUILD NÀY:
  (không có)

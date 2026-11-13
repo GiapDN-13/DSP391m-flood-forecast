@@ -43,13 +43,13 @@ V. KẾT QUẢ
 VI. PHÂN TÁN & DL — cụm 2 worker × 4 lõi, Spark 4.1.3; ETL 6,544,896 → 272,704; 54 đặc trưng giờ trùng TỪNG BIT.
    Spark quy mô đủ: 101.0 triệu dòng giờ vệ tinh (125 MB); 6,246,870 giá trị trùng Polars TỪNG BIT;
    Spark tốt nhất chậm hơn Polars 1.8 / 4.7 / 5.0 lần (IMERG / GSMaP-GC / NRT).
-   Kiến trúc Hình 8, ETL Hình 9. MLlib (Bảng X): GBT 0.699, RF 0.687 vs 0.747 ở h1. DDP: cùng NSE mọi cách phân tán, chậm hơn 1 tiến trình (Bảng XI).
+   Kiến trúc Hình 8, ETL Hình 9. MLlib (Bảng X): một lần chia GBT 0.699, RF 0.687 vs 0.747 ở h1; dữ liệu đầy đủ E + walk-forward 13 fold: kém E cả 3 horizon (h1 GBT -0.044, RF -0.049; h3 -0.090 / -0.027; p < 0,05). DDP: cùng NSE mọi cách phân tán, chậm hơn 1 tiến trình (Bảng XI).
    DL walk-forward (Bảng XII, Hình 10): không thắng vững (LSTM nhấn đỉnh h3 -0.229, p 0.033). Song song theo TÁC VỤ mới có lợi
    (168 lần fit, ~13 phút; wf_peak pool 141 lượt 329.9 s). ETL cụm chậm 11.6 lần Polars.
 VII. THỬ GIẢM CẮT NGỌN (Bảng XIII, FINDINGS_PEAK): tiêu chí đặt trước; KHÔNG biến thể nào đạt ⇒ giữ E (đóng băng 02/11/2026).
     α = 3: h1 +0.011 (p 0.13), POD 0.55 → 0.62; isotonic hại h3 -0.027 (p 0.001);
     E + LSTM h1 +0.029 [+0.006; +0.056] p 0.048 — DUY NHẤT có ý nghĩa — nhưng h2 -0.022, h3 -0.023 (p 0.021) ⇒ hướng tiếp theo.
-VIII. HỆ THỐNG VẬN HÀNH — GitHub Actions 20:00 UTC (~05:00 VN); nhật ký từ 15/09/2026 (48 ngày phát tới 2026-11-02, mất 20/09).
+VIII. HỆ THỐNG VẬN HÀNH — GitHub Actions 20:00 UTC (~05:00 VN); nhật ký từ 15/09/2026 (56 ngày phát tới 2026-11-10, mất 20/09).
     LightGBM E đóng băng (10,466 hàng h1), cột lgbm_q / lgbm_san_ho / p_level1 (isotonic trên 9,862 ngày OOF, báo ở 0.091 = 1/11).
     ĐẦU VÀO CHẠY THẬT KHÁC LÚC HỌC: mưa ngày t là mưa DỰ BÁO; độ ẩm đất giữ giá trị cuối; bão tải lỗi = không bão.
     Dashboard Streamlit 3 tab (dự báo, bản đồ 5 lưu vực con, giải thích & hạn chế).
@@ -102,13 +102,10 @@ csv    cap_tt                                   646                        data/
 csv    cap_bd                                   424                        data/external/reservoir_info.csv
 csv    lgb_nse1                                 0.747                      reports/lgbm_results.csv
 csv    lgb_rmse1                                116.3                      reports/lgbm_results.csv
-csv    lgb_pb1                                  -0.45                      reports/lgbm_results.csv
 csv    lgb_nse2                                 0.420                      reports/lgbm_results.csv
 csv    lgb_rmse2                                176.1                      reports/lgbm_results.csv
-csv    lgb_pb2                                  -0.76                      reports/lgbm_results.csv
 csv    lgb_nse3                                 0.175                      reports/lgbm_results.csv
 csv    lgb_rmse3                                210.0                      reports/lgbm_results.csv
-csv    lgb_pb3                                  -0.89                      reports/lgbm_results.csv
 csv    n_test1                                  1,522                      reports/lgbm_results.csv
 csv    persistence_nse1                         0.542                      reports/baseline_results.csv
 csv    persistence_rmse1                        156.4                      reports/baseline_results.csv
@@ -358,18 +355,7 @@ csv    par_nd_era5                              230,064                    repor
 csv    par_ncol                                 54                         reports/spark/hourly_parity_era5_linux-docker.csv
 csv    x_par_c                                  7.3                        reports/spark/hourly_parity_era5_linux-docker.csv
 csv    ml_gbt_NSE_1                             0.699                      reports/spark_results.csv
-csv    ml_gbt_NSE_2                             0.429                      reports/spark_results.csv
-csv    ml_gbt_NSE_3                             0.182                      reports/spark_results.csv
-csv    ml_gbt_peak_bias_1                       -0.50                      reports/spark_results.csv
-csv    ml_gbt_peak_bias_2                       -0.74                      reports/spark_results.csv
-csv    ml_gbt_peak_bias_3                       -0.87                      reports/spark_results.csv
 csv    ml_rf_NSE_1                              0.687                      reports/spark_results.csv
-csv    ml_rf_NSE_2                              0.454                      reports/spark_results.csv
-csv    ml_rf_NSE_3                              0.214                      reports/spark_results.csv
-csv    ml_rf_peak_bias_1                        -0.52                      reports/spark_results.csv
-csv    ml_rf_peak_bias_2                        -0.75                      reports/spark_results.csv
-csv    ml_rf_peak_bias_3                        -0.87                      reports/spark_results.csv
-csv    ml_ngrid                                 36                         reports/spark/train_grid.csv
 csv    w_single_pt                              1 x 4                      reports/spark_dl_results.csv
 csv    w_single_gb                              64                         reports/spark_dl_results.csv
 csv    w_single_ep                              10                         reports/spark_dl_results.csv
@@ -423,6 +409,30 @@ csv    wf_nfit                                  168                        repor
 csv    wf_sec                                   4,049                      reports/wf_dl_folds.csv (tổng time_s)
 doc    wf_procs                                 6                          docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (6 tiến trình × 2 luồng)
 doc    wf_min                                   13                         docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (~13 phút)
+csv    bl_E1                                    0.761                      reports/wf_peak_summary.csv
+csv    bl_E2                                    0.437                      reports/wf_peak_summary.csv
+csv    bl_E3                                    0.206                      reports/wf_peak_summary.csv
+csv    mf_gbt_t1                                0.692                      reports/spark_full_results.csv
+csv    mf_gbt_t2                                0.503                      reports/spark_full_results.csv
+csv    mf_gbt_t3                                0.215                      reports/spark_full_results.csv
+csv    mf_rf_t1                                 0.717                      reports/spark_full_results.csv
+csv    mf_rf_t2                                 0.506                      reports/spark_full_results.csv
+csv    mf_rf_t3                                 0.224                      reports/spark_full_results.csv
+csv    mf_cores                                 8                          reports/spark_full_results.csv
+csv    mf_ngrid                                 36                         reports/spark/train_full_grid.csv
+csv    mf_gbt_w1                                0.717                      reports/spark_full_wf_summary.csv
+csv    mf_gbt_w1_m                              -0.044                     reports/spark_full_wf_summary.csv
+csv    mf_gbt_w2                                0.382                      reports/spark_full_wf_summary.csv
+csv    mf_gbt_w3                                0.116                      reports/spark_full_wf_summary.csv
+csv    mf_rf_w1                                 0.712                      reports/spark_full_wf_summary.csv
+csv    mf_rf_w1_m                               -0.049                     reports/spark_full_wf_summary.csv
+csv    mf_rf_w1_wl                              0/13                       reports/spark_full_wf_summary.csv
+csv    mf_rf_w2                                 0.390                      reports/spark_full_wf_summary.csv
+csv    mf_rf_w3                                 0.179                      reports/spark_full_wf_summary.csv
+csv    mf_nfold                                 13                         reports/spark_full_wf_summary.csv
+csv    mf_wall                                  116.7                      reports/spark_full_wf_summary.csv (phút, cả hai bước)
+doc    mf_nfeat                                 88                         src/distributed/spark_train_full.py docstring (88 cột E, wf_tuning.e_features)
+doc    mf_start                                 1998                       src/distributed/spark_train_full.py (START = 1998-01-04)
 csv    sg_flow_1                                58.4                       reports/shap_importance.csv
 csv    sg_flow_3                                22.8                       reports/shap_importance.csv
 csv    sg_rain_2                                36.5                       reports/shap_importance.csv
@@ -641,9 +651,9 @@ csv    live_thr                                 0.091                      model
 csv    live_oof_n                               9,862                      models/lgbm_live_iso_level1_h1.json
 csv    live_oof_pos                             185                        models/lgbm_live_iso_level1_h1.json
 csv    live_level                               806                        models/lgbm_live_iso_level1_h1.json
-csv    live_nlogs                               48                         reports/forecast_log/*.csv (tính lúc build)
-csv    live_last                                2026-11-02                 reports/forecast_log/*.csv (tính lúc build)
-csv    live_nlgbm                               1                          reports/forecast_log/*.csv (lần chạy có cột lgbm_q, kể cả chạy tay) (tính lúc build)
+csv    live_nlogs                               56                         reports/forecast_log/*.csv (tính lúc build)
+csv    live_last                                2026-11-10                 reports/forecast_log/*.csv (tính lúc build)
+csv    live_nlgbm                               7                          reports/forecast_log/*.csv (lần chạy có cột lgbm_q, kể cả chạy tay) (tính lúc build)
 csv    live_lgbm_first                          2026-11-02                 reports/forecast_log/*.csv (lần chạy đầu có lgbm_q) (tính lúc build)
 csv    fs_imerg_mb                              47.7                       reports/spark/full_scale_bench.csv (tính lúc build)
 csv    fs_imerg_rows                            50,477,000                 reports/spark/full_scale_bench.csv (tính lúc build)
@@ -694,9 +704,9 @@ csv    wfb_sp_pjobs                             141                        repor
 csv    wfb_sp_diff_m                            2.3                        reports/spark/wf_bench.csv (tính lúc build)
 csv    wfb_sp_diff_e                            -13                        reports/spark/wf_bench.csv (tính lúc build)
 
-(604 khoá khác của sổ Report 3/4 + bản cuối kỳ được nạp và kiểm nhưng không in.)
+(652 khoá khác của sổ Report 3/4 + bản cuối kỳ được nạp và kiểm nhưng không in.)
 
-SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (32) — nhóm kiểm lại:
+SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (34) — nhóm kiểm lại:
  - area_sys = 2,830  (docs/FINDINGS_GRID.md §3 (UNESCO-IHP Catalogue of Rivers Vol. V, Viet Nam-8))
  - area_bo = 938  (docs/FINDINGS_GRID.md §3 (UNESCO-IHP))
  - pccs_nov = 0.073  (docs/FINDINGS_HOURLY_FINEGRID.md §2 (PERSIANN-CCS 11/2020))
@@ -723,6 +733,8 @@ SỐ CHỈ CÓ TRONG TÀI LIỆU, CÓ IN TRONG PDF (32) — nhóm kiểm lại:
  - docker_ram = 7.4  (infra/spark/README.md (Docker Desktop cấp 7,4 GB))
  - wf_procs = 6  (docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (6 tiến trình × 2 luồng))
  - wf_min = 13  (docs/FINDINGS_HOURLY_FINEGRID.md §12.2 (~13 phút))
+ - mf_nfeat = 88  (src/distributed/spark_train_full.py docstring (88 cột E, wf_tuning.e_features))
+ - mf_start = 1998  (src/distributed/spark_train_full.py (START = 1998-01-04))
  - wf_fc_2022 = 862  (docs/FINDINGS_SHAP.md §4; reports/figures/report/shap_waterfall_20221016_h1_en.png)
  - wf_fc_2025 = 1,727  (docs/FINDINGS_SHAP.md §4)
  - wf_n_above = 12  (docs/FINDINGS_SHAP.md §4 (12/9 283 ngày train có Q(t+1) >= 1 967))

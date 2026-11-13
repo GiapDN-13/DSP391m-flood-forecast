@@ -790,22 +790,31 @@ def story() -> list:
                       "will give rows, run times on the cluster, local mode and Polars, and the "
                       "bitwise parity check.")]
     s += [h2("C", "MLlib models"),
-          p("MLlib gradient-boosted trees (GBT) and random forests (RF) were trained on the "
-            "cluster with the configuration-A panel and the same temporal split; Spark's "
-            "CrossValidator splits rows at random, which lets a model see the future, so it "
-            "was replaced by a loop over a fixed validation period "
-            f"({V('ml_ngrid')} fits). LightGBM stays best one day ahead (Table {T['mllib']}); "
-            "RF is ahead at h = 2&#8211;3 on one split without a significance test, and all "
-            "three cut peaks by a similar amount."),
-          tbl([["Model", "NSE h=1", "h=2", "h=3", "Peak bias h=1", "h=2", "h=3"],
-               ["LightGBM, config. A"] + [V(f"lgb_nse{h}") for h in (1, 2, 3)]
-               + [V(f"lgb_pb{h}") for h in (1, 2, 3)],
-               ["Spark GBT"] + [V(f"ml_gbt_NSE_{h}") for h in (1, 2, 3)]
-               + [V(f"ml_gbt_peak_bias_{h}") for h in (1, 2, 3)],
-               ["Spark RF"] + [V(f"ml_rf_NSE_{h}") for h in (1, 2, 3)]
-               + [V(f"ml_rf_peak_bias_{h}") for h in (1, 2, 3)]],
+          p("MLlib gradient-boosted trees (GBT) and random forests (RF) were first trained on the "
+            "configuration-A panel with one split; Spark's CrossValidator splits rows at random, "
+            "which lets a model see the future, so it was replaced by a loop over a fixed "
+            f"validation period. One day ahead LightGBM was best (GBT {V('ml_gbt_NSE_1')}, RF "
+            f"{V('ml_rf_NSE_1')}, LightGBM {V('lgb_nse1')}); RF was ahead at h = 2&#8211;3, but "
+            "on one split. To settle this, both models were retrained on the cluster with "
+            f"exactly the data of the main model E (from {V('mf_start')}, {V('mf_nfeat')} "
+            f"predictors; {V('mf_ngrid')} validation fits) and run through the same "
+            f"{V('mf_nfold')} walk-forward folds (Table {T['mllib']}). On the test period they "
+            f"are level with E at h = 2 only; across the folds both are worse at every horizon, "
+            "with the 95% interval below zero and Wilcoxon p &lt; 0.05 (one day ahead GBT "
+            f"{V('mf_gbt_w1_m')}, RF {V('mf_rf_w1_m')}, RF losing {V('mf_rf_w1_wl')} folds). "
+            "Peak bias is as large as for LightGBM and no level-1 day is caught three days "
+            "ahead, so more years and a distributed learner do not remove the peak "
+            f"underestimation. The run took {V('mf_wall')} minutes on {V('mf_cores')} cores."),
+          tbl([["Model", "Test h=1", "h=2", "h=3", "WF h=1", "h=2", "h=3"],
+               ["LightGBM E (main)"] + [V(f"abE{h}") for h in (1, 2, 3)]
+               + [V(f"bl_E{h}") for h in (1, 2, 3)],
+               ["Spark GBT"] + [V(f"mf_gbt_t{h}") for h in (1, 2, 3)]
+               + [V(f"mf_gbt_w{h}") for h in (1, 2, 3)],
+               ["Spark RF"] + [V(f"mf_rf_t{h}") for h in (1, 2, 3)]
+               + [V(f"mf_rf_w{h}") for h in (1, 2, 3)]],
               [1.1 * inch] + [0.4 * inch] * 3 + [0.46 * inch] + [0.4 * inch] * 2, "mllib",
-              "MLLIB ON THE TWO-WORKER CLUSTER AGAINST LIGHTGBM, SAME PANEL AND SPLIT", small=True),
+              "MLLIB ON THE FULL DATA OF THE MAIN MODEL: NSE ON THE TEST PERIOD AND MEAN NSE OVER "
+              f"{V('mf_nfold')} WALK-FORWARD FOLDS", small=True),
 
           h2("D", "Deep learning"),
           p(f"An LSTM [11] reads 14 or 30 days of nine raw daily variables and predicts the "
@@ -986,7 +995,7 @@ def story() -> list:
             "five sub-basins coloured by the basin-wide level at Kim Long, and an explanation "
             "tab with grouped SHAP shares, skill scores and limitations. It states on every "
             "page that the product is academic and that risk levels are not the official "
-            "alert stages.")]
+            "alert stages. It is deployed at https://dsp391m-huong-flood.streamlit.app.")]
 
     # ============================================================ IX
     s += [h1("IX", "Discussion"),
@@ -1027,9 +1036,9 @@ def story() -> list:
                ["Fixed 0.5 alert threshold", "Cost-based, calibrated, 1/11",
                 "Misses cost more than false alarms"],
                ["LSTM only if time allowed", "LSTM, MLP, distributed DDP",
-                "Requested in the review of Report 3"],
+                "Requested by the supervisor, Oct. 2026"],
                ["Single machine", "Spark cluster, MLlib, task parallelism",
-                "Requested in the review of Report 3"]],
+                "Requested by the supervisor, Oct. 2026"]],
               [1.2 * inch, 1.15 * inch, 1.15 * inch], "dev",
               "DEVIATIONS FROM THE PROPOSAL", small=True)]
 
@@ -1401,7 +1410,7 @@ V. KẾT QUẢ
  I. Tiêu chí nghiệm thu (Bảng {T['ac']}): AC-1 đạt h1/h2, TRƯỢT h3; AC-2 không đánh giá được; AC-3 đạt so với persistence, phần GloFAS chờ;
     AC-4 thất bại → mức nguy cơ; AC-5 đạt; AC-6 chỉ mức 1.
 VI. PHÂN TÁN & DL — cụm {g('n_workers')} worker × {g('w_cores')} lõi, Spark {g('spark_ver')}; ETL {g('era5_rows')} → {g('era5_out')}; {g('par_ncol')} đặc trưng giờ trùng TỪNG BIT.
-{spark_full}   Kiến trúc Hình {F['arch']}, ETL Hình {F['etl']}. MLlib (Bảng {T['mllib']}): GBT {g('ml_gbt_NSE_1')}, RF {g('ml_rf_NSE_1')} vs {g('lgb_nse1')} ở h1. DDP: cùng NSE mọi cách phân tán, chậm hơn 1 tiến trình (Bảng {T['ddp']}).
+{spark_full}   Kiến trúc Hình {F['arch']}, ETL Hình {F['etl']}. MLlib (Bảng {T['mllib']}): một lần chia GBT {g('ml_gbt_NSE_1')}, RF {g('ml_rf_NSE_1')} vs {g('lgb_nse1')} ở h1; dữ liệu đầy đủ E + walk-forward {g('mf_nfold')} fold: kém E cả 3 horizon (h1 GBT {g('mf_gbt_w1_m')}, RF {g('mf_rf_w1_m')}; h3 {g('mf_gbt_w3_m')} / {g('mf_rf_w3_m')}; p < 0,05). DDP: cùng NSE mọi cách phân tán, chậm hơn 1 tiến trình (Bảng {T['ddp']}).
    DL walk-forward (Bảng {T['dl']}, Hình {F['dl']}): không thắng vững (LSTM nhấn đỉnh h3 {g('lstmP3_m')}, p {g('lstmP3_p')}). Song song theo TÁC VỤ mới có lợi
    ({g('wf_nfit')} lần fit, ~{g('wf_min')} phút; wf_peak pool {g('wfb_pool_jobs')} lượt {g('wfb_pool_s')} s). ETL cụm chậm {g('x_c2_wpol')} lần Polars.
 VII. THỬ GIẢM CẮT NGỌN (Bảng {T['peak']}, FINDINGS_PEAK): tiêu chí đặt trước; KHÔNG biến thể nào đạt ⇒ giữ E (đóng băng {g('pk_freeze')}).
