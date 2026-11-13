@@ -1,8 +1,8 @@
 run_date,point,lat,lon,target_date,glofas_discharge,rain_forecast,temp_forecast,sea_level_max,horizon_days,alert_glofas,q_release_upstream,glofas_san_ho,lgbm_q,lgbm_san_ho,alert_lgbm,p_level1,canh_bao_level1,model_storm_ok
-2026-11-12,huong_kim_long,16.45,107.5,2026-11-12,902.65,25.9,21.6,1.29,0,nguy_co_1,,902.65,,,,,,True
-2026-11-12,huong_kim_long,16.45,107.5,2026-11-13,543.5,1.2,23.4,1.18,1,binh_thuong,,543.5,408.8851892982771,408.8851892982771,binh_thuong,0.011428571428571429,False,True
-2026-11-12,huong_kim_long,16.45,107.5,2026-11-14,266.92,2.1,24.8,1.03,2,binh_thuong,,266.92,294.7610695818404,294.7610695818404,binh_thuong,,,True
-2026-11-12,huong_kim_long,16.45,107.5,2026-11-15,151.76,3.3,25.6,0.99,3,binh_thuong,,151.76,235.39569618976623,235.39569618976623,binh_thuong,,,True
-2026-11-12,huong_kim_long,16.45,107.5,2026-11-16,126.06,1.2,26.3,0.99,4,binh_thuong,,126.06,,,,,,True
-2026-11-12,huong_kim_long,16.45,107.5,2026-11-17,83.33,0.9,26.7,0.98,5,binh_thuong,,83.33,,,,,,True
-2026-11-12,huong_kim_long,16.45,107.5,2026-11-18,51.24,0.4,25.7,0.99,6,binh_thuong,,51.24,,,,,,True
+2026-11-13,huong_kim_long,16.45,107.5,2026-11-13,534.8,0.9,23.5,1.17,0,binh_thuong,,534.8,,,,,,True
+2026-11-13,huong_kim_long,16.45,107.5,2026-11-14,242.22,0.1,24.0,1.03,1,binh_thuong,,242.22,207.83312967851768,207.83312967851768,binh_thuong,0.0,False,True
+2026-11-13,huong_kim_long,16.45,107.5,2026-11-15,152.11,0.9,25.7,0.99,2,binh_thuong,,152.11,128.51746102027653,128.51746102027653,binh_thuong,,,True
+2026-11-13,huong_kim_long,16.45,107.5,2026-11-16,108.4,0.9,26.1,0.98,3,binh_thuong,,108.4,130.93110795652456,130.93110795652456,binh_thuong,,,True
+2026-11-13,huong_kim_long,16.45,107.5,2026-11-17,65.68,0.0,27.0,0.98,4,binh_thuong,,65.68,,,,,,True
+2026-11-13,huong_kim_long,16.45,107.5,2026-11-18,49.93,2.2,25.9,0.97,5,binh_thuong,,49.93,,,,,,True
+2026-11-13,huong_kim_long,16.45,107.5,2026-11-19,43.06,6.8,24.1,1.05,6,binh_thuong,,43.06,,,,,,True
